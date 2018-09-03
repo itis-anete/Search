@@ -33,7 +33,7 @@ namespace Search.App
             });
 
 
-            services.AddEntityFrameworkNpgsql().AddDbContext<SearchDbContext>(opt=>opt.UseNpgsql("User ID=;Password=;Host=localhost;Port=5432;Database=marketplace.app;"));
+            services.AddEntityFrameworkNpgsql().AddDbContext<SearchDbContext>(opt=>opt.UseSqlServer("User ID=;Password=;Host=localhost;Port=5432;Database=marketplace.app;"));
             //services.AddDbContext<SearchDbContext>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
