@@ -3,6 +3,13 @@
 @{
     ViewData["Title"] = "Home page";
 }
+
+<div class="jumbotron">
+    <h1>
+        What are we looking for today?
+    </h1>
+</div>
+
 <div class="input-group input-group-lg">
     <div class="input-group-prepend">
         <span class="input-group-text" id="inputGroup-sizing-lg">Search</span>
@@ -10,9 +17,11 @@
     <input type="text" class="form-control" aria-label="Large" aria-describedby="inputGroup-sizing-sm">
 </div>
 <h5>sources from:</h5>
+
 <ul>
     @foreach (var item in Model.Sources)
     {
         @item.Url
     }
 </ul>
+
