@@ -31,8 +31,7 @@ namespace Search.App
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
-
-
+            
             services.AddEntityFrameworkNpgsql().AddDbContext<SearchDbContext>(opt=>opt.UseSqlServer("User ID=;Password=;Host=localhost;Port=5432;Database=marketplace.app;"));
             //services.AddDbContext<SearchDbContext>();
 

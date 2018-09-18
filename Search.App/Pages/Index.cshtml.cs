@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Search.App.DataBase.Context;
-using Search.App.DataBase.Entities;
+using Search.DataBase.Entities;
 using System.Collections.Generic;
 using System.Linq;
 

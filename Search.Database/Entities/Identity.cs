@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Search.App.DataBase.Entities
+namespace Search.DataBase.Entities
 {
     public abstract class Identity
     {

@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.App", "Search.App\Search.App.csproj", "{66B6DA6F-F5C9-4217-9CCC-AB78E1380AD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.App", "Search.App\Search.App.csproj", "{66B6DA6F-F5C9-4217-9CCC-AB78E1380AD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.Database", "Search.Database\Search.Database.csproj", "{CA354E2E-4272-48F1-B324-BDC2F8F5C9F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Search.API", "Search.Web\Search.API.csproj", "{FAACF57E-A31B-413B-8536-B99F67E042A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{66B6DA6F-F5C9-4217-9CCC-AB78E1380AD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66B6DA6F-F5C9-4217-9CCC-AB78E1380AD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66B6DA6F-F5C9-4217-9CCC-AB78E1380AD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA354E2E-4272-48F1-B324-BDC2F8F5C9F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA354E2E-4272-48F1-B324-BDC2F8F5C9F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA354E2E-4272-48F1-B324-BDC2F8F5C9F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA354E2E-4272-48F1-B324-BDC2F8F5C9F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

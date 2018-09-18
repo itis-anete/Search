@@ -1,5 +1,8 @@
-using Search.App.DataBase.Entities;
+using Search.DataBase.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Data.SqlClient;
+using System.Data;
+using System;
 
 namespace Search.App.DataBase.Context
 {
