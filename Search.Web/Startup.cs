@@ -49,6 +49,8 @@ namespace Search.Web
             }
 
             app.UseHttpsRedirection();
+
+            app.UseSwagger();
             app.UseSwaggerUI(x =>
             {
                 x.SwaggerEndpoint("/swagger/v1/swagger.json", "CoolName");
