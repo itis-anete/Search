@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -13,7 +14,9 @@ namespace Search.App
 
         public string DownloadPage(string url)
         {
-            return _client.DownloadString(url);
+            var data = _client.DownloadString(url);
+
+            return data;
         }
     }
 }
