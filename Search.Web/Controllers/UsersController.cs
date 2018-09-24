@@ -12,7 +12,7 @@ namespace Search.API.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        // GET api/values
+        // GET api/users
         [HttpGet]
         public ActionResult<IEnumerable<User>> Get()
         {
@@ -25,8 +25,8 @@ namespace Search.API.Controllers
                 } };
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
+        // GET api/users/deagle@gmail.com
+        [HttpGet("{email}")]
         public ActionResult<User> Get(string email)
         {
             return new User {
@@ -37,20 +37,20 @@ namespace Search.API.Controllers
             };
         }
 
-        // POST api/values
+        // POST api/users
         [HttpPost]
         public void Post([FromBody] User user)
         {
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
+        // PUT api/users/deagle@gmail.com
+        [HttpPut("{email}")]
         public void Put(string email, [FromBody] User user)
         {
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
+        // DELETE api/users/deagle@gmail.com
+        [HttpDelete("{email}")]
         public void Delete(string email)
         {
         }
