@@ -7,8 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Search.Web.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class ValuesController : ControllerBase
+    public class ValuesController : Controller
     {
         // GET api/values
         [HttpGet]

@@ -9,8 +9,7 @@ using Search.DataBase.Models;
 namespace Search.API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : Controller
     {
         // GET api/users
         [HttpGet]

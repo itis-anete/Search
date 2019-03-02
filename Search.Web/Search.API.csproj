@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BestSockets\BestSockets.csproj" />
     <ProjectReference Include="..\Search.App\Search.App.csproj" />
     <ProjectReference Include="..\Search.Database\Search.Database.csproj" />
   </ItemGroup>

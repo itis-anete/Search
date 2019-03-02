@@ -12,8 +12,6 @@ namespace Search.API.Controllers
     [ApiController]
     public class SearchController : ControllerBase
     {
-        private readonly Server _server = Server.Instance;
-
         // GET api/search
         [HttpGet]
         public ActionResult<IEnumerable<int>> Search(
@@ -22,5 +20,7 @@ namespace Search.API.Controllers
         {
             return Ok(_server.Search(url, pattern));
         }
+
+        private readonly Server _server = Server.Instance;
     }
 }
