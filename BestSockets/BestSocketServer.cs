@@ -1,6 +1,6 @@
-﻿using System;
+﻿using BestSockets.Internal;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
@@ -10,7 +10,7 @@ namespace BestSockets
     {
         public BestSocketServer()
         {
-            _server = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            _server = SocketWrapper.Create();
         }
 
         public void Start(string ip, int port, Func<TReceivedData, TSentData> onRequest)
@@ -19,7 +19,7 @@ namespace BestSockets
             _server.Bind(endPoint);
             _server.Listen(MaxQueueLength);
 
-            var state = new StateObject(_server, null, onRequest);
+            var state = new StateObject(_server, onRequest);
             _server.BeginAccept(AcceptCallback, state);
         }
 
@@ -41,17 +41,11 @@ namespace BestSockets
             return listener;
         }
 
-        private readonly Socket _server;
-
         private class StateObject
         {
-            public StateObject(
-                Socket server,
-                Socket handler,
-                Func<TReceivedData, TSentData> onRequest)
+            public StateObject(Socket server, Func<TReceivedData, TSentData> onRequest)
             {
                 Server = server;
-                Handler = handler;
                 OnRequest = onRequest;
             }
 
@@ -64,42 +58,23 @@ namespace BestSockets
             public const int BufferSize = 1024;
         }
 
+        private readonly Socket _server;
+
         private const int MaxQueueLength = 100;
 
-        private void AcceptCallback(IAsyncResult ar)
+        private static void AcceptCallback(IAsyncResult ar)
         {
             var state = (StateObject)ar.AsyncState;
             var handler = state.Server.EndAccept(ar);
             state.Handler = handler;
 
-            handler.BeginReceive(state.Buffer, 0, state.Buffer.Length,
-                SocketFlags.None, ReceiveCallback, state);
+            SocketWrapper.ReceiveAllAsync(handler, state.Buffer, state.Data, SendResponse, state);
         }
 
-        private static void ReceiveCallback(IAsyncResult ar)
+        private static void SendResponse(object obj)
         {
-            var state = (StateObject)ar.AsyncState;
-            var handler = state.Handler;
-            var buffer = state.Buffer;
+            var state = (StateObject)obj;
 
-            var countOfBytesRead = handler.EndReceive(ar);
-
-            if (countOfBytesRead > 0)
-            {
-                state.Data.AddRange(buffer.Take(countOfBytesRead));
-                if (handler.Available > 0)
-                {
-                    handler.BeginReceive(buffer, 0, buffer.Length,
-                        SocketFlags.None, ReceiveCallback, state);
-                    return;
-                }
-            }
-
-            SendResponse(state);
-        }
-
-        private static void SendResponse(StateObject state)
-        {
             var request = (TReceivedData)ObjectSerializer.Deserialize(state.Data.ToArray());
 
             var response = state.OnRequest(request);

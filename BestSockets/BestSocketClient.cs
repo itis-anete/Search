@@ -1,6 +1,6 @@
-﻿using System;
+﻿using BestSockets.Internal;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -25,7 +25,7 @@ namespace BestSockets
 
         public static void SendAsync(string ip, int port, TSentData data, Action<TReceivedData> onResponse)
         {
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
+            var socket = SocketWrapper.Create();
             socket.BeginConnect(ip, port, ConnectCallback, new StateObject(socket, data, onResponse));
         }
 
@@ -64,33 +64,17 @@ namespace BestSockets
             var socket = state.Socket;
             socket.EndSend(ar);
 
-            socket.BeginReceive(state.Buffer, 0, state.Buffer.Length,
-                SocketFlags.None, ReceiveCallback, state);
+            SocketWrapper.ReceiveAllAsync(socket, state.Buffer, state.Data, ReceiveCallback, state);
         }
 
-        private static void ReceiveCallback(IAsyncResult ar)
+        private static void ReceiveCallback(object obj)
         {
-            var state = (StateObject)ar.AsyncState;
-            var socket = state.Socket;
-            var buffer = state.Buffer;
-
-            var countOfBytesRead = socket.EndReceive(ar);
-
-            if (countOfBytesRead > 0)
-            {
-                state.Data.AddRange(buffer.Take(countOfBytesRead));
-                if (socket.Available > 0)
-                {
-                    socket.BeginReceive(buffer, 0, buffer.Length,
-                        SocketFlags.None, ReceiveCallback, state);
-                    return;
-                }
-            }
+            var state = (StateObject)obj;
 
             var response = (TReceivedData)ObjectSerializer.Deserialize(state.Data.ToArray());
             state.OnResponse(response);
 
-            socket.Close();
+            state.Socket.Close();
         }
     }
 }

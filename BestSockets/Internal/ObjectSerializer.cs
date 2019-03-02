@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace BestSockets
+namespace BestSockets.Internal
 {
-    public static class ObjectSerializer
+    internal static class ObjectSerializer
     {
         public static byte[] Serialize(object obj)
         {
