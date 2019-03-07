@@ -12,10 +12,10 @@ namespace Search.API.Controllers
         [HttpGet("{message}")]
         public IActionResult Get(string message)
         {
-            using (var server = BestSocketServer<string, string>.StartListening(
+            using (var server = SocketServer<string, string>.StartListening(
                 "127.0.0.1", 33060, request => new string(request.Reverse().ToArray())))
             {
-                var response = BestSocketClient<string, string>.Send("127.0.0.1", 33060, message);
+                var response = SocketClient<string, string>.Send("127.0.0.1", 33060, message);
                 return Ok(response);
             }
         }

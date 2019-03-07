@@ -1,13 +1,12 @@
-﻿using BestSockets.Internal;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace BestSockets
 {
-    public class BestSocketClient<TReceivedData, TSentData> : BestSocketBase<TReceivedData, TSentData>
+    public class SocketClient<TReceivedData, TSentData> : SocketBase<TReceivedData, TSentData>
     {
-        public BestSocketClient(string ip, int port, IObjectSerializer objectSerializer = null)
+        public SocketClient(string ip, int port, IObjectSerializer objectSerializer = null)
             : base(ip, port, objectSerializer) { }
 
         public TReceivedData Send(TSentData data)

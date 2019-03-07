@@ -3,7 +3,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace BestSockets.Internal
 {
-    internal class ObjectSerializer : IObjectSerializer
+    internal class DefaultObjectSerializer : IObjectSerializer
     {
         public byte[] Serialize(object obj)
         {

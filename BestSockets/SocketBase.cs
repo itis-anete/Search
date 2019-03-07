@@ -1,20 +1,21 @@
-﻿using System;
+﻿using BestSockets.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace BestSockets.Internal
+namespace BestSockets
 {
-    public abstract class BestSocketBase<TReceivedData, TSentData>
+    public abstract class SocketBase<TReceivedData, TSentData>
     {
-        public BestSocketBase(string ip, int port, IObjectSerializer objectSerializer = null)
+        public SocketBase(string ip, int port, IObjectSerializer objectSerializer = null)
         {
             _ip = IPAddress.Parse(ip);
             _port = port;
             
-            _serializer = objectSerializer ?? new ObjectSerializer();
+            _serializer = objectSerializer ?? new DefaultObjectSerializer();
         }
 
         protected void InitializeSocket()

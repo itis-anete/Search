@@ -1,14 +1,13 @@
-﻿using BestSockets.Internal;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace BestSockets
 {
-    public class BestSocketServer<TReceivedData, TSentData> : BestSocketBase<TReceivedData, TSentData>, IDisposable
+    public class SocketServer<TReceivedData, TSentData> : SocketBase<TReceivedData, TSentData>, IDisposable
     {
-        public BestSocketServer(string ip, int port, IObjectSerializer objectSerializer = null)
+        public SocketServer(string ip, int port, IObjectSerializer objectSerializer = null)
             : base(ip, port, objectSerializer) { }
 
         public void Start(Func<TReceivedData, TSentData> onRequest)
@@ -36,13 +35,13 @@ namespace BestSockets
             Stop();
         }
 
-        public static BestSocketServer<TReceivedData, TSentData> StartNew(
+        public static SocketServer<TReceivedData, TSentData> StartNew(
             string ip,
             int port,
             Func<TReceivedData, TSentData> onRequest,
             IObjectSerializer objectSerializer = null)
         {
-            var server = new BestSocketServer<TReceivedData, TSentData>(ip, port, objectSerializer);
+            var server = new SocketServer<TReceivedData, TSentData>(ip, port, objectSerializer);
             server.Start(onRequest);
             return server;
         }
