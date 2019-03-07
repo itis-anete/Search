@@ -54,11 +54,12 @@ namespace BestSockets
             var buffer = new byte[bufferSize];
             var receivedBytes = new List<byte>();
 
-            while (usedSocket.Available > 0)
+            do
             {
                 var countOfReceivedBytes = await usedSocket.ReceiveAsync(buffer, SocketFlags.None);
                 receivedBytes.AddRange(buffer.Take(countOfReceivedBytes));
             }
+            while (usedSocket.Available > 0);
 
             return receivedBytes;
         }

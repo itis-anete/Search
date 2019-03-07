@@ -25,5 +25,25 @@ namespace BestSockets
             FinalizeSocket();
             return response;
         }
+
+        public static TReceivedData Send(
+            string ip,
+            int port,
+            TSentData data,
+            IObjectSerializer objectSerializer = null)
+        {
+            var client = new SocketClient<TReceivedData, TSentData>(ip, port, objectSerializer);
+            return client.Send(data);
+        }
+
+        public static async Task<TReceivedData> SendAsync(
+            string ip,
+            int port,
+            TSentData data,
+            IObjectSerializer objectSerializer = null)
+        {
+            var client = new SocketClient<TReceivedData, TSentData>(ip, port, objectSerializer);
+            return await client.SendAsync(data);
+        }
     }
 }

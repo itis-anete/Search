@@ -12,21 +12,23 @@ namespace BestSockets
 
         public void Start(Func<TReceivedData, TSentData> onRequest)
         {
+            if (_isListening)
+                return;
+
             InitializeSocket();
+            _onRequest = onRequest;
 
             var endPoint = new IPEndPoint(_ip, _port);
             _socket.Bind(endPoint);
             _socket.Listen(MaxQueueLength);
 
             _isListening = true;
-            _listeningTask = ListenAsync();
+            ListenAsync();
         }
 
         public void Stop()
         {
             _isListening = false;
-            _listeningTask.Wait();
-
             FinalizeSocket();
         }
 
@@ -47,8 +49,7 @@ namespace BestSockets
         }
 
         private bool _isListening;
-        private Task _listeningTask;
-        private readonly Func<TReceivedData, TSentData> _onRequest;
+        private Func<TReceivedData, TSentData> _onRequest;
 
         private const int MaxQueueLength = 100;
 
