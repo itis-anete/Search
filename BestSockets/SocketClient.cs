@@ -4,17 +4,16 @@ using System.Threading.Tasks;
 
 namespace BestSockets
 {
-    public class SocketClient<TReceivedData, TSentData> : SocketBase<TReceivedData, TSentData>
+    public class SocketClient<TSentData> : SocketBase<string, TSentData>
     {
-        public SocketClient(string ip, int port, IObjectSerializer objectSerializer = null)
-            : base(ip, port, objectSerializer) { }
+        public SocketClient(string ip, int port) : base(ip, port) { }
 
-        public TReceivedData Send(TSentData data)
+        public string Send(TSentData data)
         {
             return SendAsync(data).Result;
         }
 
-        public async Task<TReceivedData> SendAsync(TSentData data)
+        public async Task<string> SendAsync(TSentData data)
         {
             InitializeSocket();
 
@@ -26,23 +25,15 @@ namespace BestSockets
             return response;
         }
 
-        public static TReceivedData Send(
-            string ip,
-            int port,
-            TSentData data,
-            IObjectSerializer objectSerializer = null)
+        public static string Send(string ip, int port, TSentData data)
         {
-            var client = new SocketClient<TReceivedData, TSentData>(ip, port, objectSerializer);
+            var client = new SocketClient<TSentData>(ip, port);
             return client.Send(data);
         }
 
-        public static async Task<TReceivedData> SendAsync(
-            string ip,
-            int port,
-            TSentData data,
-            IObjectSerializer objectSerializer = null)
+        public static async Task<string> SendAsync(string ip, int port, TSentData data)
         {
-            var client = new SocketClient<TReceivedData, TSentData>(ip, port, objectSerializer);
+            var client = new SocketClient<TSentData>(ip, port);
             return await client.SendAsync(data);
         }
     }

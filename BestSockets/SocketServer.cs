@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace BestSockets
 {
-    public class SocketServer<TReceivedData, TSentData> : SocketBase<TReceivedData, TSentData>, IDisposable
+    public class SocketServer<TSentData> : SocketBase<string, TSentData>, IDisposable
     {
-        public SocketServer(string ip, int port, IObjectSerializer objectSerializer = null)
-            : base(ip, port, objectSerializer) { }
+        public SocketServer(string ip, int port) : base(ip, port) { }
 
-        public void Start(Func<TReceivedData, TSentData> onRequest)
+        public void Start(Func<string, TSentData> onRequest)
         {
             if (_isListening)
                 return;
@@ -37,19 +36,15 @@ namespace BestSockets
             Stop();
         }
 
-        public static SocketServer<TReceivedData, TSentData> StartNew(
-            string ip,
-            int port,
-            Func<TReceivedData, TSentData> onRequest,
-            IObjectSerializer objectSerializer = null)
+        public static SocketServer<TSentData> StartNew(string ip, int port, Func<string, TSentData> onRequest)
         {
-            var server = new SocketServer<TReceivedData, TSentData>(ip, port, objectSerializer);
+            var server = new SocketServer<TSentData>(ip, port);
             server.Start(onRequest);
             return server;
         }
 
         private bool _isListening;
-        private Func<TReceivedData, TSentData> _onRequest;
+        private Func<string, TSentData> _onRequest;
 
         private const int MaxQueueLength = 100;
 
