@@ -3,9 +3,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace BestSockets.Internal
 {
-    internal static class ObjectSerializer
+    internal class ObjectSerializer : IObjectSerializer
     {
-        public static byte[] Serialize(object obj)
+        public byte[] Serialize(object obj)
         {
             var serializer = new BinaryFormatter();
             var stream = new MemoryStream();
@@ -15,7 +15,7 @@ namespace BestSockets.Internal
             return stream.ToArray();
         }
 
-        public static object Deserialize(byte[] bytes)
+        public object Deserialize(byte[] bytes)
         {
             var serializer = new BinaryFormatter();
             var stream = new MemoryStream();

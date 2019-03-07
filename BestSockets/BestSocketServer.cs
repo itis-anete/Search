@@ -1,96 +1,68 @@
 ﻿using BestSockets.Internal;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace BestSockets
 {
-    public class BestSocketServer<TReceivedData, TSentData> : IDisposable
+    public class BestSocketServer<TReceivedData, TSentData> : BestSocketBase<TReceivedData, TSentData>, IDisposable
     {
-        public BestSocketServer()
+        public BestSocketServer(string ip, int port, IObjectSerializer objectSerializer = null)
+            : base(ip, port, objectSerializer) { }
+
+        public void Start(Func<TReceivedData, TSentData> onRequest)
         {
-            _server = SocketWrapper.Create();
+            InitializeSocket();
+
+            var endPoint = new IPEndPoint(_ip, _port);
+            _socket.Bind(endPoint);
+            _socket.Listen(MaxQueueLength);
+
+            _isListening = true;
+            _listeningTask = ListenAsync();
         }
 
-        public void Start(string ip, int port, Func<TReceivedData, TSentData> onRequest)
+        public void Stop()
         {
-            var endPoint = new IPEndPoint(IPAddress.Parse(ip), port);
-            _server.Bind(endPoint);
-            _server.Listen(MaxQueueLength);
+            _isListening = false;
+            _listeningTask.Wait();
 
-            var state = new StateObject(_server, onRequest);
-            _server.BeginAccept(AcceptCallback, state);
-        }
-
-        public void Close()
-        {
-            _server.Close();
+            FinalizeSocket();
         }
 
         public void Dispose()
         {
-            _server.Dispose();
+            Stop();
         }
 
-        public static BestSocketServer<TReceivedData, TSentData>
-            StartListening(string ip, int port, Func<TReceivedData, TSentData> onRequest)
+        public static BestSocketServer<TReceivedData, TSentData> StartNew(
+            string ip,
+            int port,
+            Func<TReceivedData, TSentData> onRequest,
+            IObjectSerializer objectSerializer = null)
         {
-            var listener = new BestSocketServer<TReceivedData, TSentData>();
-            listener.Start(ip, port, onRequest);
-            return listener;
+            var server = new BestSocketServer<TReceivedData, TSentData>(ip, port, objectSerializer);
+            server.Start(onRequest);
+            return server;
         }
 
-        private class StateObject
-        {
-            public StateObject(Socket server, Func<TReceivedData, TSentData> onRequest)
-            {
-                Server = server;
-                OnRequest = onRequest;
-            }
-
-            public Socket Server;
-            public Socket Handler;
-            public Func<TReceivedData, TSentData> OnRequest;
-
-            public byte[] Buffer = new byte[BufferSize];
-            public List<byte> Data = new List<byte>();
-            public const int BufferSize = 1024;
-        }
-
-        private readonly Socket _server;
+        private bool _isListening;
+        private Task _listeningTask;
+        private readonly Func<TReceivedData, TSentData> _onRequest;
 
         private const int MaxQueueLength = 100;
 
-        private static void AcceptCallback(IAsyncResult ar)
+        private async Task ListenAsync()
         {
-            var state = (StateObject)ar.AsyncState;
-            var handler = state.Server.EndAccept(ar);
-            state.Handler = handler;
-
-            SocketWrapper.ReceiveAllAsync(handler, state.Buffer, state.Data, SendResponse, state);
-        }
-
-        private static void SendResponse(object obj)
-        {
-            var state = (StateObject)obj;
-
-            var request = (TReceivedData)ObjectSerializer.Deserialize(state.Data.ToArray());
-
-            var response = state.OnRequest(request);
-            var serialized = ObjectSerializer.Serialize(response);
-
-            state.Handler.BeginSend(serialized, 0, serialized.Length,
-                SocketFlags.None, SendCallback, state);
-        }
-
-        private static void SendCallback(IAsyncResult ar)
-        {
-            var state = (StateObject)ar.AsyncState;
-            var handler = state.Handler;
-
-            handler.EndSend(ar);
-            handler.Close();
+            while (_isListening)
+            {
+                var handler = await _socket.AcceptAsync();
+                var request = await ReceiveDataAsync(handler);
+                var response = _onRequest(request);
+                await SendDataAsync(response, handler);
+                handler.Close();
+            }
         }
     }
 }
