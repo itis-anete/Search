@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 
-namespace Search.API.Controllers
+namespace Search.Web.Controllers
 {
     [Route("api/[controller]")]
     public class SocketsController : Controller

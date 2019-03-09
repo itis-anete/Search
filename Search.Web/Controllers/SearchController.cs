@@ -1,26 +1,25 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Search.Infrastructure;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Search.App;
 
-namespace Search.API.Controllers
+namespace Search.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class SearchController : ControllerBase
     {
-        // GET api/search
-        [HttpGet]
-        public ActionResult<IEnumerable<int>> Search(
-            [Bind(Prefix = "url")] string url,
-            [Bind(Prefix = "pattern")] string pattern)
+        public SearchController(Searcher searcher)
         {
-            return Ok(_server.Search(url, pattern));
+            _searcher = searcher;
         }
 
-        private readonly Server _server = Server.Instance;
+        // GET api/search
+        [HttpGet]
+        public ActionResult<IEnumerable<string>> Search([FromQuery] string query)
+        {
+            return Ok(_searcher.Search(query));
+        }
+
+        private readonly Searcher _searcher;
     }
 }
