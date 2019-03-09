@@ -10,10 +10,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HtmlAgilityPack" Version="1.8.8" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.9.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
+    <PackageReference Include="PresentationFramework" Version="4.6.0" />
+    <PackageReference Include="Shipwreck.Phash.PresentationCore" Version="0.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="3.0.0" />
+    <PackageReference Include="System.Runtime.WindowsRuntime.UI.Xaml" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
