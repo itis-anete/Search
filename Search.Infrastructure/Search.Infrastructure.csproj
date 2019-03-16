@@ -15,14 +15,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="NEST" Version="6.5.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DataBase\" />
   </ItemGroup>
 
 </Project>
