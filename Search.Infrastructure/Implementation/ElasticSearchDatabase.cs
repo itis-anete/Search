@@ -57,7 +57,7 @@ namespace Search.Infrastructure.Implementation
         }
 
         private readonly ElasticClient _client;
-        private const string IndexName = "SearchDotNET_main_index";
+        private const string IndexName = "search-dot-net_main_index";
 
         private void EnsureIndexCreated()
         {
