@@ -1,12 +1,17 @@
-﻿using System.Collections.Generic;
-
-namespace Search.Infrastructure
+﻿namespace Search.Infrastructure
 {
     public class Searcher
     {
-        public IEnumerable<string> Search(string query)
+        public Searcher(ISearchDatabase searchDatabase)
         {
-            return new[] { "google.com" };
+            _searchDatabase = searchDatabase;
         }
+
+        public SearchResponse Search(SearchRequest request)
+        {
+            return _searchDatabase.Search(request);
+        }
+
+        public readonly ISearchDatabase _searchDatabase;
     }
 }
