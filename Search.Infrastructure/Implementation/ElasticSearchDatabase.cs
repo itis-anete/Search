@@ -31,7 +31,11 @@ namespace Search.Infrastructure.Implementation
         public SearchResponse Search(SearchRequest request)
         {
             var response = _client.Search<DocumentInfo>(search => search
-                .Query(query => query
+                .Query(query => query.
+                    Match(match => match
+                        .Field(x => x.Title)
+                        .Query(request.Query)
+                    ) || query
                     .Match(match => match
                         .Field(x => x.Text)
                         .Query(request.Query)
@@ -53,7 +57,7 @@ namespace Search.Infrastructure.Implementation
         }
 
         private readonly ElasticClient _client;
-        private const string IndexName = "main_documents_index";
+        private const string IndexName = "SearchDotNET_main_index";
 
         private void EnsureIndexCreated()
         {
@@ -84,8 +88,18 @@ namespace Search.Infrastructure.Implementation
                     .Map<DocumentInfo>(map => map
                         .Properties(properties => properties
                             .Text(text => text
-                                .Name(name => name.Text)
-                                .Analyzer("english_russian"))))));
+                                .Name(x => x.Title)
+                                .Analyzer("english_russian")
+                                .Boost(3)
+                            )
+                            .Text(text => text
+                                .Name(x => x.Text)
+                                .Analyzer("english_russian")
+                            )
+                        )
+                    )
+                )
+            );
             ThrowIfNotValid(createResponse);
         }
 
