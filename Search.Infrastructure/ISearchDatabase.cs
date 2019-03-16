@@ -6,5 +6,6 @@ namespace Search.Infrastructure
     {
         SearchResponse Search(SearchRequest request);
         void Add(DocumentInfo document);
+        void Remove(string url);
     }
 }

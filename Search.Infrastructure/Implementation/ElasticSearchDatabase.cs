@@ -12,10 +12,13 @@ namespace Search.Infrastructure.Implementation
         {
             var uri = new Uri(elasticSearchUrl);
             var connectionSettings = new ConnectionSettings(uri)
-                .DefaultMappingFor<DocumentInfo>(mapping => mapping.IndexName(IndexName));
+                .DefaultMappingFor<DocumentInfo>(mapping => mapping
+                    .IndexName(IndexName)
+                    .IdProperty(x => x.Url)
+                );
 
             _client = new ElasticClient(connectionSettings);
-            
+
             EnsureIndexCreated();
         }
 
@@ -54,6 +57,12 @@ namespace Search.Infrastructure.Implementation
                     })
                     .ToList()
             };
+        }
+
+        public void Remove(string url)
+        {
+            var response = _client.Delete<DocumentInfo>(url);
+            ThrowIfNotValid(response);
         }
 
         private readonly ElasticClient _client;
