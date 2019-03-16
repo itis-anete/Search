@@ -17,7 +17,12 @@ namespace Search.Web.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Search([FromQuery] string query)
         {
-            return Ok(_searcher.Search(query));
+            var searchQuery = new SearchRequest
+            {
+                Query = query
+            };
+
+            return Ok(_searcher.Search(searchQuery));
         }
 
         private readonly Searcher _searcher;

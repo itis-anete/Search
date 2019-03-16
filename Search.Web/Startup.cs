@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Search.Infrastructure;
+using Search.Infrastructure.Implementation;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Search.Web
@@ -23,6 +24,7 @@ namespace Search.Web
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddScoped<Searcher>();
+            services.AddScoped<ISearchDatabase, ElasticSearchDatabase>();
 
             services.AddSwaggerGen(x=>
             {
