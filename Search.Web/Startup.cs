@@ -25,6 +25,7 @@ namespace Search.Web
 
             services.AddScoped<Searcher>();
             services.AddScoped<ISearchDatabase, ElasticSearchDatabase>();
+            services.AddSingleton<ISearchCache, MemorySearchCache>();
 
             services.AddSwaggerGen(x=>
             {
