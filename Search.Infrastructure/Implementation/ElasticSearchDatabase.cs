@@ -15,6 +15,7 @@ namespace Search.Infrastructure.Implementation
                 .DefaultMappingFor<DocumentInfo>(mapping => mapping
                     .IndexName(IndexName)
                     .IdProperty(x => x.Url)
+                    .Ignore(x => x.Text)
                 );
 
             _client = new ElasticClient(connectionSettings);
@@ -104,6 +105,7 @@ namespace Search.Infrastructure.Implementation
                             .Text(text => text
                                 .Name(x => x.Text)
                                 .Analyzer("english_russian")
+                                .Store()
                             )
                         )
                     )
