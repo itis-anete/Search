@@ -10,12 +10,11 @@ namespace Search.Infrastructure.Implementation
     {
         public ElasticSearchDatabase(string elasticSearchUrl)
         {
-            var uri = new Uri(elasticSearchUrl);
-            var connectionSettings = new ConnectionSettings(uri)
+            _uri = new Uri(elasticSearchUrl);
+            var connectionSettings = new ConnectionSettings(_uri)
                 .DefaultMappingFor<DocumentInfo>(mapping => mapping
                     .IndexName(IndexName)
                     .IdProperty(x => x.Url)
-                    .Ignore(x => x.Text)
                 );
 
             _client = new ElasticClient(connectionSettings);
@@ -67,6 +66,8 @@ namespace Search.Infrastructure.Implementation
         }
 
         private readonly ElasticClient _client;
+        private readonly Uri _uri;
+
         private const string IndexName = "search-dot-net_main_index";
 
         private void EnsureIndexCreated()
@@ -97,16 +98,18 @@ namespace Search.Infrastructure.Implementation
                 .Mappings(mappings => mappings
                     .Map<DocumentInfo>(map => map
                         .Properties(properties => properties
-                            .Text(text => text
+                            .Text(property => property
                                 .Name(x => x.Title)
                                 .Analyzer("english_russian")
                                 .Boost(3)
                             )
-                            .Text(text => text
+                            .Text(property => property
                                 .Name(x => x.Text)
                                 .Analyzer("english_russian")
                                 .Store()
                             )
+                        ).SourceField(source => source
+                            .Excludes(new[] { "text" })
                         )
                     )
                 )
