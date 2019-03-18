@@ -15,7 +15,8 @@ namespace Search.Infrastructure.Implementation
                 .DefaultMappingFor<DocumentInfo>(mapping => mapping
                     .IndexName(IndexName)
                     .IdProperty(x => x.Url)
-                );
+                )
+                .ThrowExceptions();
 
             _client = new ElasticClient(connectionSettings);
 
@@ -27,8 +28,7 @@ namespace Search.Infrastructure.Implementation
 
         public void Add(DocumentInfo document)
         {
-            var response = _client.IndexDocument(document);
-            ThrowIfNotValid(response);
+            _client.IndexDocument(document);
         }
 
         public SearchResponse Search(SearchRequest request)
@@ -45,7 +45,6 @@ namespace Search.Infrastructure.Implementation
                     )
                 )
             );
-            ThrowIfNotValid(response);
 
             return new SearchResponse
             {
@@ -61,8 +60,7 @@ namespace Search.Infrastructure.Implementation
 
         public void Remove(string url)
         {
-            var response = _client.Delete<DocumentInfo>(url);
-            ThrowIfNotValid(response);
+            _client.Delete<DocumentInfo>(url);
         }
 
         private readonly ElasticClient _client;
@@ -73,8 +71,6 @@ namespace Search.Infrastructure.Implementation
         private void EnsureIndexCreated()
         {
             var existsResponse = _client.IndexExists(Indices.Index(IndexName));
-            ThrowIfNotValid(existsResponse);
-
             if (existsResponse.Exists)
                 return;
 
@@ -114,13 +110,6 @@ namespace Search.Infrastructure.Implementation
                     )
                 )
             );
-            ThrowIfNotValid(createResponse);
-        }
-
-        private static void ThrowIfNotValid(IResponse response)
-        {
-            if (!response.IsValid)
-                throw response.OriginalException;
         }
     }
 }
