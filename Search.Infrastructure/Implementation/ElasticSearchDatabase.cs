@@ -10,12 +10,13 @@ namespace Search.Infrastructure.Implementation
     {
         public ElasticSearchDatabase(string elasticSearchUrl)
         {
-            var uri = new Uri(elasticSearchUrl);
-            var connectionSettings = new ConnectionSettings(uri)
+            _uri = new Uri(elasticSearchUrl);
+            var connectionSettings = new ConnectionSettings(_uri)
                 .DefaultMappingFor<DocumentInfo>(mapping => mapping
                     .IndexName(IndexName)
                     .IdProperty(x => x.Url)
-                );
+                )
+                .ThrowExceptions();
 
             _client = new ElasticClient(connectionSettings);
 
@@ -27,13 +28,14 @@ namespace Search.Infrastructure.Implementation
 
         public void Add(DocumentInfo document)
         {
-            var response = _client.IndexDocument(document);
-            ThrowIfNotValid(response);
+            _client.IndexDocument(document);
         }
 
         public SearchResponse Search(SearchRequest request)
         {
             var response = _client.Search<DocumentInfo>(search => search
+                .From(request.From)
+                .Size(request.Size)
                 .Query(query => query.
                     Match(match => match
                         .Field(x => x.Title)
@@ -45,7 +47,6 @@ namespace Search.Infrastructure.Implementation
                     )
                 )
             );
-            ThrowIfNotValid(response);
 
             return new SearchResponse
             {
@@ -61,18 +62,17 @@ namespace Search.Infrastructure.Implementation
 
         public void Remove(string url)
         {
-            var response = _client.Delete<DocumentInfo>(url);
-            ThrowIfNotValid(response);
+            _client.Delete<DocumentInfo>(url);
         }
 
         private readonly ElasticClient _client;
+        private readonly Uri _uri;
+
         private const string IndexName = "search-dot-net_main_index";
 
         private void EnsureIndexCreated()
         {
             var existsResponse = _client.IndexExists(Indices.Index(IndexName));
-            ThrowIfNotValid(existsResponse);
-
             if (existsResponse.Exists)
                 return;
 
@@ -96,26 +96,22 @@ namespace Search.Infrastructure.Implementation
                 .Mappings(mappings => mappings
                     .Map<DocumentInfo>(map => map
                         .Properties(properties => properties
-                            .Text(text => text
+                            .Text(property => property
                                 .Name(x => x.Title)
                                 .Analyzer("english_russian")
                                 .Boost(3)
                             )
-                            .Text(text => text
+                            .Text(property => property
                                 .Name(x => x.Text)
                                 .Analyzer("english_russian")
+                                .Store()
                             )
+                        ).SourceField(source => source
+                            .Excludes(new[] { "text" })
                         )
                     )
                 )
             );
-            ThrowIfNotValid(createResponse);
-        }
-
-        private static void ThrowIfNotValid(IResponse response)
-        {
-            if (!response.IsValid)
-                throw response.OriginalException;
         }
     }
 }

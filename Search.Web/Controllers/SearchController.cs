@@ -15,14 +15,12 @@ namespace Search.Web.Controllers
 
         // GET api/search
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Search([FromQuery] string query)
+        public ActionResult<IEnumerable<string>> Search([FromQuery] SearchRequest request)
         {
-            var searchQuery = new SearchRequest
-            {
-                Query = query
-            };
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return Ok(_searcher.Search(searchQuery));
+            return Ok(_searcher.Search(request));
         }
 
         private readonly Searcher _searcher;
