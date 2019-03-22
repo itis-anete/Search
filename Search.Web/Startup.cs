@@ -27,7 +27,9 @@ namespace Search.Web
             services.AddScoped<ISearchDatabase, ElasticSearchDatabase>();
             services.AddSingleton<ISearchCache, MemorySearchCache>();
 
-            services.AddSwaggerGen(x=>
+            services.AddScoped<Indexer>();
+
+            services.AddSwaggerGen(x =>
             {
                 x.SwaggerDoc("ApiDescription", new Info {
                     Title = "API Description",
