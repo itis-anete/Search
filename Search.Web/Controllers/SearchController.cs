@@ -18,6 +18,9 @@ namespace Search.Web.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Search([FromQuery] SearchRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             return Ok(_searcher.Search(request));
         }
 
