@@ -34,6 +34,8 @@ namespace Search.Infrastructure.Implementation
         public SearchResponse Search(SearchRequest request)
         {
             var response = _client.Search<DocumentInfo>(search => search
+                .From(request.From)
+                .Size(request.Size)
                 .Query(query => query.
                     Match(match => match
                         .Field(x => x.Title)
