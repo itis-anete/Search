@@ -13,7 +13,9 @@
             if (_searchCache != null && _searchCache.TryGetResponse(request, out var response))
                 return response;
 
-            return _searchDatabase.Search(request);
+            response = _searchDatabase.Search(request);
+            _searchCache?.Add(request, response);
+            return response;
         }
 
         public readonly ISearchDatabase _searchDatabase;
