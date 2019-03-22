@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Infrastructure;
+using Search.SearchService;
 using System.Collections.Generic;
 
 namespace Search.Web.Controllers

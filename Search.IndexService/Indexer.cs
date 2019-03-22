@@ -1,7 +1,8 @@
 ﻿using Search.Core.Entities;
+using Search.Infrastructure;
 using System.Net;
 
-namespace Search.Infrastructure
+namespace Search.IndexService
 {
     public class Indexer
     {

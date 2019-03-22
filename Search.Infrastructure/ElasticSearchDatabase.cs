@@ -4,7 +4,7 @@ using Search.Core.Entities;
 using System;
 using System.Linq;
 
-namespace Search.Infrastructure.Implementation
+namespace Search.Infrastructure
 {
     public class ElasticSearchDatabase : ISearchDatabase
     {

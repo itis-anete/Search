@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Search.IndexService;
 using Search.Infrastructure;
-using Search.Infrastructure.Implementation;
+using Search.SearchService;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Search.Web

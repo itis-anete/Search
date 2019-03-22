@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Search.Infrastructure;
+using System.Collections.Generic;
 
-namespace Search.Infrastructure.Implementation
+namespace Search.SearchService
 {
     public class MemorySearchCache : ISearchCache
     {

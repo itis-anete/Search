@@ -20,7 +20,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BestSockets\BestSockets.csproj" />
+    <ProjectReference Include="..\Search.IndexService\Search.IndexService.csproj" />
     <ProjectReference Include="..\Search.Infrastructure\Search.Infrastructure.csproj" />
+    <ProjectReference Include="..\Search.SearchService\Search.SearchService.csproj" />
   </ItemGroup>
 
 </Project>
