@@ -10,8 +10,8 @@ namespace Search.Infrastructure
     {
         public ElasticSearchDatabase(string elasticSearchUrl)
         {
-            _uri = new Uri(elasticSearchUrl);
-            var connectionSettings = new ConnectionSettings(_uri)
+            var uri = new Uri(elasticSearchUrl);
+            var connectionSettings = new ConnectionSettings(uri)
                 .DefaultMappingFor<DocumentInfo>(mapping => mapping
                     .IndexName(IndexName)
                     .IdProperty(x => x.Url)
@@ -66,7 +66,6 @@ namespace Search.Infrastructure
         }
 
         private readonly ElasticClient _client;
-        private readonly Uri _uri;
 
         private const string IndexName = "search-dot-net_main_index";
 

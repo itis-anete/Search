@@ -24,11 +24,11 @@ namespace Search.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            services.AddScoped<Searcher>();
-            services.AddScoped<ISearchDatabase, ElasticSearchDatabase>();
+            services.AddSingleton<Searcher>();
+            services.AddSingleton<ISearchDatabase, ElasticSearchDatabase>();
             services.AddSingleton<ISearchCache, MemorySearchCache>();
 
-            services.AddScoped<Indexer>();
+            services.AddSingleton<Indexer>();
 
             services.AddSwaggerGen(x =>
             {
