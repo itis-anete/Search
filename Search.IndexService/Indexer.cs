@@ -1,5 +1,6 @@
 ﻿using Nest;
 using Search.Core.Entities;
+using System;
 using System.Net;
 
 namespace Search.IndexService
@@ -19,8 +20,9 @@ namespace Search.IndexService
 
             var document = new DocumentInfo
             {
-                Url = request.Url.ToString(),
-                Title = request.Url.ToString(),
+                Url = request.Url,
+                IndexedTime = DateTime.UtcNow,
+                Title = request.Url.Host + request.Url.PathAndQuery,
                 Text = page
             };
 
