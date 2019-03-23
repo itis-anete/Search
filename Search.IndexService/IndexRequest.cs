@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Search.Infrastructure
+namespace Search.IndexService
 {
     public class IndexRequest
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Search.Infrastructure
+namespace Search.SearchService
 {
     public class SearchRequest
     {

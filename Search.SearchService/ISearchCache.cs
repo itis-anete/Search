@@ -1,6 +1,4 @@
-﻿using Search.Infrastructure;
-
-namespace Search.SearchService
+﻿namespace Search.SearchService
 {
     public interface ISearchCache
     {

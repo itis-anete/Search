@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nest;
 using Search.IndexService;
 using Search.Infrastructure;
 using Search.SearchService;
@@ -24,8 +25,12 @@ namespace Search.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            services.AddSingleton(serviceProvider => new ElasticClientBuilder()
+                .UseConfiguration(Configuration)
+                .Build()
+            );
+
             services.AddSingleton<Searcher>();
-            services.AddSingleton<ISearchDatabase, ElasticSearchDatabase>();
             services.AddSingleton<ISearchCache, MemorySearchCache>();
 
             services.AddSingleton<Indexer>();

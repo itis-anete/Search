@@ -1,4 +1,4 @@
-﻿namespace Search.Infrastructure
+﻿namespace Search.SearchService
 {
     public class SearchResult
     {

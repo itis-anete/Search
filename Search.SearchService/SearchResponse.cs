@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Search.Infrastructure
+namespace Search.SearchService
 {
     public class SearchResponse
     {

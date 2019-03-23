@@ -1,14 +1,14 @@
-﻿using Search.Core.Entities;
-using Search.Infrastructure;
+﻿using Nest;
+using Search.Core.Entities;
 using System.Net;
 
 namespace Search.IndexService
 {
     public class Indexer
     {
-        public Indexer(ISearchDatabase searchDatabase)
+        public Indexer(ElasticClient client)
         {
-            _searchDatabase = searchDatabase;
+            _client = client;
         }
 
         public void Index(IndexRequest request)
@@ -24,9 +24,9 @@ namespace Search.IndexService
                 Text = page
             };
 
-            _searchDatabase.Add(document);
+            _client.IndexDocument(document);
         }
 
-        private readonly ISearchDatabase _searchDatabase;
+        private readonly ElasticClient _client;
     }
 }
