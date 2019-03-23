@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nest;
 using Search.IndexService;
 using Search.Infrastructure;
 using Search.SearchService;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
 
 namespace Search.Web
 {
@@ -25,8 +25,13 @@ namespace Search.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            services.AddSingleton(new ElasticSearchOptions
+            {
+                Url = new Uri(Configuration.GetValue<string>("ElasticSearchUrl"))
+            });
+
             services.AddSingleton(serviceProvider => new ElasticClientBuilder()
-                .UseConfiguration(Configuration)
+                .UseOptions(serviceProvider.GetRequiredService<ElasticSearchOptions>())
                 .Build()
             );
 

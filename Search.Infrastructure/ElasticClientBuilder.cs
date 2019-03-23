@@ -1,37 +1,21 @@
-﻿using Microsoft.Extensions.Configuration;
-using Nest;
+﻿using Nest;
 using Search.Core.Entities;
-using System;
 
 namespace Search.Infrastructure
 {
     public class ElasticClientBuilder
     {
-        public ElasticClientBuilder SetUrl(Uri url)
+        public ElasticClientBuilder UseOptions(ElasticSearchOptions options)
         {
-            _url = url;
-            return this;
-        }
-
-        public ElasticClientBuilder SetUrl(string url)
-        {
-            _url = new Uri(url);
-            return this;
-        }
-
-        public ElasticClientBuilder UseConfiguration(IConfiguration configuration)
-        {
-            var url = configuration.GetValue<string>("ElasticSearchUrl");
-            SetUrl(url);
-
+            _options = options;
             return this;
         }
 
         public ElasticClient Build()
         {
-            var connectionSettings = new ConnectionSettings(_url)
+            var connectionSettings = new ConnectionSettings(_options.Url)
                 .DefaultMappingFor<DocumentInfo>(mapping => mapping
-                    .IndexName(DocumentIndexName)
+                    .IndexName(_options.DocumentIndexName)
                     .IdProperty(x => x.Url)
                 )
                 .ThrowExceptions();
@@ -41,17 +25,25 @@ namespace Search.Infrastructure
             return client;
         }
 
-        private Uri _url;
+        private ElasticSearchOptions _options;
 
-        private const string DocumentIndexName = "search-dot-net_main_index";
-
-        private static void EnsureIndexCreated(ElasticClient client)
+        private void EnsureIndexCreated(ElasticClient client)
         {
-            var response = client.IndexExists(Indices.Index(DocumentIndexName));
+            var response = client.IndexExists(Indices.Index(_options.DocumentIndexName));
             if (response.Exists)
                 return;
 
-            client.CreateIndex(DocumentIndexName, index => index
+            ITextProperty TitleProperty(TextPropertyDescriptor<DocumentInfo> property) => property
+                .Name(x => x.Title)
+                .Analyzer("english_russian")
+                .Boost(3);
+
+            ITextProperty TextProperty(TextPropertyDescriptor<DocumentInfo> property) => property
+                .Name(x => x.Text)
+                .Analyzer("english_russian")
+                .Store();
+
+            client.CreateIndex(_options.DocumentIndexName, index => index
                 .Settings(settings => settings
                     .Analysis(analysis => analysis
                         .TokenFilters(filters => filters
@@ -71,16 +63,8 @@ namespace Search.Infrastructure
                 .Mappings(mappings => mappings
                     .Map<DocumentInfo>(map => map
                         .Properties(properties => properties
-                            .Text(property => property
-                                .Name(x => x.Title)
-                                .Analyzer("english_russian")
-                                .Boost(3)
-                            )
-                            .Text(property => property
-                                .Name(x => x.Text)
-                                .Analyzer("english_russian")
-                                .Store()
-                            )
+                            .Text(TitleProperty)
+                            .Text(TextProperty)
                         ).SourceField(source => source
                             .Excludes(new[] { "text" })
                         )
