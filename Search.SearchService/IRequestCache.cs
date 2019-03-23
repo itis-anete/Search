@@ -1,6 +1,6 @@
 ﻿namespace Search.SearchService
 {
-    public interface ISearchCache
+    public interface IRequestCache
     {
         bool IsCached(SearchRequest request);
 

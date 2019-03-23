@@ -27,6 +27,12 @@ namespace Search.Infrastructure
             return this;
         }
 
+        public ElasticClientBuilder EnableHistorySearch(bool enabled = true)
+        {
+            _historySearchEnabled = enabled;
+            return this;
+        }
+
         public ElasticClient Build()
         {
             var connectionSettings = new ConnectionSettings(_url)
@@ -38,10 +44,15 @@ namespace Search.Infrastructure
 
             var client = new ElasticClient(connectionSettings);
             EnsureIndexCreated(client);
+
+            if (_historySearchEnabled)
+                EnsureRollupJobStarted(client);
+
             return client;
         }
 
         private Uri _url;
+        private bool _historySearchEnabled;
 
         private const string DocumentIndexName = "search-dot-net_main_index";
 
@@ -87,6 +98,38 @@ namespace Search.Infrastructure
                     )
                 )
             );
+        }
+
+        private static void EnsureRollupJobStarted(ElasticClient client)
+        {
+            const string JobName = "search-dot-net_rollup_job";
+            const string RollupIndexName = "search-dot-net_rollup_index";
+
+            var response = client.GetRollupJob(job => job.Id(JobName));
+            if (response.Jobs.Count > 0)
+                return;
+
+            IPromise<Fields> FieldsToSave(FieldsDescriptor<DocumentInfo> fields) => fields
+                .Fields(
+                    x => x.Url,
+                    x => x.Title,
+                    x => x.Text
+                );
+
+            client.CreateRollupJob<DocumentInfo>(JobName, job => job
+                .IndexPattern(DocumentIndexName)
+                .RollupIndex(RollupIndexName)
+                .Cron("*/30 * * * * ?")
+                .PageSize(1000)
+                .Groups(groups => groups
+                    .DateHistogram(date => date
+                        //.Field(x => x)
+                        .Interval(TimeSpan.FromMinutes(20))
+                    )
+                    .Terms(terms => terms.Fields(FieldsToSave))
+                )
+            );
+            client.StartRollupJob(JobName);
         }
     }
 }

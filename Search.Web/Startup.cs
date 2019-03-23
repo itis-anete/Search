@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nest;
+using Search.DataHistoryService;
 using Search.IndexService;
 using Search.Infrastructure;
 using Search.SearchService;
@@ -31,9 +31,11 @@ namespace Search.Web
             );
 
             services.AddSingleton<Searcher>();
-            services.AddSingleton<ISearchCache, MemorySearchCache>();
+            services.AddSingleton<IRequestCache, MemoryRequestCache>();
 
             services.AddSingleton<Indexer>();
+
+            services.AddSingleton<CacheSearcher>();
 
             services.AddSwaggerGen(x =>
             {

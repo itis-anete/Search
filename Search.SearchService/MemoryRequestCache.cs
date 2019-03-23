@@ -2,7 +2,7 @@
 
 namespace Search.SearchService
 {
-    public class MemorySearchCache : ISearchCache
+    public class MemoryRequestCache : IRequestCache
     {
         public void Add(SearchRequest request, SearchResponse response)
         {

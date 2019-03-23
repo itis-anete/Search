@@ -6,7 +6,7 @@ namespace Search.SearchService
 {
     public class Searcher
     {
-        public Searcher(ElasticClient client, ISearchCache searchCache = null)
+        public Searcher(ElasticClient client, IRequestCache searchCache = null)
         {
             _client = client;
             _searchCache = searchCache;
@@ -23,7 +23,7 @@ namespace Search.SearchService
         }
 
         private readonly ElasticClient _client;
-        private readonly ISearchCache _searchCache;
+        private readonly IRequestCache _searchCache;
 
         private SearchResponse SendRequest(SearchRequest request)
         {
