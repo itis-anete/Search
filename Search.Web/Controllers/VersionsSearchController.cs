@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Search.SearchService;
+using Search.VersioningService;
 
 namespace Search.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SearchController : ControllerBase
+    public class VersionsSearchController : ControllerBase
     {
-        public SearchController(Searcher searcher)
+        public VersionsSearchController(VersionsSearcher searcher)
         {
             _searcher = searcher;
         }
 
-        // GET api/search
+        // GET api/versionssearch
         [HttpGet]
-        public IActionResult Search([FromQuery] SearchRequest request)
+        public IActionResult Search([FromQuery] VersionsSearchRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -22,6 +22,6 @@ namespace Search.Web.Controllers
             return Ok(_searcher.Search(request));
         }
 
-        private readonly Searcher _searcher;
+        private readonly VersionsSearcher _searcher;
     }
 }

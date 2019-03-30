@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.SearchService", "Sea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.IndexService", "Search.IndexService\Search.IndexService.csproj", "{96D116E2-0068-4C07-A96B-56C81A04FB6B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.CacheSearchService", "Search.CacheSearchService\Search.CacheSearchService.csproj", "{2A8C38EA-960E-4BB9-863F-D2831DCA299D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.VersioningService", "Search.VersioningService\Search.VersioningService.csproj", "{2A8C38EA-960E-4BB9-863F-D2831DCA299D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

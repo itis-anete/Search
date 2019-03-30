@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Search.DataHistoryService;
 using Search.IndexService;
 using Search.Infrastructure;
 using Search.SearchService;
+using Search.VersioningService;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
 
 namespace Search.Web
 {
@@ -25,17 +26,19 @@ namespace Search.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            services.AddSingleton(serviceProvider => new ElasticClientBuilder()
-                .UseConfiguration(Configuration)
-                .Build()
-            );
+            services.AddSingleton(new ElasticSearchOptions
+            {
+                Url = new Uri(Configuration.GetValue<string>("ElasticSearchUrl")),
+                EnableVersioning = true
+            });
+            services.AddSingleton<ElasticSearchDatabase>();
 
             services.AddSingleton<Searcher>();
             services.AddSingleton<IRequestCache, MemoryRequestCache>();
 
             services.AddSingleton<Indexer>();
 
-            services.AddSingleton<CacheSearcher>();
+            services.AddSingleton<VersionsSearcher>();
 
             services.AddSwaggerGen(x =>
             {

@@ -1,32 +1,21 @@
-﻿using Nest;
-using Search.Core.Entities;
-using System.Net;
+﻿using Search.Infrastructure;
+using System;
 
 namespace Search.IndexService
 {
     public class Indexer
     {
-        public Indexer(ElasticClient client)
+        public Indexer(ElasticSearchDatabase database)
         {
-            _client = client;
+            _database = database;
         }
 
         public void Index(IndexRequest request)
         {
-            var page = "";
-            using (var client = new WebClient())
-                page = client.DownloadString(request.Url);
-
-            var document = new DocumentInfo
-            {
-                Url = request.Url.ToString(),
-                Title = request.Url.ToString(),
-                Text = page
-            };
-
-            _client.IndexDocument(document);
+            request.Document.IndexedTime = DateTime.UtcNow;
+            _database.Add(request.Document);
         }
 
-        private readonly ElasticClient _client;
+        private readonly ElasticSearchDatabase _database;
     }
 }

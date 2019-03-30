@@ -1,14 +1,13 @@
-﻿using Nest;
-using Search.Core.Entities;
+﻿using Search.Infrastructure;
 using System.Linq;
 
 namespace Search.SearchService
 {
     public class Searcher
     {
-        public Searcher(ElasticClient client, IRequestCache searchCache = null)
+        public Searcher(ElasticSearchDatabase database, IRequestCache searchCache = null)
         {
-            _client = client;
+            _database = database;
             _searchCache = searchCache;
         }
 
@@ -17,34 +16,14 @@ namespace Search.SearchService
             if (_searchCache != null && _searchCache.TryGetResponse(request, out var response))
                 return response;
 
-            response = SendRequest(request);
-            _searchCache?.Add(request, response);
-            return response;
-        }
+            var responseFromElastic = _database.Search(
+                request.Query,
+                request.From,
+                request.Size);
 
-        private readonly ElasticClient _client;
-        private readonly IRequestCache _searchCache;
-
-        private SearchResponse SendRequest(SearchRequest request)
-        {
-            QueryContainer MatchTitleOrText(QueryContainerDescriptor<DocumentInfo> query) => query.
-                Match(match => match
-                    .Field(x => x.Title)
-                    .Query(request.Query)
-                ) || query
-                .Match(match => match
-                    .Field(x => x.Text)
-                    .Query(request.Query));
-
-            var response = _client.Search<DocumentInfo>(search => search
-                .From(request.From)
-                .Size(request.Size)
-                .Query(MatchTitleOrText)
-            );
-
-            return new SearchResponse
+            response = new SearchResponse
             {
-                Results = response.Documents
+                Results = responseFromElastic.Documents
                     .Select(document => new SearchResult
                     {
                         Url = document.Url,
@@ -52,6 +31,12 @@ namespace Search.SearchService
                     })
                     .ToList()
             };
+
+            _searchCache?.Add(request, response);
+            return response;
         }
+
+        private readonly ElasticSearchDatabase _database;
+        private readonly IRequestCache _searchCache;
     }
 }

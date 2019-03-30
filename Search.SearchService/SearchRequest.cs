@@ -5,7 +5,7 @@ namespace Search.SearchService
     public class SearchRequest
     {
         [Range(0, int.MaxValue)]
-        public int From { get; set; }
+        public int? From { get; set; }
 
         [Range(1, int.MaxValue)]
         public int? Size { get; set; }
