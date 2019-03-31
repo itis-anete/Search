@@ -1,4 +1,6 @@
 ﻿using HtmlAgilityPack;
+using System.Text.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +12,13 @@ namespace Search.API
 {
     public class Parser
     {
-        static Dictionary<int, string> SelectChildNodes(HtmlDocument html)
+        static Dictionary<int, string> HtmlIndexer(HtmlDocument html)
         {
             Dictionary<int, string> indexedInfo = new Dictionary<int, string>();
             var htmlBody = html.DocumentNode.SelectSingleNode("//body");
-            IEnumerable<HtmlNode> childNodes;
-            childNodes = htmlBody.DescendantsAndSelf();
-            foreach (var node in childNodes)
+            IEnumerable<HtmlNode> nodes;
+            nodes = htmlBody.DescendantsAndSelf();
+            foreach (var node in nodes)
             {
                 if (node.NodeType == HtmlNodeType.Element)
                 {
@@ -26,16 +28,20 @@ namespace Search.API
             return indexedInfo;
         }
 
-        //static void GetMetaInformation(HtmlDocument htmlDoc, string value)
-        //{
-        //    HtmlNode tcNode = htmlDoc.DocumentNode.SelectSingleNode("//meta[@name='" + value + "']");
-        //    string description = string.Empty;
-        //    if (tcNode != null)
-        //    {
-        //        HtmlAttribute desc;
-        //        desc = tcNode.Attributes["content"];
+        static Dictionary<int, string> JSONIndexer(JsonDocument json)
+        {
+            Dictionary<int, string> indexedInfo = new Dictionary<int, string>();
+            
 
-        //    }
-        //}
+            return indexedInfo;
+        }
+
+        static Dictionary<int, string> XMLIndexer()
+        {
+            Dictionary<int, string> indexedInfo = new Dictionary<int, string>();
+            return indexedInfo;
+        }
+
+
     }
 }

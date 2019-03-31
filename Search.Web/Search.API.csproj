@@ -17,6 +17,7 @@
     <PackageReference Include="Shipwreck.Phash.PresentationCore" Version="0.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="3.0.0" />
     <PackageReference Include="System.Runtime.WindowsRuntime.UI.Xaml" Version="4.3.0" />
+    <PackageReference Include="System.Text.Json" Version="2.0.0.11" />
   </ItemGroup>
 
   <ItemGroup>
