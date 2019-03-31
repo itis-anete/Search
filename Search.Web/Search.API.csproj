@@ -26,4 +26,10 @@
     <ProjectReference Include="..\Search.Database\Search.Database.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="birdFormat">
+      <HintPath>..\..\..\..\..\source\repos\birdFormat\birdFormat\bin\Debug\netcoreapp2.1\birdFormat.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

@@ -41,7 +41,5 @@ namespace Search.API
             Dictionary<int, string> indexedInfo = new Dictionary<int, string>();
             return indexedInfo;
         }
-
-
     }
 }
