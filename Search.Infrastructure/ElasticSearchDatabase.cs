@@ -1,5 +1,6 @@
 ﻿using Nest;
 using Search.Core.Entities;
+using System;
 
 namespace Search.Infrastructure
 {
@@ -53,21 +54,35 @@ namespace Search.Infrastructure
         public ISearchResponse<DocumentInfo> SearchInHistory(
            string query,
            int? from = null,
-           int? size = null)
+           int? size = null,
+           DateTime? fromDate = null,
+           DateTime? toDate = null)
         {
             return _client.Search<DocumentInfo>(search => search
                 .Index(_options.VersionsIndexName)
                 .From(from)
                 .Size(size)
-                .Query(desc => desc
-                    .Match(match => match
-                        .Field(x => x.Title)
-                        .Query(query)
-                    ) || desc
-                    .Match(match => match
-                        .Field(x => x.Text)
-                        .Query(query)
+                .Query(desc =>
+                    (
+                        desc.Match(match => match
+                            .Field(x => x.Title)
+                            .Query(query)
+                        )
+                        ||
+                        desc.Match(match => match
+                            .Field(x => x.Text)
+                            .Query(query)
+                        )
                     )
+                    &&
+                    desc.DateRange(range =>
+                    {
+                        if (fromDate != null)
+                            range = range.GreaterThanOrEquals(fromDate);
+                        if (toDate != null)
+                            range = range.LessThanOrEquals(toDate);
+                        return range.Field(x => x.IndexedTime);
+                    })
                 )
             );
         }

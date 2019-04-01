@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Search.SearchService;
+using System;
 
 namespace Search.VersioningService
 {
-    public class VersionsSearchRequest
+    public class VersionsSearchRequest : SearchRequest
     {
-        [Required]
-        [MinLength(1)]
-        public string Query { get; set; }
+        public DateTime? FromDate { get; set; }
+        public DateTime? ToDate { get; set; }
     }
 }

@@ -13,7 +13,11 @@ namespace Search.VersioningService
         public VersionsSearchResponse Search(VersionsSearchRequest request)
         {
             var responseFromElastic = _database.SearchInHistory(
-                request.Query
+                request.Query,
+                request.From,
+                request.Size,
+                request.FromDate,
+                request.ToDate
             );
 
             return new VersionsSearchResponse
