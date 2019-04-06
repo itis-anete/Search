@@ -5,9 +5,13 @@ namespace Search.SearchService
 {
     public class Searcher
     {
-        public Searcher(ElasticSearchDatabase database, IRequestCache searchCache = null)
+        public Searcher(
+            ElasticSearchClient database,
+            ElasticSearchOptions options,
+            IRequestCache searchCache = null)
         {
             _database = database;
+            _options = options;
             _searchCache = searchCache;
         }
 
@@ -16,10 +20,21 @@ namespace Search.SearchService
             if (_searchCache != null && _searchCache.TryGetResponse(request, out var response))
                 return response;
 
-            var responseFromElastic = _database.Search(
-                request.Query,
-                request.From,
-                request.Size);
+            var responseFromElastic = _database.Search(search => search
+                .Index(_options.DocumentsIndexName)
+                .From(request.From)
+                .Size(request.Size)
+                .Query(desc => desc
+                    .Match(match => match
+                        .Field(x => x.Title)
+                        .Query(request.Query)
+                    ) || desc
+                    .Match(match => match
+                        .Field(x => x.Text)
+                        .Query(request.Query)
+                    )
+                )
+            );
 
             response = new SearchResponse
             {
@@ -36,7 +51,8 @@ namespace Search.SearchService
             return response;
         }
 
-        private readonly ElasticSearchDatabase _database;
+        private readonly ElasticSearchClient _database;
+        private readonly ElasticSearchOptions _options;
         private readonly IRequestCache _searchCache;
     }
 }

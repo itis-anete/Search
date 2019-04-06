@@ -31,7 +31,7 @@ namespace Search.Web
                 Url = new Uri(Configuration.GetValue<string>("ElasticSearchUrl")),
                 EnableVersioning = true
             });
-            services.AddSingleton<ElasticSearchDatabase>();
+            services.AddSingleton<ElasticSearchClient>();
 
             services.AddSingleton<Searcher>();
             services.AddSingleton<IRequestCache, MemoryRequestCache>();
@@ -39,6 +39,8 @@ namespace Search.Web
             services.AddSingleton<Indexer>();
 
             services.AddSingleton<VersionsSearcher>();
+
+            services.AddSingleton<ServiceContainer>();
 
             services.AddSwaggerGen(x =>
             {

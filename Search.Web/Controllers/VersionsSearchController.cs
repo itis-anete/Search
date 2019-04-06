@@ -7,9 +7,9 @@ namespace Search.Web.Controllers
     [ApiController]
     public class VersionsSearchController : ControllerBase
     {
-        public VersionsSearchController(VersionsSearcher searcher)
+        public VersionsSearchController(ServiceContainer services)
         {
-            _searcher = searcher;
+            _searcher = services.VersionsSearcher;
         }
 
         // GET api/versionssearch

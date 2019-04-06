@@ -7,9 +7,9 @@ namespace Search.Web.Controllers
     [ApiController]
     public class IndexController : ControllerBase
     {
-        public IndexController(Indexer indexer)
+        public IndexController(ServiceContainer services)
         {
-            _indexer = indexer;
+            _indexer = services.Indexer;
         }
 
         // POST api/index
