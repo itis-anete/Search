@@ -13,7 +13,7 @@ namespace Search.VersioningService
             _options = options;
 
             EnsureIndexCreated();
-            _client.OnIndex += ElasticSearchClient_OnAdded;
+            _client.OnIndex += ElasticSearchClient_OnIndex;
         }
 
         public VersionsSearchResponse Search(VersionsSearchRequest request)
@@ -84,14 +84,16 @@ namespace Search.VersioningService
             );
         }
 
-        private void ElasticSearchClient_OnAdded(
+        private void ElasticSearchClient_OnIndex(
             DocumentInfo document,
             IIndexRequest<DocumentInfo> request,
             IIndexResponse response)
         {
-            if (request.Index == _options.DocumentsIndexName)
-                _client.Index(document, desc => desc
-                    .Index(_options.VersionsIndexName));
+            if (request.Index != _options.DocumentsIndexName)
+                return;
+
+            _client.Index(document, desc => desc
+                .Index(_options.VersionsIndexName));
         }
     }
 }

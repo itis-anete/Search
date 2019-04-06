@@ -13,13 +13,6 @@ namespace Search.Infrastructure
             remove { _onIndex -= value; }
         }
 
-        private Action<ISearchRequest, ISearchResponse<DocumentInfo>> _onSearch;
-        public event Action<ISearchRequest, ISearchResponse<DocumentInfo>> OnSearch
-        {
-            add { _onSearch += value; }
-            remove { _onSearch -= value; }
-        }
-
         public ElasticSearchClient(ElasticSearchOptions options)
         {
             _client = new ElasticClient(
@@ -52,12 +45,7 @@ namespace Search.Infrastructure
 
         public ISearchResponse<DocumentInfo> Search(Func<SearchDescriptor<DocumentInfo>, ISearchRequest> selector)
         {
-            var response = _client.Search(selector);
-
-            var desc = new SearchDescriptor<DocumentInfo>();
-            _onSearch?.Invoke(selector(desc), response);
-
-            return response;
+            return _client.Search(selector);
         }
 
         private readonly ElasticClient _client;

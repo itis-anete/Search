@@ -1,9 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using Nest;
+using Search.Core.Entities;
+using Search.Infrastructure;
+using Search.SearchService.Internal;
+using System.Collections.Generic;
 
 namespace Search.SearchService
 {
     public class MemoryRequestCache : IRequestCache
     {
+        public MemoryRequestCache(ElasticSearchClient client, ElasticSearchOptions options)
+        {
+            _options = options;
+
+            client.OnIndex += ElasticSearchClient_OnIndex;
+        }
+
         public void Add(SearchRequest request, SearchResponse response)
         {
             _cache[request] = response;
@@ -31,27 +42,21 @@ namespace Search.SearchService
             return _cache.TryGetValue(request, out response);
         }
 
+        private readonly ElasticSearchOptions _options;
         private readonly Dictionary<SearchRequest, SearchResponse> _cache =
                      new Dictionary<SearchRequest, SearchResponse>(Comparer);
 
-        private class RequestComparer : IEqualityComparer<SearchRequest>
-        {
-            public bool Equals(SearchRequest x, SearchRequest y)
-            {
-                return Equals(x.From, y.From)
-                    && Equals(x.Size, y.Size)
-                    && Equals(x.Query, y.Query);
-            }
-
-            public int GetHashCode(SearchRequest obj)
-            {
-                return unchecked(
-                    obj.Query.GetHashCode() * 2081561 +
-                    obj.From.GetHashCode() * 61583 +
-                    obj.Size.GetHashCode());
-            }
-        }
-
         private static readonly RequestComparer Comparer = new RequestComparer();
+
+        private void ElasticSearchClient_OnIndex(
+            DocumentInfo document,
+            IIndexRequest<DocumentInfo> request,
+            IIndexResponse response)
+        {
+            if (request.Index != _options.DocumentsIndexName)
+                return;
+
+            _cache.Clear();
+        }
     }
 }
