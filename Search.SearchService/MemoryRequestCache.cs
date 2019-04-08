@@ -3,7 +3,7 @@ using Search.Core.Entities;
 using Search.Infrastructure;
 using Search.SearchService.Internal;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -51,7 +51,7 @@ namespace Search.SearchService
 
         public void Remove(SearchRequest request)
         {
-            _cache.Remove(request);
+            _cache.TryRemove(request, out var record);
         }
 
         public bool TryGetResponse(SearchRequest request, out SearchResponse response)
@@ -81,8 +81,8 @@ namespace Search.SearchService
         private readonly TimeSpan _maxRecordAge;
         private readonly ElasticSearchOptions _options;
 
-        private readonly Dictionary<SearchRequest, CacheRecord> _cache =
-                     new Dictionary<SearchRequest, CacheRecord>(Comparer);
+        private readonly ConcurrentDictionary<SearchRequest, CacheRecord> _cache =
+                     new ConcurrentDictionary<SearchRequest, CacheRecord>(Comparer);
         private readonly Stopwatch _ageStopwatch;
         private readonly Timer _ageCheckingTimer;
         private bool _disposed;
@@ -114,7 +114,7 @@ namespace Search.SearchService
 
             var currentAge = _ageStopwatch.Elapsed - record.CreationTime;
             if (currentAge > _maxRecordAge)
-                _cache.Remove(request);
+                _cache.TryRemove(request, out record);
             else if (resetAge)
                 record.CreationTime = _ageStopwatch.Elapsed;
         }
