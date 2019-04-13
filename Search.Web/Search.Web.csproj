@@ -21,10 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Views\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\ttf\" />
   </ItemGroup>
 
 </Project>
