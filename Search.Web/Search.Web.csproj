@@ -6,13 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="wwwroot\**" />
-    <Content Remove="wwwroot\**" />
-    <EmbeddedResource Remove="wwwroot\**" />
-    <None Remove="wwwroot\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
@@ -24,6 +17,14 @@
     <ProjectReference Include="..\Search.Infrastructure\Search.Infrastructure.csproj" />
     <ProjectReference Include="..\Search.SearchService\Search.SearchService.csproj" />
     <ProjectReference Include="..\Search.VersioningService\Search.VersioningService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

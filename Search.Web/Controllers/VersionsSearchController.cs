@@ -4,15 +4,13 @@ using Search.VersioningService;
 namespace Search.Web.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     public class VersionsSearchController : ControllerBase
     {
         public VersionsSearchController(ServiceContainer services)
         {
             _searcher = services.VersionsSearcher;
         }
-
-        // GET api/versionssearch
+        
         [HttpGet]
         public IActionResult Search([FromQuery] VersionsSearchRequest request)
         {
