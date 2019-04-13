@@ -8,8 +8,7 @@ namespace Search.Infrastructure
     {
         public Uri Url { get; set; }
         public string DocumentsIndexName { get; set; } = "documents_index";
-
-        public bool EnableVersioning { get; set; }
+        
         public string VersionsIndexName { get; set; } = "versions_index";
 
         public static ITextProperty TitleProperty(TextPropertyDescriptor<DocumentInfo> property) => property
