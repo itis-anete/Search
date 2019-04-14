@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.IndexService;
+using Search.Indexer;
 
 namespace Search.Web.Controllers
 {
@@ -17,6 +18,8 @@ namespace Search.Web.Controllers
         public IActionResult Index([FromQuery] IndexRequest request)
         {
             _indexer.Index(request);
+            HtmlParse(GetHtml(request));
+            IndexRequest(url, GetHtml(request)); 
             return Ok();
         }
 
