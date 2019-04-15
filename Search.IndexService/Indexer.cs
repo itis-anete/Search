@@ -1,6 +1,8 @@
-﻿using Search.Core.Entities;
+﻿using HtmlAgilityPack;
+using Search.Core.Entities;
 using Search.Infrastructure;
 using System;
+using System.Net.Http;
 
 namespace Search.IndexService
 {
@@ -16,8 +18,12 @@ namespace Search.IndexService
 
         public void Index(IndexRequest request)
         {
-            var document = request.Document;
+            var html = GetHtml(request.Url);
+            var document = ParseHtml(html);
+
+            document.Url = request.Url;
             document.IndexedTime = DateTime.UtcNow;
+
             _client.Index(document, desc => desc
                 .Id(document.Url.ToString())
                 .Index(_options.DocumentsIndexName));
@@ -46,20 +52,27 @@ namespace Search.IndexService
                 )
             );
         }
-        //получить html по данному url;
-        public htmlDocument GetHtml(string url)
+
+        private HtmlDocument GetHtml(Uri url)
         {
-            using (HttpClient client = new HttpClient())
+            string result;
+            using (var client = new HttpClient())
+            using (HttpResponseMessage response = client.GetAsync(url).Result)
+            using (HttpContent content = response.Content)
+                result = content.ReadAsStringAsync().Result;
+
+            var document = new HtmlDocument();
+            document.LoadHtml(result);
+            return document;
+        }
+
+        private DocumentInfo ParseHtml(HtmlDocument document)
+        {
+            return new DocumentInfo
             {
-                using (HttpResponseMessage response = client.GetAsync(url).Result)
-                {
-                    using (HttpContent content = response.Content)
-                    {
-                        string result = content.ReadAsStringAsync().Result;
-                    }
-                }
-            }
-            return result;
+                Title = document.DocumentNode.SelectSingleNode("//title").InnerText,
+                Text = ConvertToPlainText(document).Replace(Header, "")
+            };
         }
     }
 }

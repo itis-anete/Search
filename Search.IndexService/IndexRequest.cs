@@ -7,7 +7,5 @@ namespace Search.IndexService
     {
         [Required]
         public Uri Url { get; set; }
-
-        public Core.Entities.DocumentInfo Document { get; set; }
     }
 }

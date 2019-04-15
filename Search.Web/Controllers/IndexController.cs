@@ -17,7 +17,6 @@ namespace Search.Web.Controllers
         public IActionResult Index([FromQuery] IndexRequest request)
         {
             _indexer.Index(request);
-            DocumentInfo docInfo = new DocumentInfo(request.url);
             return Ok();
         }
 
