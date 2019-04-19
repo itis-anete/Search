@@ -1,5 +1,7 @@
 ﻿using System;
+using HtmlAgilityPack;
 
+//using Search.IndexService;
 namespace Search.Core.Entities
 {
     public class DocumentInfo
@@ -8,12 +10,12 @@ namespace Search.Core.Entities
         public DateTime IndexedTime { get; set; }
         public string Title { get; set; }
         public string Text { get; set; }
-        public DocumentInfo(url url)
+        public DocumentInfo(Uri url, HtmlDocument doc, string text)
         {
-            var doc = GetHtml(url);
             Url = url;
-            Title = doc.DocumentNode.SelectSingleNode("//title");
-            Text = ConvertDoc(doc).Replace(Title, "");
+            IndexedTime = DateTime.UtcNow;
+            Title = doc.DocumentNode.SelectSingleNode("//title").ToString();
+            Text = text.Replace(Title, ""); 
         }
     }
 }

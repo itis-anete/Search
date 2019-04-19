@@ -60,7 +60,7 @@ namespace Search.IndexService
                     case HtmlNodeType.Text:
                         // script and style must not be output
                         string parentName = node.ParentNode.Name;
-                        if ((parentName == "script") || (parentjuufName == "style"))
+                        if ((parentName == "script") || (parentName == "style"))
                         {
                             break;
                         }

@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using Search.IndexService;
 using Search.Core.Entities;
 using Search.Infrastructure;
 using System;
@@ -18,14 +19,12 @@ namespace Search.IndexService
 
         public void Index(IndexRequest request)
         {
-            var html = GetHtml(request.Url);
-            var document = ParseHtml(html);
+            HtmlDocument html = GetHtml(request.Url);
+            var text = Parser.HtmlToText.ConvertDoc(html);
 
-            document.Url = request.Url;
-            document.IndexedTime = DateTime.UtcNow;
-
-            _client.Index(document, desc => desc
-                .Id(document.Url.ToString())
+            DocumentInfo docInf = new DocumentInfo(request.Url, html, text);
+            _client.Index(docInf, desc => desc
+                .Id(docInf.Url.ToString())
                 .Index(_options.DocumentsIndexName));
         }
 
@@ -53,7 +52,7 @@ namespace Search.IndexService
             );
         }
 
-        private HtmlDocument GetHtml(Uri url)
+        public HtmlDocument GetHtml(Uri url)
         {
             string result;
             using (var client = new HttpClient())
@@ -66,13 +65,5 @@ namespace Search.IndexService
             return document;
         }
 
-        private DocumentInfo ParseHtml(HtmlDocument document)
-        {
-            return new DocumentInfo
-            {
-                Title = document.DocumentNode.SelectSingleNode("//title").InnerText,
-                Text = ConvertToPlainText(document).Replace(Header, "")
-            };
-        }
     }
 }
