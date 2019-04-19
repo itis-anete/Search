@@ -11,7 +11,7 @@ namespace Search.IndexService
             Indexer indexer,
             bool autoReindexing = false,
             TimeSpan? indexingFrequency = null,
-            TimeSpan? indexingDelay = null)
+            TimeSpan? firstIndexingDeferral = null)
         {
             _client = client;
             _indexer = indexer;
@@ -20,15 +20,15 @@ namespace Search.IndexService
                 _indexingTimer = new Timer(
                     ReindexAll,
                     null,
-                    indexingDelay ?? default(TimeSpan),
+                    firstIndexingDeferral ?? default(TimeSpan),
                     indexingFrequency ?? TimeSpan.FromMinutes(15));
         }
+
+        public void ReindexAll() => ReindexAll(null);
 
         private readonly ElasticSearchClient _client;
         private readonly Indexer _indexer;
         private readonly Timer _indexingTimer;
-
-        public void ReindexAll() => ReindexAll(null);
 
         private void ReindexAll(object state)
         {
