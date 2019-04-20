@@ -29,8 +29,11 @@ namespace Search.Web
             services.AddSingleton<Indexer>();
             services.AddSingleton<Reindexer>(provider => new Reindexer(
                 provider.GetRequiredService<ElasticSearchClient>(),
+                provider.GetRequiredService<ElasticSearchOptions>(),
                 provider.GetRequiredService<Indexer>(),
-                autoReindexing: true
+                autoReindexing: true,
+                indexingFrequency: TimeSpan.FromMinutes(1),
+                firstIndexingDeferral: TimeSpan.FromSeconds(10)
             ));
 
             services.AddSingleton<VersionsSearcher>();
