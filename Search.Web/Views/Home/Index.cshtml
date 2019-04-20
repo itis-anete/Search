@@ -1,5 +1,96 @@
 ﻿@{
-   ViewBag.Title = "Search";
+    ViewBag.Title = "Search";
 }
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="~/css/prod.css">
+</head>
+<body>
+    @RenderBody()
+    <script src="threex.dynamictexture.js"></script>
+    <canvas id="canvas"></canvas>
+    <script src="~/js/fabric.js"></script>
+    <script src="~/js/three.js"></script>
+    <script src="~/js/OrbitControls.js"></script>
+    <script src="~/js/pro.js"></script>
+    <script>
+        var data = [];
+        data[0] = 'Kek';
+        data[1] = 'Pop';
+        data[2] = 'Jopok';
+        var c = data.length;
 
-<input type="text" name="query" value="Search query">
+
+        function seachInfo() {
+            for (var i = 0; i < c; i++) {
+                seach(data[i]);
+            }
+        }
+
+        function seach(k) {
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 17;
+            camera.position.x = -20;
+            camera.position.y = 5;
+
+            var renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth / 1.075, window.innerHeight / 2);
+
+            var dynamicTexture = new THREEx.DynamicTexture(890, 339)
+            dynamicTexture.context.font = 80 + "px Arial";
+            dynamicTexture.texture.anisotropy = renderer.getMaxAnisotropy();
+            dynamicTexture.clear('#EBC1F6');
+            // update the text
+            dynamicTexture.drawText("Name: " + k, 10, 130, 'red');
+            dynamicTexture.drawText("text: " + k, 10, 270, 'red');
+
+            document.body.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableZoom = false;
+            controls.enablePan = false;
+
+            var cubeMaterialArray = [];
+
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0xEBC1F6 }));//зад
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+                map: dynamicTexture.texture
+            }));//перед
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x693776 })); //вверх
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x693776 })); //низ
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x4E2458 })); //правый бок
+            cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x4E2458 })); //левый бок
+
+            var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+
+            window.addEventListener('resize', function () {
+                var width = window.innerWidth / 1.09;
+                var height = window.innerHeight / 2;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
+            );
+
+            var geometry = new THREE.BoxGeometry(1, 7, 21);
+            var mesh = new THREE.Mesh(geometry, cubeMaterials);
+
+            scene.add(mesh);
+
+
+            var render = function () {
+                renderer.render(scene, camera);
+            };
+
+            var Loop = function () {
+                requestAnimationFrame(Loop);
+
+                render();
+            };
+            Loop();
+        }
+    </script>
+</body>
+</html>

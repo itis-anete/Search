@@ -4,20 +4,14 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title</title>
-
-    
-
     <link rel="stylesheet" type="text/css" href="~/css/prod.css">
-
 </head>
 <body>
-   
-
     <partial name="_CookieConsentPartial" />
 
     <div class="container body-content">
         @RenderBody()
-
+        <script src="threex.dynamictexture.js"></script>
         <canvas id="canvas"></canvas>
         <script src="~/js/fabric.js"></script>
         <script src="~/js/three.js"></script>
@@ -40,11 +34,11 @@
             });
             canvas1.add(textSearch);
         </script>
-       
+
         <div id="cover">
             <form method="get" action="">
                 <div class="tb">
-                    <div class="td"><input type="text" placeholder="Search" required></div>
+                    <div class="td"><input type="text" name="query" value="Search query" placeholder="Search" required></div>
                     <div class="td" id="s-cover">
                         <button type="submit" onclick="seachInfo()">
                             <div id="s-circle"></div>
