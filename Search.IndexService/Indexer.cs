@@ -1,6 +1,4 @@
-﻿using HtmlAgilityPack;
-using Search.IndexService;
-using Search.Core.Entities;
+﻿using Search.Core.Entities;
 using Search.Infrastructure;
 using System;
 using System.Net.Http;
@@ -19,12 +17,19 @@ namespace Search.IndexService
 
         public void Index(IndexRequest request)
         {
-            HtmlDocument html = GetHtml(request.Url);
-            var text = Parser.HtmlToText.ConvertDoc(html);
+            var html = GetHtml(request.Url);
+            var parsedHtml = Parser.HtmlToText.ParseHtml(html);
 
-            DocumentInfo docInf = new DocumentInfo(request.Url, html, text);
-            _client.Index(docInf, desc => desc
-                .Id(docInf.Url.ToString())
+            var document = new DocumentInfo()
+            {
+                Url = request.Url,
+                IndexedTime = DateTime.UtcNow,
+                Title = parsedHtml.Title,
+                Text = parsedHtml.Text
+            };
+
+            _client.Index(document, desc => desc
+                .Id(document.Url.ToString())
                 .Index(_options.DocumentsIndexName));
         }
 
@@ -52,17 +57,15 @@ namespace Search.IndexService
             );
         }
 
-        public HtmlDocument GetHtml(Uri url)
+        private string GetHtml(Uri url)
         {
-            string result;
+            string html;
             using (var client = new HttpClient())
             using (HttpResponseMessage response = client.GetAsync(url).Result)
             using (HttpContent content = response.Content)
-                result = content.ReadAsStringAsync().Result;
-
-            var document = new HtmlDocument();
-            document.LoadHtml(result);
-            return document;
+                html = content.ReadAsStringAsync().Result;
+            
+            return html;
         }
 
     }

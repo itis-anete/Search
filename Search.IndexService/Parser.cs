@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using HtmlAgilityPack;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using HtmlAgilityPack;
-using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
@@ -12,23 +9,29 @@ namespace Search.IndexService
     {
         public static class HtmlToText
         {
-            public static string Convert(string path)
+            public static ParsedHtml ParseHtml(string html)
             {
-                HtmlDocument doc = new HtmlDocument();
-                doc.Load(path);
-                return ConvertDoc(doc);
-            }
-
-            public static string ConvertHtml(string html)
-            {
-                HtmlDocument doc = new HtmlDocument();
+                var doc = new HtmlDocument();
                 doc.LoadHtml(html);
-                return ConvertDoc(doc);
+
+                var title = GetTitle(doc);
+                var text = ConvertDoc(doc);
+
+                return new ParsedHtml
+                {
+                    Title = title,
+                    Text = text
+                };
             }
 
-            public static string ConvertDoc(HtmlDocument doc)
+            private static string GetTitle(HtmlDocument doc)
             {
-                using (StringWriter sw = new StringWriter())
+                return doc.DocumentNode.SelectSingleNode("//title").InnerText;
+            }
+
+            private static string ConvertDoc(HtmlDocument doc)
+            {
+                using (var sw = new StringWriter())
                 {
                     ConvertTo(doc.DocumentNode, sw);
                     sw.Flush();
@@ -36,18 +39,20 @@ namespace Search.IndexService
                 }
             }
 
-            internal static void ConvertContentTo(HtmlNode node, TextWriter outText, PreceedingDomTextInfo textInfo)
+            private static void ConvertContentTo(HtmlNode node, TextWriter outText, PreceedingDomTextInfo textInfo)
             {
                 foreach (HtmlNode subnode in node.ChildNodes)
                 {
                     ConvertTo(subnode, outText, textInfo);
                 }
             }
-            public static void ConvertTo(HtmlNode node, TextWriter outText)
+
+            private static void ConvertTo(HtmlNode node, TextWriter outText)
             {
                 ConvertTo(node, outText, new PreceedingDomTextInfo(false));
             }
-            internal static void ConvertTo(HtmlNode node, TextWriter outText, PreceedingDomTextInfo textInfo)
+
+            private static void ConvertTo(HtmlNode node, TextWriter outText, PreceedingDomTextInfo textInfo)
             {
                 string html;
                 switch (node.NodeType)
@@ -96,6 +101,7 @@ namespace Search.IndexService
                         switch (node.Name)
                         {
                             case "nav":
+                            case "title":
                                 skip = true;
                                 isInline = false;
                                 break;
@@ -181,25 +187,31 @@ namespace Search.IndexService
                 }
             }
         }
-        internal class PreceedingDomTextInfo
+
+        private class PreceedingDomTextInfo
         {
             public PreceedingDomTextInfo(BoolWrapper isFirstTextOfDocWritten)
             {
                 IsFirstTextOfDocWritten = isFirstTextOfDocWritten;
             }
+
             public bool WritePrecedingWhiteSpace { get; set; }
             public bool LastCharWasSpace { get; set; }
             public readonly BoolWrapper IsFirstTextOfDocWritten;
             public int ListIndex { get; set; }
         }
-        internal class BoolWrapper
+
+        private class BoolWrapper
         {
             public BoolWrapper() { }
+
             public bool Value { get; set; }
+
             public static implicit operator bool(BoolWrapper boolWrapper)
             {
                 return boolWrapper.Value;
             }
+
             public static implicit operator BoolWrapper(bool boolWrapper)
             {
                 return new BoolWrapper { Value = boolWrapper };
