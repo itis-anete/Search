@@ -27,6 +27,11 @@ namespace Search.Web
             services.AddSingleton<IRequestCache, MemoryRequestCache>();
 
             services.AddSingleton<Indexer>();
+            services.AddSingleton<Reindexer>(provider => new Reindexer(
+                provider.GetRequiredService<ElasticSearchClient>(),
+                provider.GetRequiredService<Indexer>(),
+                autoReindexing: true
+            ));
 
             services.AddSingleton<VersionsSearcher>();
 

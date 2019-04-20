@@ -20,15 +20,15 @@ namespace Search.SearchService
             _options = options;
             _maxRecordAge = maxRecordAge ?? TimeSpan.FromMinutes(5);
 
-            client.OnIndex += ElasticSearchClient_OnIndex;
+            client.OnIndex += ClearOnIndexing;
 
-            var intervalBetweenAgeChecks = _maxRecordAge / 2;
+            var ageCheckFrequency = _maxRecordAge / 2;
             _ageStopwatch = Stopwatch.StartNew();
             _ageCheckingTimer = new Timer(
-                TimerCallback,
+                CheckAgeOfAllRecords,
                 null,
-                intervalBetweenAgeChecks,
-                intervalBetweenAgeChecks);
+                ageCheckFrequency,
+                ageCheckFrequency);
         }
 
         public void Add(SearchRequest request, SearchResponse response)
@@ -89,7 +89,7 @@ namespace Search.SearchService
 
         private static readonly RequestComparer Comparer = new RequestComparer();
 
-        private void ElasticSearchClient_OnIndex(
+        private void ClearOnIndexing(
             DocumentInfo document,
             IIndexRequest<DocumentInfo> request,
             IIndexResponse response)
@@ -100,7 +100,7 @@ namespace Search.SearchService
             _cache.Clear();
         }
 
-        private void TimerCallback(object state)
+        private void CheckAgeOfAllRecords(object state)
         {
             var keys = _cache.Keys.ToArray();
             foreach (var request in keys)

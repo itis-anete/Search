@@ -8,16 +8,19 @@ namespace Search.Web
     {
         public ServiceContainer(
             Searcher searcher,
+            VersionsSearcher versionsSearcher,
             Indexer indexer,
-            VersionsSearcher versionsSearcher)
+            Reindexer reindexer)
         {
             Searcher = searcher;
-            Indexer = indexer;
             VersionsSearcher = versionsSearcher;
+            Indexer = indexer;
+            Reindexer = reindexer;
         }
 
         public Searcher Searcher { get; }
-        public Indexer Indexer { get; }
         public VersionsSearcher VersionsSearcher { get; }
+        public Indexer Indexer { get; }
+        public Reindexer Reindexer { get; }
     }
 }
