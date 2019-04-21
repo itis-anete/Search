@@ -18,14 +18,14 @@
     <script src="~/js/pro.js"></script>-
     <script>
 
-        function seachInfo() {
-            @for (var i = 0; i < Resultes.lenght; i++)
+        function searchInfo() {
+            for (var i = 0; i < Resultes.lenght; i++)
             {
                 seach(Resultes[i]);
             }
         }
 
-        function seach(k) {
+        function search(k) {
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
             camera.position.z = 17;
