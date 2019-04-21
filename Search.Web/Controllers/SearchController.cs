@@ -4,7 +4,7 @@ using Search.SearchService;
 namespace Search.Web.Controllers
 {
     [Route("api/[controller]")]
-    public class SearchController : ControllerBase
+    public class SearchController : Controller
     {
         public SearchController(ServiceContainer services)
         {
@@ -17,7 +17,8 @@ namespace Search.Web.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            return Ok(_searcher.Search(request));
+            var ok= Ok(_searcher.Search(request));
+            return View(ok);
         }
 
         private readonly Searcher _searcher;

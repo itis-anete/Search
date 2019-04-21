@@ -11,7 +11,7 @@
 
     <div class="container body-content">
         @RenderBody()
-        <script src="threex.dynamictexture.js"></script>
+        <script src="~/js/threex.dynamictexture.js"></script>
         <canvas id="canvas"></canvas>
         <script src="~/js/fabric.js"></script>
         <script src="~/js/three.js"></script>
@@ -38,7 +38,9 @@
         <div id="cover">
             <form method="get" action="">
                 <div class="tb">
-                    <div class="td"><input type="text" name="query" value="Search query" placeholder="Search" required></div>
+                    <div class="td">
+                        <input type="text" name="query" value="Search query" placeholder="Search" required>
+                    </div>
                     <div class="td" id="s-cover">
                         <button type="submit" onclick="seachInfo()">
                             <div id="s-circle"></div>
@@ -49,8 +51,6 @@
             </form>
         </div>
     </div>
-
-  
     @RenderSection("Scripts", required: false)
 </body>
 </html>
