@@ -7,50 +7,50 @@
     <link rel="stylesheet" type="text/css" href="~/css/prod.css">
 </head>
 <body>
-    <partial name="_CookieConsentPartial" />
+	<partial name="_CookieConsentPartial" />
 
-    <div class="container body-content">
-        @RenderBody()
-        <script src="~/js/threex.dynamictexture.js"></script>
-        <canvas id="canvas"></canvas>
-        <script src="~/js/fabric.js"></script>
-        <script src="~/js/three.js"></script>
-        <script src="~/js/OrbitControls.js"></script>
-        <script src="~/js/pro.js"></script>
-        <script>
-            var canvas = document.getElementById('canvas'),
-                context = canvas.getContext('3d');
-            canvas.width = window.innerWidth / 2;
-            canvas.height = window.innerHeight / 2;
+	<div class="container body-content">
+		@RenderBody()
+		<script src="~/js/threex.dynamictexture.js"></script>
+		<canvas id="canvas"></canvas>
+		<script src="~/js/fabric.js"></script>
+		<script src="~/js/three.js"></script>
+		<script src="~/js/OrbitControls.js"></script>
+		<script src="~/js/pro.js"></script>
+		<script>
+			var canvas = document.getElementById('canvas'),
+				context = canvas.getContext('3d');
+			canvas.width = window.innerWidth / 2;
+			canvas.height = window.innerHeight / 2;
 
-            var canvas1 = new fabric.StaticCanvas('canvas');
-            var textSearch = new fabric.Text("Search", {
-                fontFamily: 'Liana',
-                left: 70,
-                top: 50,
-                width: 150,
-                fontSize: 100,
-                fill: 'white'
-            });
-            canvas1.add(textSearch);
-        </script>
+			var canvas1 = new fabric.StaticCanvas('canvas');
+			var textSearch = new fabric.Text("Search", {
+				fontFamily: 'Liana',
+				left: 70,
+				top: 50,
+				width: 150,
+				fontSize: 100,
+				fill: 'white'
+			});
+			canvas1.add(textSearch);
+		</script>
 
-        <div id="cover">
-            <form method="get" action="">
-                <div class="tb">
-                    <div class="td">
-                        <input type="text" name="query" value="Search query" placeholder="Search" required>
-                    </div>
-                    <div class="td" id="s-cover">
-                        <button type="submit" onclick="seachInfo()">
-                            <div id="s-circle"></div>
-                            <span></span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    @RenderSection("Scripts", required: false)
+		<div id="cover">
+			<form method="get" asp-area="" asp-controller="Search" asp-action="Search">
+				<div class="tb">
+					<div class="td">
+						<input type="text" name="query" value="Search query" placeholder="Search" required>
+					</div>
+					<div class="td" id="s-cover">
+						<button type="submit">
+							<div id="s-circle"></div>
+							<span></span>
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	@RenderSection("Scripts", required: false)
 </body>
 </html>
