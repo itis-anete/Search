@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" type="text/css" href="~/css/prod.css">
+</head>
+<body>
+	<partial name="_CookieConsentPartial" />
+
+	<div class="container body-content">
+		<script src="~/js/threex.dynamictexture.js"></script>
+		<canvas id="canvas"></canvas>
+		<script src="~/js/fabric.js"></script>
+		<script src="~/js/three.js"></script>
+		<script src="~/js/OrbitControls.js"></script>
+		<script src="~/js/pro.js"></script>
+
+		<script>
+			var canvas = document.getElementById('canvas'),
+				context = canvas.getContext('3d');
+			canvas.width = window.innerWidth / 2;
+			canvas.height = window.innerHeight / 2;
+
+			var canvas1 = new fabric.StaticCanvas('canvas');
+			var textSearch = new fabric.Text("Search", {
+				fontFamily: 'Liana',
+				left: 70,
+				top: 50,
+				width: 150,
+				fontSize: 100,
+				fill: 'white'
+			});
+			canvas1.add(textSearch);
+		</script>
+
+		@RenderBody()
+	</div>
+
+	@RenderSection("Scripts", required: false)
+</body>
+</html>

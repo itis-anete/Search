@@ -1,0 +1,88 @@
+﻿@{
+	ViewBag.Title = "Search";
+}
+
+<div id="cover">
+	<div class="tb">
+		<div class="td">
+			<input type="text" id="queryInput" value="Search query" placeholder="Search" required>
+		</div>
+		<div class="td" id="s-cover">
+			<button onclick="search()">
+				<div id="s-circle"></div>
+				<span></span>
+			</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	function search() {
+		var queryInput = document.getElementById("queryInput");
+		var query = queryInput.value;
+
+		fetch('api/Search?Query=' + query).then(function (response) {
+			response.json().then(function (parsedJson) {
+				var results = parsedJson.results;
+				for (var i = 0; i < results.length; i++)
+					outputSearchResult(results[i]);
+			});
+		});        
+	}
+
+	function outputSearchResult(result) {
+		var scene = new THREE.Scene();
+		var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+		camera.position.z = 17;
+		camera.position.x = -20;
+        camera.position.y = 5;
+
+		var renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth / 1.075, window.innerHeight / 2);
+
+		var dynamicTexture = new THREEx.DynamicTexture(512, 256)
+		dynamicTexture.context.font = 80 + "px Arial";
+		dynamicTexture.texture.anisotropy = renderer.getMaxAnisotropy();
+		dynamicTexture.clear('#EBC1F6');
+		// update the text
+
+		dynamicTexture.drawText(result.title, 10, 130, 'black');
+		dynamicTexture.drawText(result.url, 10, 270, 'black');
+
+        document.body.appendChild(renderer.domElement);
+
+		controls = new THREE.OrbitControls(camera, renderer.domElement);
+		controls.enableZoom = false;
+		controls.enablePan = false;
+		var cubeMaterialArray = [];
+		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0xEBC1F6 }));//зад
+		cubeMaterialArray.push(new THREE.MeshBasicMaterial({
+			map: dynamicTexture.texture
+		}));//перед
+		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x693776 })); //вверх
+		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x693776 })); //низ
+		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x4E2458 })); //правый бок
+		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x4E2458 })); //левый бок
+        var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+
+		window.addEventListener('resize', function () {
+			var width = window.innerWidth / 1.09;
+			var height = window.innerHeight / 2;
+			renderer.setSize(width, height);
+			camera.aspect = width / height;
+			camera.updateProjectionMatrix();
+		}
+		);
+		var geometry = new THREE.BoxGeometry(1, 7, 21);
+		var mesh = new THREE.Mesh(geometry, cubeMaterials);
+		scene.add(mesh);
+		var render = function () {
+			renderer.render(scene, camera);
+		};
+		var Loop = function () {
+			requestAnimationFrame(Loop);
+			render();
+		};
+		Loop();
+	}
+</script>

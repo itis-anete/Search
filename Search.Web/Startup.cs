@@ -24,8 +24,8 @@ namespace Search.Web
             services.AddServices();
             services.AddSwaggerGen(x =>
             {
-                x.SwaggerDoc("ApiDescription", new Info {
-                    Title = "API Description",
+                x.SwaggerDoc("ApiList", new Info {
+                    Title = "Search API",
                     Version = "v1"
                 });
             });
@@ -44,14 +44,26 @@ namespace Search.Web
                 app.UseHsts();
             }
 
-            app.UseSwagger();
+            app.UseStaticFiles();
+
+            app.UseSwagger(x =>
+            {
+                x.RouteTemplate = "/api/swagger/{documentName}/swagger.json";
+            });
             app.UseSwaggerUI(x =>
             {
-                x.SwaggerEndpoint("/swagger/ApiDescription/swagger.json", "API Description");
-                x.RoutePrefix = "";
+                x.SwaggerEndpoint("/api/swagger/ApiList/swagger.json", "");
+                x.RoutePrefix = "api/swagger";
+                x.DocumentTitle = "Search API";
+                x.DisplayRequestDuration();
             });
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapSpaFallbackRoute(
+                    name: "spa-fallback",
+                    defaults: new { controller = "Home", action = "Index" });
+            });
         }
     }
 }
