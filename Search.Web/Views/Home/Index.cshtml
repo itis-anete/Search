@@ -6,10 +6,10 @@
 	<form method="get">
 		<div class="tb">
 			<div class="td">
-				<input type="text" name="query" value="Search query" placeholder="Search" required>
+				<input type="text" class="queryInput" value="Search query" placeholder="Search" required>
 			</div>
 			<div class="td" id="s-cover">
-				<button type="submit" onclick="search">
+				<button type="submit" onclick="search()">
 					<div id="s-circle"></div>
 					<span></span>
 				</button>
@@ -19,27 +19,39 @@
 </div>
 
 <script>
-	function search() {
-		for (var i = 0; i < Resultes.lenght; i++) {
-			search("");
+    function search() {
+        var queryInput = document.getElementsByClassName("queryInput")[0];
+        var query = queryInput.textContent;
+
+        var queryControll = Html.ActionLink(query, "Search", "Search");
+        var parse = JSON.parse(queryControll);
+        // посылаем запрос
+
+        for (var i = 0; i < parse.lenght; i++) {
+			search(parse[i]);
 		}
 	}
-	function search(k) {
+	function search(query) {
 		var scene = new THREE.Scene();
 		var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
 		camera.position.z = 17;
 		camera.position.x = -20;
-		camera.position.y = 5;
+        camera.position.y = 5;
+
 		var renderer = new THREE.WebGLRenderer({ alpha: true });
-		renderer.setSize(window.innerWidth / 1.075, window.innerHeight / 2);
+        renderer.setSize(window.innerWidth / 1.075, window.innerHeight / 2);
+
 		var dynamicTexture = new THREEx.DynamicTexture(890, 339)
 		dynamicTexture.context.font = 80 + "px Arial";
 		dynamicTexture.texture.anisotropy = renderer.getMaxAnisotropy();
 		dynamicTexture.clear('#EBC1F6');
 		// update the text
-		//dynamicTexture.drawText("Name: " + k.Url, 10, 130, 'red');
-		dynamicTexture.drawText(k, 10, 270, 'red');
-		document.body.appendChild(renderer.domElement);
+
+        dynamicTexture.drawText("Title: " + query.Title, 10, 130, 'black');
+        dynamicTexture.drawText("Url" + query.Url, 10, 270, 'black');
+
+        document.body.appendChild(renderer.domElement);
+
 		controls = new THREE.OrbitControls(camera, renderer.domElement);
 		controls.enableZoom = false;
 		controls.enablePan = false;
@@ -52,7 +64,8 @@
 		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x693776 })); //низ
 		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x4E2458 })); //правый бок
 		cubeMaterialArray.push(new THREE.MeshBasicMaterial({ color: 0x4E2458 })); //левый бок
-		var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+        var cubeMaterials = new THREE.MeshFaceMaterial(cubeMaterialArray);
+
 		window.addEventListener('resize', function () {
 			var width = window.innerWidth / 1.09;
 			var height = window.innerHeight / 2;
