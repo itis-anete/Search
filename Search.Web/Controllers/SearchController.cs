@@ -18,7 +18,7 @@ namespace Search.Web.Controllers
                 return BadRequest(ModelState);
 
             var result = _searcher.Search(request);
-            return View(result);
+            return Ok(result);
         }
 
         private readonly Searcher _searcher;

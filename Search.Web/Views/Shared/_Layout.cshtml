@@ -10,13 +10,13 @@
 	<partial name="_CookieConsentPartial" />
 
 	<div class="container body-content">
-		@RenderBody()
 		<script src="~/js/threex.dynamictexture.js"></script>
 		<canvas id="canvas"></canvas>
 		<script src="~/js/fabric.js"></script>
 		<script src="~/js/three.js"></script>
 		<script src="~/js/OrbitControls.js"></script>
 		<script src="~/js/pro.js"></script>
+
 		<script>
 			var canvas = document.getElementById('canvas'),
 				context = canvas.getContext('3d');
@@ -35,22 +35,9 @@
 			canvas1.add(textSearch);
 		</script>
 
-		<div id="cover">
-			<form method="get" asp-area="" asp-controller="Search" asp-action="Search">
-				<div class="tb">
-					<div class="td">
-						<input type="text" name="query" value="Search query" placeholder="Search" required>
-					</div>
-					<div class="td" id="s-cover">
-						<button type="submit">
-							<div id="s-circle"></div>
-							<span></span>
-						</button>
-					</div>
-				</div>
-			</form>
-		</div>
+		@RenderBody()
 	</div>
+
 	@RenderSection("Scripts", required: false)
 </body>
 </html>
