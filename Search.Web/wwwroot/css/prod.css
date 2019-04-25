@@ -15,8 +15,8 @@ canvas {
 body {
     margin: 0;
     background: linear-gradient(to right, rgb(67, 26, 88), #a3b4d3);
+    font-family:Liana;
 }
-
 
 .tb {
     display: table;
@@ -26,6 +26,11 @@ body {
 .td {
     display: table-cell;
     vertical-align: middle;
+}
+
+@font-face {
+    font-family: 'Liana';
+    src: url(~/ttf/9099.ttf);
 }
 
 input, button {

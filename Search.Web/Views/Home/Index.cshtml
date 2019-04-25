@@ -41,10 +41,22 @@
         renderer.setSize(window.innerWidth / 1.075, window.innerHeight / 2);
 
 		var dynamicTexture = new THREEx.DynamicTexture(512, 256)
-		dynamicTexture.context.font = 80 + "px Arial";
+		
 		dynamicTexture.texture.anisotropy = renderer.getMaxAnisotropy();
 		dynamicTexture.clear('#EBC1F6');
 		// update the text
+
+        if (result.title.length / 12 > 1 || result.url.length / 12 > 1) {
+            if (result.title.length > result.url.length) {
+                dynamicTexture.context.font = 70 / (result.title.length / 12) + "px Nunito";
+            }
+            else {
+                dynamicTexture.context.font = 70 / (result.url.length / 12) + "px Nunito";
+            }
+        }
+        else {
+            dynamicTexture.context.font = 60 + "px Nunito";
+        }
 
 		dynamicTexture.drawText(result.title, 10, 130, 'black');
 		dynamicTexture.drawText(result.url, 10, 270, 'black');
