@@ -1,6 +1,7 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Search.IndexService.Internal
@@ -15,7 +16,9 @@ namespace Search.IndexService.Internal
                 doc.LoadHtml(html);
 
                 var title = GetTitle(doc);
+
                 var text = ConvertDoc(doc);
+                text = DeleteExcessWhitespaces(text);
 
                 return new ParsedHtml
                 {
@@ -116,6 +119,7 @@ namespace Search.IndexService.Internal
                             case "address":
                             case "main":
                             case "div":
+                            case "a":
                             case "p": // stylistic - adjust as you tend to use
                                 if (textInfo.IsFirstTextOfDocWritten)
                                 {
@@ -128,17 +132,6 @@ namespace Search.IndexService.Internal
                                 outText.Write("\r\n");
                                 skip = true;
                                 textInfo.WritePrecedingWhiteSpace = false;
-                                isInline = true;
-                                break;
-                            case "a":
-                                if (node.Attributes.Contains("href"))
-                                {
-                                    string href = node.Attributes["href"].Value.Trim();
-                                    if (node.InnerText.IndexOf(href, StringComparison.InvariantCultureIgnoreCase) == -1)
-                                    {
-                                        endElementString = "<" + href + ">";
-                                    }
-                                }
                                 isInline = true;
                                 break;
                             case "li":
@@ -162,12 +155,8 @@ namespace Search.IndexService.Internal
                             case "img": 
                                 if (node.Attributes.Contains("alt"))
                                 {
-                                    outText.Write('[' + node.Attributes["alt"].Value);
-                                    endElementString = "]";
-                                }
-                                if (node.Attributes.Contains("src"))
-                                {
-                                    outText.Write('<' + node.Attributes["src"].Value + '>');
+                                    outText.Write(' ' + node.Attributes["alt"].Value);
+                                    endElementString = " ";
                                 }
                                 isInline = true;
                                 break;
@@ -185,6 +174,43 @@ namespace Search.IndexService.Internal
                         }
                         break;
                 }
+            }
+
+            private static string DeleteExcessWhitespaces(string str)
+            {
+                const int minWhitespaceGapLength = 1;
+                var sb = new StringBuilder(str);
+
+                var currentIndex = 0;
+                var firstWhitespaceIndex = default(int?);
+                while (currentIndex < sb.Length)
+                {
+                    var currentSymbol = sb[currentIndex];
+                    if (char.IsWhiteSpace(currentSymbol) || char.IsControl(currentSymbol))
+                    {
+                        if (firstWhitespaceIndex == null)
+                            firstWhitespaceIndex = currentIndex;
+                    }
+                    else
+                    {
+                        if (firstWhitespaceIndex != null)
+                        {
+                            var whitespaceGapLength = currentIndex - firstWhitespaceIndex.Value;
+                            if (whitespaceGapLength > minWhitespaceGapLength)
+                            {
+                                sb.Remove(firstWhitespaceIndex.Value, whitespaceGapLength - minWhitespaceGapLength);
+                                currentIndex = firstWhitespaceIndex.Value + minWhitespaceGapLength + 1;
+                            }
+
+                            firstWhitespaceIndex = null;
+                        }
+                    }
+                    ++currentIndex;
+                }
+                if (firstWhitespaceIndex != null)
+                    sb.Remove(firstWhitespaceIndex.Value, sb.Length - firstWhitespaceIndex.Value);
+
+                return sb.ToString();
             }
         }
 
