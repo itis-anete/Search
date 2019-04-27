@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BestSockets\BestSockets.csproj" />
+    <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
     <ProjectReference Include="..\Search.IndexService\Search.IndexService.csproj" />
-    <ProjectReference Include="..\Search.Infrastructure\Search.Infrastructure.csproj" />
     <ProjectReference Include="..\Search.SearchService\Search.SearchService.csproj" />
     <ProjectReference Include="..\Search.VersioningService\Search.VersioningService.csproj" />
   </ItemGroup>

@@ -21,7 +21,7 @@ namespace Search.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddElasticSearch(Configuration);
-            services.AddServices();
+            services.AddDomainServices();
             services.AddSwaggerGen(x =>
             {
                 x.SwaggerDoc("ApiList", new Info {

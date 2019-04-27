@@ -3,9 +3,9 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Search.IndexService
+namespace Search.IndexService.Internal
 {
-    class Parser
+    internal static class Parser
     {
         public static class HtmlToText
         {

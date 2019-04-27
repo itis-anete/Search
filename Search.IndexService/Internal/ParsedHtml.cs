@@ -1,6 +1,6 @@
-﻿namespace Search.IndexService
+﻿namespace Search.IndexService.Internal
 {
-    public class ParsedHtml
+    internal class ParsedHtml
     {
         public string Title { get; set; }
         public string Text { get; set; }

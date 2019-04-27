@@ -2,12 +2,12 @@
 using Search.Core.Entities;
 using System;
 
-namespace Search.Infrastructure
+namespace Search.Core.Database
 {
     public class ElasticSearchClient
     {
-        private Action<DocumentInfo, IIndexRequest<DocumentInfo>, IIndexResponse> _onIndex;
-        public event Action<DocumentInfo, IIndexRequest<DocumentInfo>, IIndexResponse> OnIndex
+        private Action<Document, IIndexRequest<Document>, IIndexResponse> _onIndex;
+        public event Action<Document, IIndexRequest<Document>, IIndexResponse> OnIndex
         {
             add { _onIndex += value; }
             remove { _onIndex -= value; }
@@ -29,12 +29,12 @@ namespace Search.Infrastructure
         }
 
         public void Index(
-            DocumentInfo document,
-            Func<IndexDescriptor<DocumentInfo>, IIndexRequest<DocumentInfo>> selector)
+            Document document,
+            Func<IndexDescriptor<Document>, IIndexRequest<Document>> selector)
         {
             var response = _client.Index(document, selector);
 
-            var desc = new IndexDescriptor<DocumentInfo>(null, null);
+            var desc = new IndexDescriptor<Document>(null, null);
             _onIndex?.Invoke(document, selector(desc), response);
         }
 
@@ -43,7 +43,7 @@ namespace Search.Infrastructure
             return _client.IndexExists(indices);
         }
 
-        public ISearchResponse<DocumentInfo> Search(Func<SearchDescriptor<DocumentInfo>, ISearchRequest> selector)
+        public ISearchResponse<Document> Search(Func<SearchDescriptor<Document>, ISearchRequest> selector)
         {
             return _client.Search(selector);
         }

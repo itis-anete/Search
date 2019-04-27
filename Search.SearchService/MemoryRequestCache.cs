@@ -1,6 +1,6 @@
 ﻿using Nest;
+using Search.Core.Database;
 using Search.Core.Entities;
-using Search.Infrastructure;
 using Search.SearchService.Internal;
 using System;
 using System.Collections.Concurrent;
@@ -90,8 +90,8 @@ namespace Search.SearchService
         private static readonly RequestComparer Comparer = new RequestComparer();
 
         private void ClearOnIndexing(
-            DocumentInfo document,
-            IIndexRequest<DocumentInfo> request,
+            Document document,
+            IIndexRequest<Document> request,
             IIndexResponse response)
         {
             if (request.Index != _options.DocumentsIndexName)

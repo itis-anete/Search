@@ -2,7 +2,7 @@
 using Search.Core.Entities;
 using System;
 
-namespace Search.Infrastructure
+namespace Search.Core.Database
 {
     public class ElasticSearchOptions
     {
@@ -11,17 +11,17 @@ namespace Search.Infrastructure
         
         public string VersionsIndexName { get; set; } = "versions_index";
 
-        public static ITextProperty TitleProperty(TextPropertyDescriptor<DocumentInfo> property) => property
+        public static ITextProperty TitleProperty(TextPropertyDescriptor<Document> property) => property
             .Name(x => x.Title)
             .Analyzer("english_russian")
             .Boost(3);
 
-        public static ITextProperty TextProperty(TextPropertyDescriptor<DocumentInfo> property) => property
+        public static ITextProperty TextProperty(TextPropertyDescriptor<Document> property) => property
             .Name(x => x.Text)
             .Analyzer("english_russian")
             .Store();
 
-        public static IDateProperty IndexedTimeProperty(DatePropertyDescriptor<DocumentInfo> property) => property
+        public static IDateProperty IndexedTimeProperty(DatePropertyDescriptor<Document> property) => property
             .Name(x => x.IndexedTime);
 
         public static IPromise<IIndexSettings> AnalysisSettings(IndexSettingsDescriptor settings) => settings

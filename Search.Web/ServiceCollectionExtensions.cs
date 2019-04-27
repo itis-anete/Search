@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Search.Core.Database;
 using Search.IndexService;
-using Search.Infrastructure;
 using Search.SearchService;
 using Search.VersioningService;
 using System;
@@ -21,7 +21,7 @@ namespace Search.Web
             services.AddSingleton<ElasticSearchClient>();
         }
 
-        public static void AddServices(this IServiceCollection services)
+        public static void AddDomainServices(this IServiceCollection services)
         {
             services.AddSingleton<Searcher>();
             services.AddSingleton<IRequestCache, MemoryRequestCache>();

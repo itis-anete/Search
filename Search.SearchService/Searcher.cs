@@ -1,4 +1,4 @@
-﻿using Search.Infrastructure;
+﻿using Search.Core.Database;
 using System.Linq;
 
 namespace Search.SearchService

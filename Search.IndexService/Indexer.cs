@@ -1,5 +1,6 @@
-﻿using Search.Core.Entities;
-using Search.Infrastructure;
+﻿using Search.Core.Database;
+using Search.Core.Entities;
+using Search.IndexService.Internal;
 using System;
 using System.Net.Http;
 
@@ -20,7 +21,7 @@ namespace Search.IndexService
             var html = GetHtml(request.Url);
             var parsedHtml = Parser.HtmlToText.ParseHtml(html);
 
-            var document = new DocumentInfo()
+            var document = new Document()
             {
                 Url = request.Url,
                 IndexedTime = DateTime.UtcNow,
@@ -45,7 +46,7 @@ namespace Search.IndexService
             _client.CreateIndex(_options.DocumentsIndexName, index => index
                 .Settings(ElasticSearchOptions.AnalysisSettings)
                 .Mappings(mappings => mappings
-                    .Map<DocumentInfo>(map => map
+                    .Map<Document>(map => map
                         .Properties(properties => properties
                             .Text(ElasticSearchOptions.TitleProperty)
                             .Text(ElasticSearchOptions.TextProperty)

@@ -1,6 +1,6 @@
 ﻿using Nest;
+using Search.Core.Database;
 using Search.Core.Entities;
-using Search.Infrastructure;
 using System.Linq;
 
 namespace Search.VersioningService
@@ -71,7 +71,7 @@ namespace Search.VersioningService
             _client.CreateIndex(_options.VersionsIndexName, index => index
                 .Settings(ElasticSearchOptions.AnalysisSettings)
                 .Mappings(mappings => mappings
-                    .Map<DocumentInfo>(map => map
+                    .Map<Document>(map => map
                         .Properties(properties => properties
                             .Text(ElasticSearchOptions.TitleProperty)
                             .Text(ElasticSearchOptions.TextProperty)
@@ -85,8 +85,8 @@ namespace Search.VersioningService
         }
 
         private void ElasticSearchClient_OnIndex(
-            DocumentInfo document,
-            IIndexRequest<DocumentInfo> request,
+            Document document,
+            IIndexRequest<Document> request,
             IIndexResponse response)
         {
             if (request.Index != _options.DocumentsIndexName)

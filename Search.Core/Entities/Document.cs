@@ -2,7 +2,7 @@
 
 namespace Search.Core.Entities
 {
-    public class DocumentInfo
+    public class Document
     {
         public Uri Url { get; set; }
         public DateTime IndexedTime { get; set; }
