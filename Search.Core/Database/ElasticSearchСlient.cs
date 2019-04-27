@@ -28,6 +28,13 @@ namespace Search.Core.Database
             return _client.CreateIndex(index, selector);
         }
 
+        public IGetResponse<Document> Get(
+            DocumentPath<Document> document,
+            Func<GetDescriptor<Document>, IGetRequest> selector = null)
+        {
+            return _client.Get(document, selector);
+        }
+
         public void Index(
             Document document,
             Func<IndexDescriptor<Document>, IIndexRequest<Document>> selector)

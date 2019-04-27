@@ -24,6 +24,9 @@ namespace Search.Core.Database
         public static IDateProperty IndexedTimeProperty(DatePropertyDescriptor<Document> property) => property
             .Name(x => x.IndexedTime);
 
+        public static IKeywordProperty UrlProperty(KeywordPropertyDescriptor<Document> property) => property
+            .Name(x => x.Url);
+
         public static IPromise<IIndexSettings> AnalysisSettings(IndexSettingsDescriptor settings) => settings
             .Analysis(analysis => analysis
                 .TokenFilters(filters => filters

@@ -50,6 +50,7 @@ namespace Search.IndexService
                         .Properties(properties => properties
                             .Text(ElasticSearchOptions.TitleProperty)
                             .Text(ElasticSearchOptions.TextProperty)
+                            .Keyword(ElasticSearchOptions.UrlProperty)
                         ).SourceField(source => source
                             .Excludes(new[] { "text" })
                         )

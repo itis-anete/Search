@@ -1,6 +1,7 @@
 ﻿using Nest;
 using Search.Core.Database;
 using Search.Core.Entities;
+using System;
 using System.Linq;
 
 namespace Search.VersioningService
@@ -76,6 +77,7 @@ namespace Search.VersioningService
                             .Text(ElasticSearchOptions.TitleProperty)
                             .Text(ElasticSearchOptions.TextProperty)
                             .Date(ElasticSearchOptions.IndexedTimeProperty)
+                            .Keyword(ElasticSearchOptions.UrlProperty)
                         ).SourceField(source => source
                             .Excludes(new[] { "text" })
                         )
@@ -92,8 +94,43 @@ namespace Search.VersioningService
             if (request.Index != _options.DocumentsIndexName)
                 return;
 
+            var latestDocument = GetLatestDocumentWithUrl(document.Url);
+            if (document.Title == latestDocument?.Title &&
+                document.Text == latestDocument?.Text)
+                return;
+
             _client.Index(document, desc => desc
                 .Index(_options.VersionsIndexName));
+        }
+
+        private Document GetLatestDocumentWithUrl(Uri url)
+        {
+            var searchResponse = _client.Search(desc => desc
+                .Index(_options.VersionsIndexName)
+                .Query(query => query
+                    .Term(term => term
+                        .Field(x => x.Url)
+                        .Value(url)
+                    )
+                )
+            );
+            var oldDocuments = searchResponse.Hits;
+            if (oldDocuments.Count == 0)
+                return null;
+
+            var latestDocumentHit = oldDocuments.Aggregate((x, y) =>
+                x.Source.IndexedTime > y.Source.IndexedTime ? x : y);
+            var latestDocument = latestDocumentHit.Source;
+
+            var getResponse = _client.Get(
+                DocumentPath<Document>.Id(latestDocumentHit.Id),
+                desc => desc
+                    .Index(_options.VersionsIndexName)
+                    .StoredFields(x => x.Text)
+            );
+
+            latestDocument.Text = getResponse.Fields["text"].As<string[]>().Single();
+            return latestDocument;
         }
     }
 }
