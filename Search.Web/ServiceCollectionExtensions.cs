@@ -12,7 +12,7 @@ namespace Search.Web
     {
         public static void AddElasticSearch(this IServiceCollection services, IConfiguration configuration)
         {
-            var elasticSearchUrl = configuration.GetValue<string>("ElasticSearchUrl");
+            var elasticSearchUrl = GetElasticSearchUrl(configuration);
             services.AddSingleton(new ElasticSearchOptions
             {
                 Url = new Uri(elasticSearchUrl)
@@ -39,6 +39,16 @@ namespace Search.Web
             services.AddSingleton<VersionsSearcher>();
 
             services.AddSingleton<ServiceContainer>();
+        }
+
+        private static string GetElasticSearchUrl(IConfiguration configuration)
+        {
+            var url = Environment.GetEnvironmentVariable("ELASTICSEARCH_URL");
+            if (!string.IsNullOrEmpty(url))
+                return url;
+
+            url = configuration.GetValue<string>("ElasticSearchUrl");
+            return url;
         }
     }
 }
