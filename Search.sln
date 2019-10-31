@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29326.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.Web", "Search.Web\Search.Web.csproj", "{FAACF57E-A31B-413B-8536-B99F67E042A3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BestSockets", "BestSockets\BestSockets.csproj", "{F1745B40-C579-4C60-A1D8-901FA5AF0AC4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.Core", "Search.Core\Search.Core.csproj", "{53F2E2C1-F228-4B75-A933-F0395DE0E6A4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.SearchService", "Search.SearchService\Search.SearchService.csproj", "{C9310FEC-82FF-49DE-B799-0BB175053C81}"
@@ -23,10 +21,6 @@ Global
 		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAACF57E-A31B-413B-8536-B99F67E042A3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1745B40-C579-4C60-A1D8-901FA5AF0AC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1745B40-C579-4C60-A1D8-901FA5AF0AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F1745B40-C579-4C60-A1D8-901FA5AF0AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1745B40-C579-4C60-A1D8-901FA5AF0AC4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{53F2E2C1-F228-4B75-A933-F0395DE0E6A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{53F2E2C1-F228-4B75-A933-F0395DE0E6A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F2E2C1-F228-4B75-A933-F0395DE0E6A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
