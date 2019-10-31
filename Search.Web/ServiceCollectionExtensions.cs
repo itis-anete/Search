@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Search.Core.Database;
 using Search.IndexService;
 using Search.SearchService;
-using Search.VersioningService;
 using System;
 
 namespace Search.Web
@@ -35,8 +34,6 @@ namespace Search.Web
                 indexingFrequency: TimeSpan.FromMinutes(1),
                 firstIndexingDeferral: TimeSpan.FromSeconds(10)
             ));
-
-            services.AddSingleton<VersionsSearcher>();
 
             services.AddSingleton<ServiceContainer>();
         }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2016
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29326.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.Web", "Search.Web\Search.Web.csproj", "{FAACF57E-A31B-413B-8536-B99F67E042A3}"
 EndProject
@@ -12,8 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.SearchService", "Search.SearchService\Search.SearchService.csproj", "{C9310FEC-82FF-49DE-B799-0BB175053C81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.IndexService", "Search.IndexService\Search.IndexService.csproj", "{96D116E2-0068-4C07-A96B-56C81A04FB6B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.VersioningService", "Search.VersioningService\Search.VersioningService.csproj", "{2A8C38EA-960E-4BB9-863F-D2831DCA299D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +39,6 @@ Global
 		{96D116E2-0068-4C07-A96B-56C81A04FB6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96D116E2-0068-4C07-A96B-56C81A04FB6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96D116E2-0068-4C07-A96B-56C81A04FB6B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2A8C38EA-960E-4BB9-863F-D2831DCA299D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2A8C38EA-960E-4BB9-863F-D2831DCA299D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2A8C38EA-960E-4BB9-863F-D2831DCA299D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2A8C38EA-960E-4BB9-863F-D2831DCA299D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
