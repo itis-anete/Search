@@ -22,7 +22,7 @@ namespace Search.IndexService
                 _indexingTimer = new Timer(
                     ReindexAll,
                     null,
-                    firstIndexingDeferral ?? default(TimeSpan),
+                    firstIndexingDeferral ?? default,
                     indexingFrequency ?? TimeSpan.FromMinutes(15));
         }
 
