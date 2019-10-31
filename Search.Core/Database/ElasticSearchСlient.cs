@@ -6,8 +6,8 @@ namespace Search.Core.Database
 {
     public class ElasticSearchClient
     {
-        private Action<Document, IIndexRequest<Document>, IIndexResponse> _onIndex;
-        public event Action<Document, IIndexRequest<Document>, IIndexResponse> OnIndex
+        private Action<Document, IIndexRequest<Document>, IndexResponse> _onIndex;
+        public event Action<Document, IIndexRequest<Document>, IndexResponse> OnIndex
         {
             add { _onIndex += value; }
             remove { _onIndex -= value; }
@@ -21,11 +21,11 @@ namespace Search.Core.Database
             );
         }
 
-        public ICreateIndexResponse CreateIndex(
+        public CreateIndexResponse CreateIndex(
             IndexName index,
             Func<CreateIndexDescriptor, ICreateIndexRequest> selector)
         {
-            return _client.CreateIndex(index, selector);
+            return _client.Indices.Create(index, selector);
         }
 
         public IGetResponse<Document> Get(
@@ -45,9 +45,9 @@ namespace Search.Core.Database
             _onIndex?.Invoke(document, selector(desc), response);
         }
 
-        public IExistsResponse IndexExists(Indices indices)
+        public ExistsResponse IndexExists(Indices indices)
         {
-            return _client.IndexExists(indices);
+            return _client.Indices.Exists(indices);
         }
 
         public ISearchResponse<Document> Search(Func<SearchDescriptor<Document>, ISearchRequest> selector)
