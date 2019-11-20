@@ -92,7 +92,7 @@ namespace Search.SearchService
         private void ClearOnIndexing(
             Document document,
             IIndexRequest<Document> request,
-            IIndexResponse response)
+            IndexResponse response)
         {
             if (request.Index != _options.DocumentsIndexName)
                 return;
