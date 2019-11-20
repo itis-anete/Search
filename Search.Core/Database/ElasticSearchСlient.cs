@@ -41,7 +41,7 @@ namespace Search.Core.Database
         {
             var response = _client.Index(document, selector);
 
-            var desc = new IndexDescriptor<Document>(null, null);
+            var desc = new IndexDescriptor<Document>();
             _onIndex?.Invoke(document, selector(desc), response);
         }
 
