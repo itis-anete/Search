@@ -14,7 +14,6 @@ namespace Search.Core.Database
         {
             client = new ElasticClient(
                 new ConnectionSettings(options.Url)
-                    .ThrowExceptions()
             );
         }
 
