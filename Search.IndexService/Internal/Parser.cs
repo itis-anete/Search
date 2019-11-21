@@ -1,5 +1,8 @@
-﻿using HtmlAgilityPack;
+﻿using AngleSharp.Dom;
+using AngleSharp.Html.Parser;
+using HtmlAgilityPack;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,16 +17,15 @@ namespace Search.IndexService.Internal
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
-
-                var title = GetTitle(doc);
-
+                
                 var text = ConvertDoc(doc);
-                text = DeleteExcessWhitespaces(text);
 
                 return new ParsedHtml
                 {
-                    Title = title,
-                    Text = text
+                    Title = GetTitle(doc),
+                    Text = DeleteExcessWhitespaces(text),
+                    Links = GetLinks(html)
+
                 };
             }
 
@@ -40,6 +42,20 @@ namespace Search.IndexService.Internal
                     sw.Flush();
                     return sw.ToString();
                 }
+            }
+
+            private static List<string> GetLinks(string htmlText)
+            {
+                var parser = new HtmlParser();
+                var document = parser.ParseDocument(htmlText);
+                var href = new List<string>();
+                foreach (IElement element in document.QuerySelectorAll("a"))
+                {
+                    string el = element.GetAttribute("href");
+                    if (el != null && el.StartsWith("http"))
+                        href.Add(element.GetAttribute("href"));
+                }
+                return href;
             }
 
             private static void ConvertContentTo(HtmlNode node, TextWriter outText, PreceedingDomTextInfo textInfo)
@@ -66,20 +82,16 @@ namespace Search.IndexService.Internal
                         ConvertContentTo(node, outText, textInfo);
                         break;
                     case HtmlNodeType.Text:
-                        // script and style must not be output
                         string parentName = node.ParentNode.Name;
                         if ((parentName == "script") || (parentName == "style"))
                         {
                             break;
                         }
-                        // get text
                         html = ((HtmlTextNode)node).Text;
-                        // is it in fact a special closing node output as text?
                         if (HtmlNode.IsOverlappedClosingElement(html))
                         {
                             break;
                         }
-                        // check the text is meaningful and not a bunch of whitespaces
                         if (html.Length == 0)
                         {
                             break;
@@ -120,7 +132,7 @@ namespace Search.IndexService.Internal
                             case "main":
                             case "div":
                             case "a":
-                            case "p": // stylistic - adjust as you tend to use
+                            case "p": 
                                 if (textInfo.IsFirstTextOfDocWritten)
                                 {
                                     outText.Write("\r\n");
