@@ -6,16 +6,13 @@ namespace Search.Core.Database
 {
     public class ElasticSearchClient
     {
-        private Action<Document, IIndexRequest<Document>, IndexResponse> _onIndex;
-        public event Action<Document, IIndexRequest<Document>, IndexResponse> OnIndex
-        {
-            add { _onIndex += value; }
-            remove { _onIndex -= value; }
-        }
+        public event Action<Document, IIndexRequest<Document>, IndexResponse> OnIndex;
+
+        private readonly ElasticClient client;
 
         public ElasticSearchClient(ElasticSearchOptions options)
         {
-            _client = new ElasticClient(
+            client = new ElasticClient(
                 new ConnectionSettings(options.Url)
                     .ThrowExceptions()
             );
@@ -23,38 +20,31 @@ namespace Search.Core.Database
 
         public CreateIndexResponse CreateIndex(
             IndexName index,
-            Func<CreateIndexDescriptor, ICreateIndexRequest> selector)
+            Func<CreateIndexDescriptor, ICreateIndexRequest> selector
+        )
         {
-            return _client.Indices.Create(index, selector);
-        }
-
-        public IGetResponse<Document> Get(
-            DocumentPath<Document> document,
-            Func<GetDescriptor<Document>, IGetRequest> selector = null)
-        {
-            return _client.Get(document, selector);
+            return client.Indices.Create(index, selector);
         }
 
         public void Index(
             Document document,
-            Func<IndexDescriptor<Document>, IIndexRequest<Document>> selector)
+            Func<IndexDescriptor<Document>, IIndexRequest<Document>> selector
+        )
         {
-            var response = _client.Index(document, selector);
+            var response = client.Index(document, selector);
 
             var desc = new IndexDescriptor<Document>();
-            _onIndex?.Invoke(document, selector(desc), response);
+            OnIndex?.Invoke(document, selector(desc), response);
         }
 
         public ExistsResponse IndexExists(Indices indices)
         {
-            return _client.Indices.Exists(indices);
+            return client.Indices.Exists(indices);
         }
 
         public ISearchResponse<Document> Search(Func<SearchDescriptor<Document>, ISearchRequest> selector)
         {
-            return _client.Search(selector);
+            return client.Search(selector);
         }
-
-        private readonly ElasticClient _client;
     }
 }
