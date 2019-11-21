@@ -49,11 +49,10 @@ namespace Search.IndexService.Internal
                 var parser = new HtmlParser();
                 var document = parser.ParseDocument(htmlText);
                 var href = new List<string>();
-                string el;
                 foreach (IElement element in document.QuerySelectorAll("a"))
                 {
-                    el = element.GetAttribute("href");
-                    if (el != null && el.Substring(0, 1) == "h")
+                    string el = element.GetAttribute("href");
+                    if (el != null && el.StartsWith("http"))
                         href.Add(element.GetAttribute("href"));
                 }
                 return href;
