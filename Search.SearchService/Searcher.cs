@@ -1,5 +1,10 @@
-﻿using Search.Core.Elasticsearch;
+using RailwayResults;
+using Search.Core.Elasticsearch;
+using Search.Core.Entities;
+using Search.Core.Extensions;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Search.SearchService
 {
@@ -15,10 +20,10 @@ namespace Search.SearchService
             _searchCache = searchCache;
         }
 
-        public SearchResponse Search(SearchRequest request)
+        public Result<SearchResponse, HttpStatusCode> Search(SearchRequest request)
         {
             if (_searchCache != null && _searchCache.TryGetResponse(request, out var response))
-                return response;
+                return Result<SearchResponse, HttpStatusCode>.Success(response);
 
             var responseFromElastic = _client.Search(search => search
                 .Index(_options.DocumentsIndexName)
@@ -35,6 +40,16 @@ namespace Search.SearchService
                     )
                 )
             );
+            if (!responseFromElastic.IsValid)
+                return ElasticSearchResponseConverter.ToResultOnFail<SearchResponse, Document>(
+                    responseFromElastic, () =>
+                    {
+                        if (responseFromElastic.ServerError.Status == HttpStatusCode.NotFound.ToInt())
+                            return HttpStatusCode.ServiceUnavailable;
+
+                        return null;
+                    }
+                );
 
             response = new SearchResponse
             {
@@ -48,7 +63,7 @@ namespace Search.SearchService
             };
 
             _searchCache?.Add(request, response);
-            return response;
+            return Result<SearchResponse, HttpStatusCode>.Success(response);
         }
 
         private readonly ElasticSearchClient _client;
