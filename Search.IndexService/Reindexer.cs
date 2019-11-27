@@ -1,4 +1,4 @@
-﻿using Search.Core.Database;
+﻿using Search.Core.Elasticsearch;
 using System;
 using System.Threading;
 

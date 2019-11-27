@@ -1,5 +1,5 @@
 ﻿using Nest;
-using Search.Core.Database;
+using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.SearchService.Internal;
 using System;

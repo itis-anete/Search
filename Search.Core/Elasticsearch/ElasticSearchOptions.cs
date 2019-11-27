@@ -2,7 +2,7 @@
 using Search.Core.Entities;
 using System;
 
-namespace Search.Core.Database
+namespace Search.Core.Elasticsearch
 {
     public class ElasticSearchOptions
     {

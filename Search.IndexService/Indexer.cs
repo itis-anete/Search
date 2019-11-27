@@ -1,4 +1,4 @@
-﻿using Search.Core.Database;
+﻿using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
 using System;
