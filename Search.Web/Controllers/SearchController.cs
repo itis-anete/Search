@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Search.Core.Extensions;
 using Search.SearchService;
 
 namespace Search.Web.Controllers
@@ -18,7 +19,9 @@ namespace Search.Web.Controllers
                 return BadRequest(ModelState);
 
             var result = _searcher.Search(request);
-            return Ok(result);
+            return result.IsSuccess
+                ? (IActionResult)Ok(result.Value)
+                : StatusCode(result.Error.ToInt());
         }
 
         private readonly Searcher _searcher;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Search.Core.Database;
+using Search.Core.Elasticsearch;
 using Search.IndexService;
 using Search.SearchService;
 using System;
