@@ -9,7 +9,7 @@ namespace Search.Core.Elasticsearch
         public Uri Url { get; set; }
         public string DocumentsIndexName { get; set; } = "documents_index";
         
-        public string VersionsIndexName { get; set; } = "versions_index";
+        public string RequestsIndexName { get; set; } = "requests_index";
 
         public static ITextProperty TitleProperty(TextPropertyDescriptor<Document> property) => property
             .Name(x => x.Title)

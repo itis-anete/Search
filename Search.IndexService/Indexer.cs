@@ -13,7 +13,7 @@ namespace Search.IndexService
             _client = client;
             _options = options;
 
-            EnsureIndexCreated();
+            EnsureIndicesCreated();
         }
 
         public void Index(IndexRequest request)
@@ -37,7 +37,7 @@ namespace Search.IndexService
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
 
-        private void EnsureIndexCreated()
+        private void EnsureIndicesCreated()
         {
             var response = _client.IndexExists(_options.DocumentsIndexName);
             if (response.Exists)
@@ -55,6 +55,17 @@ namespace Search.IndexService
                             .Excludes(new[] { "text" })
                         )
                     )
+                )
+            );
+
+            response = _client.IndexExists(_options.RequestsIndexName);
+            if (response.Exists)
+                return;
+
+            _client.CreateIndex(_options.RequestsIndexName, index => index
+                .Settings(ElasticSearchOptions.AnalysisSettings)
+                .Mappings(mappings => mappings
+                    .Map<IndexRequest>(map => map.AutoMap())
                 )
             );
         }
