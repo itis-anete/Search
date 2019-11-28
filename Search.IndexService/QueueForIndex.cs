@@ -1,4 +1,4 @@
-﻿using Search.Core.Database;
+﻿using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,25 +8,25 @@ namespace Search.IndexService
 {
     public class QueueForIndex
     {
-        public QueueForIndex(ElasticSearchClient client, ElasticSearchOptions options)
+        public QueueForIndex(ElasticSearchClient<Document> client, ElasticSearchOptions options)
         {
             _client = client;
             _options = options;
         }
 
-        private readonly ElasticSearchClient _client;
+        private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
 
         public void AddToQueueElement(IndexRequest request)
         {
             //methot for adding element to elastic
-            var el = new Core.Entities.IndexRequest()
+            var el = new IndexRequest()
             {
-                RequestTime = DateTime.Now,
-                Uri = request.Url
+                CreatedTime = DateTime.Now,
+                Url = request.Url
             };
 
-            _client.AddQueueIndex(el, x => x.Id(el.Uri.ToString()).Index(_options.DocumentsIndexName));
+            //_client.AddQueueIndex(el, x => x.Id(el.Uri.ToString()).Index(_options.DocumentsIndexName));
         }
 
         public IndexRequest GetIndexElement()

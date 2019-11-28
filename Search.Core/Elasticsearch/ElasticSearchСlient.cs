@@ -1,7 +1,7 @@
 ﻿using Nest;
 using System;
 
-namespace Search.Core.Database
+namespace Search.Core.Elasticsearch
 {
     public class ElasticSearchClient<TModel>
         where TModel : class

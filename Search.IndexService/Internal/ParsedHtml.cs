@@ -9,6 +9,5 @@ namespace Search.IndexService.Internal
         public string Text { get; set; }
 
         public List<string> Links { get; set; }
-
     }
 }

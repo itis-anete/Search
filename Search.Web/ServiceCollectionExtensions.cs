@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Search.Core.Elasticsearch;
+using Search.Core.Entities;
 using Search.IndexService;
 using Search.SearchService;
 using System;
@@ -17,7 +18,7 @@ namespace Search.Web
                 Url = new Uri(elasticSearchUrl)
             });
 
-            services.AddSingleton<ElasticSearchClient>();
+            services.AddSingleton<ElasticSearchClient<Document>>();
         }
 
         public static void AddDomainServices(this IServiceCollection services)
@@ -27,7 +28,7 @@ namespace Search.Web
 
             services.AddSingleton<Indexer>();
             services.AddSingleton<Reindexer>(provider => new Reindexer(
-                provider.GetRequiredService<ElasticSearchClient>(),
+                provider.GetRequiredService<ElasticSearchClient<Document>>(),
                 provider.GetRequiredService<ElasticSearchOptions>(),
                 provider.GetRequiredService<Indexer>(),
                 autoReindexing: true,

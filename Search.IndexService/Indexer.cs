@@ -8,7 +8,7 @@ namespace Search.IndexService
 {
     public class Indexer
     {
-        public Indexer(ElasticSearchClient client, ElasticSearchOptions options)
+        public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options)
         {
             _client = client;
             _options = options;
@@ -34,7 +34,7 @@ namespace Search.IndexService
                 .Index(_options.DocumentsIndexName));
         }
 
-        private readonly ElasticSearchClient _client;
+        private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
 
         private void EnsureIndexCreated()

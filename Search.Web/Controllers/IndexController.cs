@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Search.Core.Entities;
 using Search.IndexService;
 
 namespace Search.Web.Controllers

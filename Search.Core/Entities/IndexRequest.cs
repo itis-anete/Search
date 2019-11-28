@@ -1,8 +1,7 @@
-﻿using Search.Core.Entities;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Search.IndexService
+namespace Search.Core.Entities
 {
     public class IndexRequest
     {

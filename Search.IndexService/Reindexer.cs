@@ -1,4 +1,5 @@
 ﻿using Search.Core.Elasticsearch;
+using Search.Core.Entities;
 using System;
 using System.Threading;
 
@@ -7,7 +8,7 @@ namespace Search.IndexService
     public class Reindexer
     {
         public Reindexer(
-            ElasticSearchClient client,
+            ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             Indexer indexer,
             bool autoReindexing = false,
@@ -28,7 +29,7 @@ namespace Search.IndexService
 
         public void ReindexAll() => ReindexAll(null);
 
-        private readonly ElasticSearchClient _client;
+        private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
         private readonly Indexer _indexer;
         private readonly Timer _indexingTimer;
