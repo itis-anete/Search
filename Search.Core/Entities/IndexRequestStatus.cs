@@ -3,7 +3,6 @@
     public enum IndexRequestStatus
     {
         Pending = 1,
-        InProgress = 2,
-        Indexed = 3
+        InProgress = 2
     }
 }

@@ -20,7 +20,7 @@ namespace Search.IndexService
         public void AddToQueueElement(IndexRequest request)
         {
             //methot for adding element to elastic
-            var el = new QueueModel()
+            var el = new Core.Entities.IndexRequest()
             {
                 RequestTime = DateTime.Now,
                 Uri = request.Url
@@ -29,7 +29,7 @@ namespace Search.IndexService
             _client.AddQueueIndex(el, x => x.Id(el.Uri.ToString()).Index(_options.DocumentsIndexName));
         }
 
-        public QueueModel GetIndexElement()
+        public IndexRequest GetIndexElement()
         {
             return null;//method for return next link for index
         }
