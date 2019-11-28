@@ -17,9 +17,9 @@ namespace Search.IndexService.Internal
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
-                
                 var text = ConvertDoc(doc);
-
+                DeleteSymbols(doc, text);
+                
                 return new ParsedHtml
                 {
                     Title = GetTitle(doc),
@@ -44,6 +44,23 @@ namespace Search.IndexService.Internal
                 }
             }
 
+            private static void DeleteSymbols(HtmlDocument doc, string text)
+            {
+                var sb = new StringBuilder(text);
+                foreach (HtmlTextNode node in doc.DocumentNode.SelectNodes("//text()"))
+                {
+                    if (node.Text.Contains("google - analytics.com / ga.js")
+                        | node.Text.Contains("&")
+                        | node.Text.Contains(">")
+                        | node.Text.Contains("<")
+                        | node.Text.Contains("[")
+                        | node.Text.CompareTo("\n") == 0
+                        | node.Text.Contains("{"))
+                        continue;
+                    else
+                        sb.AppendLine(node.Text);
+                }
+            }
             private static List<string> GetLinks(string htmlText)
             {
                 var parser = new HtmlParser();
