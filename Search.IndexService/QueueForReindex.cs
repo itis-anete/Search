@@ -26,7 +26,7 @@ namespace Search.IndexService
                 .Index(_options.DocumentsIndexName)
                 .Query(desc => desc
                     .Match(match => match
-                        .Field(x => x.IndexedTime == DateTime.Now.AddDays(ReindexTime)))));
+                        .Field(x => x.IndexedTime>DateTime.Now.AddDays(ReindexTime)))));
             if (responseFromElastic == null)
             {
                 return null;
@@ -39,7 +39,7 @@ namespace Search.IndexService
                     IndexedTime = doc.IndexedTime,
                     Text = doc.Text,
                     Title = doc.Title
-                }).First();
+                }).OrderBy(x=>x.IndexedTime).First();
         }
 
         public void ChangeIndexDate(Document document) 

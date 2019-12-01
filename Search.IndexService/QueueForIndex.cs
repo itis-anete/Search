@@ -21,14 +21,17 @@ namespace Search.IndexService
         public void AddToQueueElement(IndexRequest request)
         {
             //methot for adding element to elastic
-            var indexLink = new IndexRequest()
+            if (GetIndexRequest(request.Url) == null)
             {
-                CreatedTime = DateTime.Now,
-                Url = request.Url,
-                Status = IndexRequestStatus.Pending                
-            };
+                var indexLink = new IndexRequest()
+                {
+                    CreatedTime = DateTime.Now,
+                    Url = request.Url,
+                    Status = IndexRequestStatus.Pending
+                };
 
-            _client.Index(indexLink, x => x.Id(indexLink.Url.ToString()).Index(_options.DocumentsIndexName));
+                _client.Index(indexLink, x => x.Id(indexLink.Url.ToString()).Index(_options.DocumentsIndexName));
+            }
         }
 
         public IndexRequest GetIndexElement()
@@ -54,6 +57,25 @@ namespace Search.IndexService
         public void ChangeStatusElement(IndexRequest indexRequest) 
         {//method for change 
            
+        }
+
+        private IndexRequest GetIndexRequest(Uri url) 
+        {
+            var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
+              Query(desc => desc.Match(m => m.Field(x => x.Url == url))));
+            var result = responseFromElastic.Documents
+                .Select(x => new IndexRequest
+                {
+                    Url = x.Url,
+                    CreatedTime = x.CreatedTime,
+                    Status = x.Status
+                }).First();
+            if (result == null)
+            {
+                return null;
+            }
+            else
+                return result;
         }
 
     }
