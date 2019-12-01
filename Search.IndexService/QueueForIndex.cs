@@ -51,6 +51,10 @@ namespace Search.IndexService
             else  return result;
         }
 
+        public void ChangeStatusElement(IndexRequest indexRequest) 
+        {//method for change 
+           
+        }
 
     }
 }
