@@ -3,17 +3,21 @@ using Search.Core.Entities;
 using Search.IndexService.Internal;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
-    public class Indexer
+    public class Indexer : IDisposable
     {
-        public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options)
+        public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options, QueueForIndex indexRequestsQueue)
         {
             _client = client;
             _options = options;
+            this.indexRequestsQueue = indexRequestsQueue;
 
             EnsureIndicesCreated();
+
+            indexingTask = Task.Run(IndexRequests);
         }
 
         public void Index(IndexRequest request)
@@ -36,6 +40,8 @@ namespace Search.IndexService
 
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
+        private readonly QueueForIndex indexRequestsQueue;
+        private readonly Task indexingTask;
 
         private void EnsureIndicesCreated()
         {
@@ -80,5 +86,36 @@ namespace Search.IndexService
             
             return html;
         }
+
+        private async Task IndexRequests()
+        {
+            while (true)
+            {
+                var request = indexRequestsQueue.WaitForIndexElement();
+                Index(request);
+            }
+        }
+
+        #region IDisposable support
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+        #endregion
     }
 }

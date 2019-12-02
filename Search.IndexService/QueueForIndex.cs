@@ -59,6 +59,14 @@ namespace Search.IndexService
            
         }
 
+        public IndexRequest WaitForIndexElement()
+        {
+            IndexRequest request = null;
+            while (request == null)
+                request = GetIndexElement();
+            return request;
+        }
+
         private IndexRequest GetIndexRequest(Uri url) 
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
