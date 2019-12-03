@@ -21,7 +21,7 @@ namespace Search.IndexService
         public void AddToQueueElement(IndexRequest request)
         {
             //methot for adding element to elastic
-            if (GetIndexRequest(request.Url) == null)
+            if (GetIndexRequest(request.Url))
             {
                 var indexLink = new IndexRequest()
                 {
@@ -29,7 +29,7 @@ namespace Search.IndexService
                     Url = request.Url,
                     Status = IndexRequestStatus.Pending
                 };
-
+                
                 _client.Index(indexLink, x => x.Id(indexLink.Url.ToString()).Index(_options.DocumentsIndexName));
             }
         }
@@ -37,8 +37,7 @@ namespace Search.IndexService
         public IndexRequest GetIndexElement()
         {//method for return next link for index
             var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
-              Query(desc => desc.Match(m => m.Field(x => x.Status==IndexRequestStatus.Pending))));
-
+              Query(desc => desc.Match(m => m.Field(x => x.Status == IndexRequestStatus.Pending))));
 
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
@@ -46,17 +45,30 @@ namespace Search.IndexService
                     Url = x.Url,
                     CreatedTime = x.CreatedTime,
                     Status = x.Status
-                }).OrderBy(s=>s.CreatedTime).First();
-            if (result == null)
+                });
+            IndexRequest indexRequest = result.FirstOrDefault(x => x.CreatedTime == result.Min(w => w.CreatedTime));
+
+            if (indexRequest == null)
             {
                 return null;
             }
-            else  return result;
+            else
+            {
+                ChangeStatusElementToInprogress(indexRequest);
+                return indexRequest;
+            }
         }
 
-        public void ChangeStatusElement(IndexRequest indexRequest) 
+        private void ChangeStatusElementToInprogress(IndexRequest indexRequest) 
+        {
+            indexRequest.Status = IndexRequestStatus.InProgress;
+            _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
+        }
+
+        public void ChangeStatusElementToIndexed(IndexRequest indexRequest) 
         {//method for change 
-           
+            indexRequest.Status = IndexRequestStatus.Indexed;
+            _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
         }
 
         public IndexRequest WaitForIndexElement()
@@ -67,10 +79,10 @@ namespace Search.IndexService
             return request;
         }
 
-        private IndexRequest GetIndexRequest(Uri url) 
+        private bool GetIndexRequest(Uri url) 
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
-              Query(desc => desc.Match(m => m.Field(x => x.Url == url))));
+              Query(desc => desc.Match(m => m.Field(x => x.Url == url&&x.Status==IndexRequestStatus.Indexed))));
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
                 {
@@ -80,10 +92,10 @@ namespace Search.IndexService
                 }).First();
             if (result == null)
             {
-                return null;
+                return true;
             }
             else
-                return result;
+                return false;
         }
 
     }
