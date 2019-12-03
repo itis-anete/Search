@@ -13,7 +13,14 @@ namespace Search.IndexService
         public static SiteMapContent GetContetn(Uri url)
         {
             var doc = new XmlDocument();
-            doc.LoadXml($"{url}/sitemap.xml");
+            try
+            {
+                doc.LoadXml($"{url}/sitemap.xml");
+            }
+            catch
+            {
+                throw new XmlException();
+            }
 
             var links = new List<string>();
             var priority = new List<string>();
@@ -23,10 +30,17 @@ namespace Search.IndexService
             var xnList = doc.GetElementsByTagName("url");
             foreach (XmlNode node in xnList)
             {
-                links.Add(node["loc"].InnerText);
-                priority.Add(node["priority"].InnerText);
-                lastModified.Add(node["lastmod"].InnerText);
-                changeFreq.Add(node["changefreq"].InnerText);
+                if(node["loc"].InnerText != null)
+                    links.Add(node["loc"].InnerText);
+                
+                if(node["priority"].InnerText != null)
+                    priority.Add(node["priority"].InnerText);
+
+                if (node["lastmod"].InnerText != null)
+                    lastModified.Add(node["lastmod"].InnerText);
+
+                if(node["changefreq"].InnerText != null)
+                    changeFreq.Add(node["changefreq"].InnerText);
             }
 
             return new SiteMapContent()
