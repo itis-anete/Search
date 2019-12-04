@@ -108,7 +108,7 @@ namespace Search.IndexService.SiteMap
             }
 
             return content;
-        }
+        }   
 
         
         public static bool URLIsAllowed(string URL)
@@ -118,29 +118,11 @@ namespace Search.IndexService.SiteMap
             
             Uri checkURL = new Uri(URL);
             URL = checkURL.AbsolutePath.ToLower();
-
-            Console.WriteLine("Is user-agent: " + robotAgent + " allowed access to URL: " + URL);
             
             if (URL == "/robots.txt")
             {
                 return false;
             }
-            else
-            {
-                foreach (string blockedURL in BlockedUrls)
-                {
-                    if (URL.Length >= blockedURL.Length)
-                    {
-                        if (URL.Substring(0, blockedURL.Length) == blockedURL)
-                        {
-                            Console.WriteLine("Blocked URL: " + blockedURL);
-
-                            return false;
-                        }
-                    }
-                }
-            }
-
             return true;
         }
 
@@ -157,13 +139,11 @@ namespace Search.IndexService.SiteMap
                     StringSplitOptions.RemoveEmptyEntries);
 
                 bool ApplyToBot = false;
+
                 foreach (string line in fileLines)
                 {
                     Console.WriteLine("Line = " + line);
                     RobotCommand CommandLine = new RobotCommand(line);
-                    Console.WriteLine("Command = " + CommandLine.Command 
-                        + " - URL = " + CommandLine.Url 
-                        + " - UserAgent: " + CommandLine.UserAgent);
 
                     switch (CommandLine.Command)
                     {
