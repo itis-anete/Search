@@ -3,54 +3,35 @@ using Search.Core.Entities;
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
-    public class Reindexer
+    public class Reindexer:IDisposable
     {
         public Reindexer(
             ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             Indexer indexer,
-            //bool autoReindexing = false,
-            //TimeSpan? indexingFrequency = null,
             QueueForIndex queueForIndex)
-        // TimeSpan? firstIndexingDeferral = null)
         {
             _client = client;
             _options = options;
             _indexer = indexer;
             ReindexTime = -7;
             _queueForIndex = queueForIndex;
-            //if (autoReindexing)
-            //    _indexingTimer = new Timer(
-            //        ReindexAll,
-            //        null,
-            //        firstIndexingDeferral ?? default(TimeSpan),
-            //        indexingFrequency ?? TimeSpan.FromMinutes(15));
+            EnsureIndicesCreated();
+            reindexTask = Task.Run(ReindexTask);
         }
 
-        //public void ReindexAll() => ReindexAll(null);
+       
         private int ReindexTime { get; set; }
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
         private readonly Indexer _indexer;
         private readonly Timer _indexingTimer;
         private QueueForIndex _queueForIndex;
-
-        //private void ReindexAll(object state)
-        //{
-        //    var response = _client.Search(desc => desc
-        //        .Index(_options.DocumentsIndexName)
-        //        .Query(query => query.MatchAll())
-        //    );
-
-        //    foreach (var document in response.Documents)
-        //    {
-        //        var indexRequest = new IndexRequest { Url = document.Url };
-        //        _indexer.Index(indexRequest);
-        //    }
-        //}
+        private readonly Task reindexTask;
 
         public void SearchOldPages()
         {
@@ -72,6 +53,66 @@ namespace Search.IndexService
                 _queueForIndex.AddToQueueElement(item);
             }
 
+        }
+
+        private void EnsureIndicesCreated()
+        {
+            var response = _client.IndexExists(_options.DocumentsIndexName);
+            if (response.Exists)
+                return;
+
+            _client.CreateIndex(_options.RequestsIndexName, index => index
+                .Settings(ElasticSearchOptions.AnalysisSettings)
+                .Mappings(mappings => mappings
+                    .Map<Document>(map => map
+                        .Properties(properties => properties
+                            .Text(ElasticSearchOptions.TitleProperty)
+                            .Text(ElasticSearchOptions.TextProperty)
+                            .Keyword(ElasticSearchOptions.UrlProperty)
+                        ).SourceField(source => source
+                            .Excludes(new[] { "text" })
+                        )
+                    )
+                )
+            );
+
+            response = _client.IndexExists(_options.RequestsIndexName);
+            if (response.Exists)
+                return;
+
+            _client.CreateIndex(_options.RequestsIndexName, index => index
+                .Settings(ElasticSearchOptions.AnalysisSettings)
+                .Mappings(mappings => mappings
+                    .Map<IndexRequest>(map => map.AutoMap())
+                )
+            );
+        }
+        private async Task ReindexTask()
+        {
+            while (true)
+            {
+                SearchOldPages();
+            }
+        }
+
+        private bool disposedValue = false;
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

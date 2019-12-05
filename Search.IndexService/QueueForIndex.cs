@@ -21,7 +21,7 @@ namespace Search.IndexService
         public void AddToQueueElement(IndexRequest request)
         {
             //methot for adding element to elastic
-            if (GetIndexRequest(request.Url))
+            if (CheckQueue(request.Url))
             {
                 var indexLink = new IndexRequest()
                 {
@@ -59,14 +59,28 @@ namespace Search.IndexService
             }
         }
 
-        private void ChangeStatusElementToInprogress(IndexRequest indexRequest) 
+        public IEnumerable<IndexRequest> GetAllElementsQueue() 
         {
+            var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName));
+
+            var result = responseFromElastic.Documents
+                .Select(x => new IndexRequest
+                {
+                    Url = x.Url,
+                    CreatedTime = x.CreatedTime,
+                    Status = x.Status
+                });
+            return result;
+        }
+
+        private void ChangeStatusElementToInprogress(IndexRequest indexRequest)
+        {//method for change statua to inprogress 
             indexRequest.Status = IndexRequestStatus.InProgress;
             _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
         }
 
         public void ChangeStatusElementToIndexed(IndexRequest indexRequest) 
-        {//method for change 
+        {//method for change status to indexed
             indexRequest.Status = IndexRequestStatus.Indexed;
             _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
         }
@@ -79,10 +93,10 @@ namespace Search.IndexService
             return request;
         }
 
-        private bool GetIndexRequest(Uri url) 
+        private bool CheckQueue(Uri url) 
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
-              Query(desc => desc.Match(m => m.Field(x => x.Url == url&&x.Status==IndexRequestStatus.Indexed))));
+              Query(desc => desc.Match(m => m.Field(x => x.Url == url&&x.Status!=IndexRequestStatus.Indexed))));
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
                 {
