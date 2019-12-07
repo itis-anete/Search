@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 namespace Search.Web
 {
@@ -19,12 +19,14 @@ namespace Search.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+
             services.AddElasticSearch(Configuration);
             services.AddDomainServices();
             services.AddSwaggerGen(x =>
             {
-                x.SwaggerDoc("ApiList", new Info {
+                x.SwaggerDoc("ApiList", new OpenApiInfo {
                     Title = "Search API",
                     Version = "v1"
                 });
@@ -32,7 +34,7 @@ namespace Search.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -53,11 +55,10 @@ namespace Search.Web
                 x.DisplayRequestDuration();
             });
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(routes =>
             {
-                routes.MapSpaFallbackRoute(
-                    name: "spa-fallback",
-                    defaults: new { controller = "Home", action = "Index" });
+                routes.MapDefaultControllerRoute();
             });
         }
     }
