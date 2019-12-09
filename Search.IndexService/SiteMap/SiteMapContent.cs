@@ -13,11 +13,12 @@ namespace Search.IndexService
 
         public List<string> Links { get; set; }
 
-        public List<string> Priority { get; set; }
+        //public List<string> Priority { get; set; }
 
-        public List<string> LastModified { get; set; }
+        //public List<string> LastModified { get; set; }
 
-        public List<string> ChangeFrequency { get; set; }
+        //public List<string> ChangeFrequency { get; set; }
 
     }
+
 }
