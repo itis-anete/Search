@@ -36,6 +36,7 @@ namespace Search.IndexService
             _client.Index(document, desc => desc
                 .Id(document.Url.ToString())
                 .Index(_options.DocumentsIndexName));
+            indexRequestsQueue.ChangeStatusElementToIndexed(request);
         }
 
         private readonly ElasticSearchClient<Document> _client;
