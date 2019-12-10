@@ -31,9 +31,10 @@ namespace Search.Web
                 provider.GetRequiredService<ElasticSearchClient<Document>>(),
                 provider.GetRequiredService<ElasticSearchOptions>(),
                 provider.GetRequiredService<Indexer>(),
-                autoReindexing: true,
-                indexingFrequency: TimeSpan.FromMinutes(1),
-                firstIndexingDeferral: TimeSpan.FromSeconds(10)
+                provider.GetRequiredService<QueueForIndex>()
+               // autoReindexing: true,
+                //indexingFrequency: TimeSpan.FromMinutes(1),
+               // firstIndexingDeferral: TimeSpan.FromSeconds(10)
             ));
 
             services.AddSingleton<ServiceContainer>();
