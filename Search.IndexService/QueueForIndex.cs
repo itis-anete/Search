@@ -97,14 +97,14 @@ namespace Search.IndexService
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
               Query(desc => desc.Match(m => m.Field(x => x.Url == url&&x.Status!=IndexRequestStatus.Indexed))));
-            var result = responseFromElastic.Documents
-                .Select(x => new IndexRequest
-                {
-                    Url = x.Url,
-                    CreatedTime = x.CreatedTime,
-                    Status = x.Status
-                }).First();
-            if (result == null)
+            //var result = responseFromElastic.Documents
+            //    .Select(x => new IndexRequest
+            //    {
+            //        Url = x.Url,
+            //        CreatedTime = x.CreatedTime,
+            //        Status = x.Status
+            //    }).First();
+            if (responseFromElastic == null)
             {
                 return true;
             }

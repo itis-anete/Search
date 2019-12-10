@@ -9,16 +9,16 @@ namespace Search.Web.Controllers
     {
         public IndexController(ServiceContainer services)
         {
-            _indexer = services.Indexer;
+            _queueForIndex = services.QueueForIndex;
         }
         
         [HttpPost]
         public IActionResult Index([FromQuery] IndexRequest request)
         {
-            _indexer.Index(request);
+            _queueForIndex.AddToQueueElement(request);
             return Ok();
         }
 
-        private readonly Indexer _indexer;
+        private readonly QueueForIndex _queueForIndex;
     }
 }
