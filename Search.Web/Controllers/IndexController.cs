@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Core.Entities;
 using Search.IndexService;
+using System.Collections.Generic;
 
 namespace Search.Web.Controllers
 {
@@ -17,6 +18,12 @@ namespace Search.Web.Controllers
         {
             _queueForIndex.AddToQueueElement(request);
             return Ok();
+        }
+
+        [HttpGet]
+        public IEnumerable<IndexRequest> GetQueue()
+        {
+            return _queueForIndex.GetAllElementsQueue();
         }
 
         private readonly QueueForIndex _queueForIndex;
