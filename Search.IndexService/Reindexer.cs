@@ -1,4 +1,5 @@
-﻿using Search.Core.Elasticsearch;
+﻿using Microsoft.Extensions.Hosting;
+using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using System;
 using System.Linq;
@@ -7,71 +8,53 @@ using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
-    public class Reindexer:IDisposable
+    public class Reindexer : IHostedService
     {
+        private readonly int reindexTime = -7;
+        private readonly TimeSpan indexingFrequency = TimeSpan.FromMinutes(15);
+        private readonly ElasticSearchClient<Document> _client;
+        private readonly ElasticSearchOptions _options;
+        private readonly QueueForIndex _queueForIndex;
+
+        private Timer _indexingTimer;
+
         public Reindexer(
             ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
-            Indexer indexer,
             QueueForIndex queueForIndex)
         {
             _client = client;
             _options = options;
-            _indexer = indexer;
-            ReindexTime = -7;
             _queueForIndex = queueForIndex;
-
-            reindexTask = Task.Run(ReindexTask);
         }
 
-       
-        private int ReindexTime { get; set; }
-        private readonly ElasticSearchClient<Document> _client;
-        private readonly ElasticSearchOptions _options;
-        private readonly Indexer _indexer;
-        private readonly Timer _indexingTimer;
-        private QueueForIndex _queueForIndex;
-        private readonly Task reindexTask;
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _indexingTimer = new Timer(
+                SearchOldPages,
+                null,
+                TimeSpan.Zero,
+                indexingFrequency);
+            return Task.CompletedTask;
+        }
 
-        public void SearchOldPages()
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _indexingTimer?.Dispose();
+            return Task.CompletedTask;
+        }
+
+        private void SearchOldPages(object state = null)
         {
             var responseFromElastic = _client.Search(search => search
                .Index(_options.DocumentsIndexName)
                .Query(desc => desc
                    .Match(match => match
-                       .Field(x => x.IndexedTime < DateTime.Now.AddDays(ReindexTime)))));
+                       .Field(x => x.IndexedTime < DateTime.Now.AddDays(reindexTime)))));
 
             foreach (var oldPage in responseFromElastic.Documents)
                 _queueForIndex.AddToQueueElement(oldPage.Url);
 
-        }
-
-        private async Task ReindexTask()
-        {
-            while (true)
-            {
-                SearchOldPages();
-            }
-        }
-
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
     }
 }
