@@ -15,6 +15,10 @@ namespace Search.Web
                 .ConfigureWebHostDefaults(builder =>
                 {
                     builder.UseStartup<Startup>();
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddBackgroundServices();
                 });
     }
 }

@@ -22,22 +22,18 @@ namespace Search.Web
             services.AddSingleton<ElasticSearchClient<Document>>();
         }
 
+        public static void AddBackgroundServices(this IServiceCollection services)
+        {
+            services.AddHostedService<Indexer>();
+            services.AddHostedService<Reindexer>();
+        }
+
         public static void AddDomainServices(this IServiceCollection services)
         {
             services.AddSingleton<Searcher>();
             services.AddSingleton<IRequestCache, MemoryRequestCache>();
 
             services.AddSingleton<QueueForIndex>();
-            services.AddSingleton<Indexer>();
-            services.AddSingleton<Reindexer>(provider => new Reindexer(
-                provider.GetRequiredService<ElasticSearchClient<Document>>(),
-                provider.GetRequiredService<ElasticSearchOptions>(),
-                provider.GetRequiredService<Indexer>(),
-                provider.GetRequiredService<QueueForIndex>()
-               // autoReindexing: true,
-                //indexingFrequency: TimeSpan.FromMinutes(1),
-               // firstIndexingDeferral: TimeSpan.FromSeconds(10)
-            ));
 
             services.AddSingleton<ServiceContainer>();
         }
