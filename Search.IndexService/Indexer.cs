@@ -15,7 +15,7 @@ namespace Search.IndexService
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;
 
-            EnsureIndicesCreated();
+            EnsureIndexInElasticCreated();
 
             indexingTask = Task.Run(IndexRequests);
         }
@@ -44,7 +44,7 @@ namespace Search.IndexService
         private readonly QueueForIndex indexRequestsQueue;
         private readonly Task indexingTask;
 
-        private void EnsureIndicesCreated()
+        private void EnsureIndexInElasticCreated()
         {
             var response = _client.IndexExists(_options.DocumentsIndexName);
             if (response.Exists)
@@ -62,17 +62,6 @@ namespace Search.IndexService
                             .Excludes(new[] { "text" })
                         )
                     )
-                )
-            );
-
-            response = _client.IndexExists(_options.RequestsIndexName);
-            if (response.Exists)
-                return;
-
-            _client.CreateIndex(_options.RequestsIndexName, index => index
-                .Settings(ElasticSearchOptions.AnalysisSettings)
-                .Mappings(mappings => mappings
-                    .Map<IndexRequest>(map => map.AutoMap())
                 )
             );
         }
