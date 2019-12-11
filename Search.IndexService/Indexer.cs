@@ -1,26 +1,41 @@
-﻿using Search.Core.Elasticsearch;
+﻿using Microsoft.Extensions.Hosting;
+using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
-    public class Indexer : IDisposable
+    public class Indexer : BackgroundService
     {
+        private readonly ElasticSearchClient<Document> _client;
+        private readonly ElasticSearchOptions _options;
+        private readonly QueueForIndex indexRequestsQueue;
+
         public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options, QueueForIndex indexRequestsQueue)
         {
             _client = client;
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;
-
-            EnsureIndexInElasticCreated();
-
-            indexingTask = Task.Run(IndexRequests);
         }
 
-        public void Index(IndexRequest request)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            EnsureIndexInElasticCreated();
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var request = indexRequestsQueue.WaitForIndexElement();
+                Index(request);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private void Index(IndexRequest request)
         {
             var html = GetHtml(request.Url);
             var parsedHtml = Parser.HtmlToText.ParseHtml(html);
@@ -39,10 +54,16 @@ namespace Search.IndexService
             indexRequestsQueue.ChangeStatusElementToIndexed(request);
         }
 
-        private readonly ElasticSearchClient<Document> _client;
-        private readonly ElasticSearchOptions _options;
-        private readonly QueueForIndex indexRequestsQueue;
-        private readonly Task indexingTask;
+        private string GetHtml(Uri url)
+        {
+            string html;
+            using (var client = new HttpClient())
+            using (HttpResponseMessage response = client.GetAsync(url).Result)
+            using (HttpContent content = response.Content)
+                html = content.ReadAsStringAsync().Result;
+
+            return html;
+        }
 
         private void EnsureIndexInElasticCreated()
         {
@@ -65,47 +86,5 @@ namespace Search.IndexService
                 )
             );
         }
-
-        private string GetHtml(Uri url)
-        {
-            string html;
-            using (var client = new HttpClient())
-            using (HttpResponseMessage response = client.GetAsync(url).Result)
-            using (HttpContent content = response.Content)
-                html = content.ReadAsStringAsync().Result;
-            
-            return html;
-        }
-
-        private async Task IndexRequests()
-        {
-            while (true)
-            {
-                var request = indexRequestsQueue.WaitForIndexElement();
-                Index(request);
-            }
-        }
-
-        #region IDisposable support
-        private bool disposedValue = false;
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-        #endregion
     }
 }
