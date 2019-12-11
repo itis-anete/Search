@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Search.Web.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class IndexController : ControllerBase
     {
         public IndexController(ServiceContainer services)
