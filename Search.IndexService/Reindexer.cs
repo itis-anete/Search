@@ -40,18 +40,9 @@ namespace Search.IndexService
                .Query(desc => desc
                    .Match(match => match
                        .Field(x => x.IndexedTime < DateTime.Now.AddDays(ReindexTime)))));
-            var oldPages = responseFromElastic.Documents
-                .Select(doc => new IndexRequest
-                {
-                    Url = doc.Url,
-                    CreatedTime = DateTime.Now,
-                    Status = IndexRequestStatus.Pending
-                }).ToList();
 
-            foreach (var item in oldPages)
-            {
-                _queueForIndex.AddToQueueElement(item);
-            }
+            foreach (var oldPage in responseFromElastic.Documents)
+                _queueForIndex.AddToQueueElement(oldPage.Url);
 
         }
 

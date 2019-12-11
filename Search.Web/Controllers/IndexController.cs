@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Core.Entities;
 using Search.IndexService;
+using System;
 using System.Collections.Generic;
 
 namespace Search.Web.Controllers
@@ -14,9 +15,9 @@ namespace Search.Web.Controllers
         }
         
         [HttpPost]
-        public IActionResult Index([FromQuery] IndexRequest request)
+        public IActionResult Index([FromBody] Uri url)
         {
-            _queueForIndex.AddToQueueElement(request);
+            _queueForIndex.AddToQueueElement(url);
             return Ok();
         }
 

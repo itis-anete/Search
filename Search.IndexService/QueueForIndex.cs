@@ -3,7 +3,6 @@ using Search.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Search.IndexService
 {
@@ -20,19 +19,18 @@ namespace Search.IndexService
         private readonly ElasticSearchClient<IndexRequest> _client;
         private readonly ElasticSearchOptions _options;
 
-        public void AddToQueueElement(IndexRequest request)
+        public void AddToQueueElement(Uri url)
         {
-            //methot for adding element to elastic
-            if (CheckQueue(request.Url))
+            if (CheckQueue(url))
             {
-                var indexLink = new IndexRequest()
+                var indexRequest = new IndexRequest()
                 {
-                    CreatedTime = DateTime.Now,
-                    Url = request.Url,
+                    Url = url,
+                    CreatedTime = DateTime.UtcNow,
                     Status = IndexRequestStatus.Pending
                 };
                 
-                _client.Index(indexLink, x => x.Id(indexLink.Url.ToString()).Index(_options.DocumentsIndexName));
+                _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
             }
         }
 
