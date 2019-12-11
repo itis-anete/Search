@@ -20,7 +20,7 @@ namespace Search.IndexService
             _indexer = indexer;
             ReindexTime = -7;
             _queueForIndex = queueForIndex;
-            EnsureIndicesCreated();
+
             reindexTask = Task.Run(ReindexTask);
         }
 
@@ -46,38 +46,6 @@ namespace Search.IndexService
 
         }
 
-        private void EnsureIndicesCreated()
-        {
-            var response = _client.IndexExists(_options.DocumentsIndexName);
-            if (response.Exists)
-                return;
-
-            _client.CreateIndex(_options.RequestsIndexName, index => index
-                .Settings(ElasticSearchOptions.AnalysisSettings)
-                .Mappings(mappings => mappings
-                    .Map<Document>(map => map
-                        .Properties(properties => properties
-                            .Text(ElasticSearchOptions.TitleProperty)
-                            .Text(ElasticSearchOptions.TextProperty)
-                            .Keyword(ElasticSearchOptions.UrlProperty)
-                        ).SourceField(source => source
-                            .Excludes(new[] { "text" })
-                        )
-                    )
-                )
-            );
-
-            response = _client.IndexExists(_options.RequestsIndexName);
-            if (response.Exists)
-                return;
-
-            _client.CreateIndex(_options.RequestsIndexName, index => index
-                .Settings(ElasticSearchOptions.AnalysisSettings)
-                .Mappings(mappings => mappings
-                    .Map<IndexRequest>(map => map.AutoMap())
-                )
-            );
-        }
         private async Task ReindexTask()
         {
             while (true)
