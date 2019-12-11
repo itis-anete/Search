@@ -18,6 +18,7 @@ namespace Search.Web
                 Url = new Uri(elasticSearchUrl)
             });
 
+            services.AddSingleton<ElasticSearchClient<IndexRequest>>();
             services.AddSingleton<ElasticSearchClient<Document>>();
         }
 
@@ -26,6 +27,7 @@ namespace Search.Web
             services.AddSingleton<Searcher>();
             services.AddSingleton<IRequestCache, MemoryRequestCache>();
 
+            services.AddSingleton<QueueForIndex>();
             services.AddSingleton<Indexer>();
             services.AddSingleton<Reindexer>(provider => new Reindexer(
                 provider.GetRequiredService<ElasticSearchClient<Document>>(),
