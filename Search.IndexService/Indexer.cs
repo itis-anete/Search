@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
@@ -42,13 +43,16 @@ namespace Search.IndexService
             var urlsToParse = new Stack<Uri>();
             urlsToParse.Push(request.Url);
 
+            var siteHost = request.Url.Host;
             while (urlsToParse.Any())
             {
                 var currentUrl = urlsToParse.Pop();
                 var html = GetHtml(currentUrl);
                 var parsedHtml = Parser.HtmlToText.ParseHtml(html);
-                foreach (var url in parsedHtml.Links)
-                    urlsToParse.Push(url);
+
+                parsedHtml.Links
+                    .Where(x => x.Host.EndsWith(siteHost))
+                    .ForEach(x => urlsToParse.Push(x));
 
                 var document = new Document()
                 {
