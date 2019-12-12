@@ -3,6 +3,7 @@ using Search.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Search.IndexService
 {
@@ -102,9 +103,12 @@ namespace Search.IndexService
 
         public IndexRequest WaitForIndexElement()
         {
-            IndexRequest request = null;
+            IndexRequest request = GetIndexElement();
             while (request == null)
+            {
+                Thread.Sleep(250);
                 request = GetIndexElement();
+            }
             return request;
         }
 
