@@ -4,6 +4,7 @@
     {
         Pending = 1,
         InProgress = 2,
-        Indexed=3
+        Indexed = 3,
+        Error = 4
     }
 }
