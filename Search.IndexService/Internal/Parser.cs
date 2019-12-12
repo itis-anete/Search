@@ -61,16 +61,20 @@ namespace Search.IndexService.Internal
                         sb.AppendLine(node.Text);
                 }
             }
-            private static List<string> GetLinks(string htmlText)
+            private static List<Uri> GetLinks(string htmlText)
             {
                 var parser = new HtmlParser();
                 var document = parser.ParseDocument(htmlText);
-                var href = new List<string>();
+                var href = new List<Uri>();
                 foreach (IElement element in document.QuerySelectorAll("a"))
                 {
                     string el = element.GetAttribute("href");
                     if (el != null && el.StartsWith("http"))
-                        href.Add(element.GetAttribute("href"));
+                    {
+                        var hrefAttribute = element.GetAttribute("href");
+                        if (Uri.IsWellFormedUriString(hrefAttribute, UriKind.Absolute))
+                            href.Add(new Uri(hrefAttribute));
+                    }
                 }
                 return href;
             }
