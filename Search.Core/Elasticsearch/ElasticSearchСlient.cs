@@ -27,6 +27,14 @@ namespace Search.Core.Elasticsearch
             return _client.Indices.Create(index, selector);
         }
 
+        public void Delete(
+            DocumentPath<TModel> documentPath,
+            IndexName indexName
+        )
+        {
+            _client.Delete(documentPath, x => x.Index(indexName));
+        }
+
         public GetResponse<TModel> Get(
             DocumentPath<TModel> documentPath,
             IndexName indexName

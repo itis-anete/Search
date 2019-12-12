@@ -110,6 +110,23 @@ namespace Search.IndexService
             );
         }
 
+        public void SetError(Uri url, string errorMessage)
+        {
+            var response = _client.Get(
+                url.ToString(),
+                _options.RequestsIndexName
+            );
+            if (!response.IsValid)
+                return;
+
+            response.Source.Status = IndexRequestStatus.Error;
+            response.Source.ErrorMessage = errorMessage;
+            _client.Index(response.Source, x => x
+                .Id(response.Source.Url.ToString())
+                .Index(_options.RequestsIndexName)
+            );
+        }
+
         public IndexRequest WaitForIndexElement()
         {
             IndexRequest request = GetIndexElement();

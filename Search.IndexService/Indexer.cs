@@ -18,6 +18,8 @@ namespace Search.IndexService
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex indexRequestsQueue;
 
+        private const int pagesPerSiteLimit = 100;
+
         public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options, QueueForIndex indexRequestsQueue)
         {
             _client = client;
@@ -44,6 +46,7 @@ namespace Search.IndexService
             urlsToParse.Push(request.Url);
 
             var siteHost = request.Url.Host;
+            var indexedUrls = new List<Uri>();
             while (urlsToParse.Any())
             {
                 var currentUrl = urlsToParse.Pop();
@@ -56,7 +59,7 @@ namespace Search.IndexService
 
                 var document = new Document()
                 {
-                    Url = request.Url,
+                    Url = currentUrl,
                     IndexedTime = DateTime.UtcNow,
                     Title = parsedHtml.Title,
                     Text = parsedHtml.Text
@@ -66,6 +69,20 @@ namespace Search.IndexService
                     .Id(document.Url.ToString())
                     .Index(_options.DocumentsIndexName)
                 );
+                indexedUrls.Add(document.Url);
+
+                if (indexedUrls.Count + urlsToParse.Count > pagesPerSiteLimit)
+                {
+                    indexRequestsQueue.SetError(
+                        request.Url,
+                        $"Can't index site {request.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
+                            "The main page was indexed only."
+                    );
+                    indexedUrls
+                        .Except(new[] { request.Url })
+                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
+                    return;
+                }
             }
 
             indexRequestsQueue.UpdateStatus(request.Url, IndexRequestStatus.Indexed);
