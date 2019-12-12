@@ -30,14 +30,23 @@ namespace Search.IndexService
                     Status = IndexRequestStatus.Pending
                 };
                 
-                _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
+                _client.Index(indexRequest, x => x
+                    .Id(indexRequest.Url.ToString())
+                    .Index(_options.RequestsIndexName));
             }
         }
 
         public IndexRequest GetIndexElement()
-        {//method for return next link for index
-            var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
-              Query(desc => desc.Match(m => m.Field(x => x.Status == IndexRequestStatus.Pending))));
+        {
+            var responseFromElastic = _client.Search(search => search
+                .Index(_options.RequestsIndexName)
+                .Query(desc => desc
+                    .Term(t => t
+                        .Field(x => x.Status)
+                        .Value(IndexRequestStatus.Pending)
+                    )
+                )
+            );
 
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
@@ -61,7 +70,7 @@ namespace Search.IndexService
 
         public IEnumerable<IndexRequest> GetAllElementsQueue() 
         {
-            var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName));
+            var responseFromElastic = _client.Search(search => search.Index(_options.RequestsIndexName));
 
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
@@ -76,13 +85,19 @@ namespace Search.IndexService
         private void ChangeStatusElementToInprogress(IndexRequest indexRequest)
         {//method for change statua to inprogress 
             indexRequest.Status = IndexRequestStatus.InProgress;
-            _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
+            _client.Index(indexRequest, x => x
+                .Id(indexRequest.Url.ToString())
+                .Index(_options.RequestsIndexName)
+            );
         }
 
         public void ChangeStatusElementToIndexed(IndexRequest indexRequest) 
         {//method for change status to indexed
             indexRequest.Status = IndexRequestStatus.Indexed;
-            _client.Index(indexRequest, x => x.Id(indexRequest.Url.ToString()).Index(_options.DocumentsIndexName));
+            _client.Index(indexRequest, x => x
+                .Id(indexRequest.Url.ToString())
+                .Index(_options.RequestsIndexName)
+            );
         }
 
         public IndexRequest WaitForIndexElement()
@@ -95,21 +110,22 @@ namespace Search.IndexService
 
         private bool CheckQueue(Uri url) 
         {
-            var responseFromElastic = _client.Search(search => search.Index(_options.DocumentsIndexName).
-              Query(desc => desc.Match(m => m.Field(x => x.Url == url&&x.Status!=IndexRequestStatus.Indexed))));
-            //var result = responseFromElastic.Documents
-            //    .Select(x => new IndexRequest
-            //    {
-            //        Url = x.Url,
-            //        CreatedTime = x.CreatedTime,
-            //        Status = x.Status
-            //    }).First();
-            if (responseFromElastic == null)
-            {
-                return true;
-            }
-            else
-                return false;
+            var responseFromElastic = _client.Search(search => search
+                .Index(_options.RequestsIndexName)
+                .Query(desc => 
+                    desc.Term(t => t
+                        .Field(x => x.Url)
+                        .Value(url)
+                    )
+                    &&
+                    !desc.Term(t => t
+                        .Field(x => x.Status)
+                        .Value(IndexRequestStatus.Indexed)
+                    )
+                )
+            );
+
+            return !responseFromElastic.Documents.Any();
         }
 
         private void EnsureIndexInElasticCreated()
@@ -119,9 +135,13 @@ namespace Search.IndexService
                 return;
 
             _client.CreateIndex(_options.RequestsIndexName, index => index
-                .Settings(ElasticSearchOptions.AnalysisSettings)
-                .Mappings(mappings => mappings
-                    .Map<IndexRequest>(map => map.AutoMap())
+                .Mappings(ms => ms
+                    .Map<IndexRequest>(m => m
+                        .Properties(ps => ps
+                            .Keyword(k => k.Name(x => x.Url))
+                            .Date(d => d.Name(x => x.CreatedTime))
+                        )
+                    )
                 )
             );
         }

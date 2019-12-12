@@ -47,10 +47,14 @@ namespace Search.IndexService
         private void SearchOldPages(object state = null)
         {
             var responseFromElastic = _client.Search(search => search
-               .Index(_options.DocumentsIndexName)
-               .Query(desc => desc
-                   .Match(match => match
-                       .Field(x => x.IndexedTime < DateTime.Now.AddDays(reindexTime)))));
+                .Index(_options.DocumentsIndexName)
+                .Query(desc => desc
+                    .DateRange(d => d
+                        .Field(x => x.IndexedTime)
+                        .LessThan(DateTime.UtcNow.AddDays(reindexTime))
+                    )
+                )
+            );
 
             foreach (var oldPage in responseFromElastic.Documents)
                 _queueForIndex.AddToQueueElement(oldPage.Url);
