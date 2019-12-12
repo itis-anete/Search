@@ -68,7 +68,7 @@ namespace Search.IndexService
                 );
             }
 
-            indexRequestsQueue.ChangeStatusElementToIndexed(request);
+            indexRequestsQueue.UpdateStatus(request.Url, IndexRequestStatus.Indexed);
         }
 
         private string GetHtml(Uri url)

@@ -73,7 +73,7 @@ namespace Search.IndexService
             }
             else
             {
-                ChangeStatusElementToInprogress(indexRequest);
+                UpdateStatus(indexRequest.Url, IndexRequestStatus.InProgress);
                 return indexRequest;
             }
         }
@@ -94,20 +94,18 @@ namespace Search.IndexService
             return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(result);
         }
 
-        private void ChangeStatusElementToInprogress(IndexRequest indexRequest)
-        {//method for change statua to inprogress 
-            indexRequest.Status = IndexRequestStatus.InProgress;
-            _client.Index(indexRequest, x => x
-                .Id(indexRequest.Url.ToString())
-                .Index(_options.RequestsIndexName)
+        public void UpdateStatus(Uri url, IndexRequestStatus newStatus)
+        {
+            var response = _client.Get(
+                url.ToString(),
+                _options.RequestsIndexName
             );
-        }
+            if (!response.IsValid)
+                return;
 
-        public void ChangeStatusElementToIndexed(IndexRequest indexRequest) 
-        {//method for change status to indexed
-            indexRequest.Status = IndexRequestStatus.Indexed;
-            _client.Index(indexRequest, x => x
-                .Id(indexRequest.Url.ToString())
+            response.Source.Status = newStatus;
+            _client.Index(response.Source, x => x
+                .Id(response.Source.Url.ToString())
                 .Index(_options.RequestsIndexName)
             );
         }
