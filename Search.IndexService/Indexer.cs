@@ -3,6 +3,8 @@ using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,20 +39,31 @@ namespace Search.IndexService
 
         private void Index(IndexRequest request)
         {
-            var html = GetHtml(request.Url);
-            var parsedHtml = Parser.HtmlToText.ParseHtml(html);
+            var urlsToParse = new Stack<Uri>();
+            urlsToParse.Push(request.Url);
 
-            var document = new Document()
+            while (urlsToParse.Any())
             {
-                Url = request.Url,
-                IndexedTime = DateTime.UtcNow,
-                Title = parsedHtml.Title,
-                Text = parsedHtml.Text
-            };
+                var currentUrl = urlsToParse.Pop();
+                var html = GetHtml(currentUrl);
+                var parsedHtml = Parser.HtmlToText.ParseHtml(html);
+                foreach (var url in parsedHtml.Links)
+                    urlsToParse.Push(url);
 
-            _client.Index(document, desc => desc
-                .Id(document.Url.ToString())
-                .Index(_options.DocumentsIndexName));
+                var document = new Document()
+                {
+                    Url = request.Url,
+                    IndexedTime = DateTime.UtcNow,
+                    Title = parsedHtml.Title,
+                    Text = parsedHtml.Text
+                };
+
+                _client.Index(document, desc => desc
+                    .Id(document.Url.ToString())
+                    .Index(_options.DocumentsIndexName)
+                );
+            }
+
             indexRequestsQueue.ChangeStatusElementToIndexed(request);
         }
 
