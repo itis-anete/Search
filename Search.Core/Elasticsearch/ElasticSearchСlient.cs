@@ -17,7 +17,6 @@ namespace Search.Core.Elasticsearch
         {
             _client = new ElasticClient(
                 new ConnectionSettings(options.Url)
-                    .ThrowExceptions()
             );
         }
 

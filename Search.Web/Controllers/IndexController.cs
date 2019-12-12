@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Search.Core.Entities;
+using Search.Core.Extensions;
 using Search.IndexService;
 using System;
-using System.Collections.Generic;
 
 namespace Search.Web.Controllers
 {
@@ -17,14 +16,22 @@ namespace Search.Web.Controllers
         [HttpPost]
         public IActionResult Index([FromBody] Uri url)
         {
-            _queueForIndex.AddToQueueElement(url);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = _queueForIndex.AddToQueueElement(url);
+            return result.IsSuccess
+                ? Ok()
+                : StatusCode(result.Error.ToInt());
         }
 
         [HttpGet]
-        public IEnumerable<IndexRequest> GetQueue()
+        public IActionResult GetQueue()
         {
-            return _queueForIndex.GetAllElementsQueue();
+            var result = _queueForIndex.GetAllElementsQueue();
+            return result.IsSuccess
+                ? (IActionResult)Ok(result.Value)
+                : StatusCode(result.Error.ToInt());
         }
 
         private readonly QueueForIndex _queueForIndex;

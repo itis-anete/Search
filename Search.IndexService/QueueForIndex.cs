@@ -1,8 +1,10 @@
-﻿using Search.Core.Elasticsearch;
+﻿using RailwayResults;
+using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 
 namespace Search.IndexService
@@ -20,9 +22,13 @@ namespace Search.IndexService
         private readonly ElasticSearchClient<IndexRequest> _client;
         private readonly ElasticSearchOptions _options;
 
-        public void AddToQueueElement(Uri url)
+        public Result<HttpStatusCode> AddToQueueElement(Uri url)
         {
-            if (CheckQueue(url))
+            var checkResult = CheckQueue(url);
+            if (checkResult.IsFailure)
+                return checkResult;
+
+            if (checkResult.Value)
             {
                 var indexRequest = new IndexRequest()
                 {
@@ -35,6 +41,7 @@ namespace Search.IndexService
                     .Id(indexRequest.Url.ToString())
                     .Index(_options.RequestsIndexName));
             }
+            return Result<HttpStatusCode>.Success();
         }
 
         public IndexRequest GetIndexElement()
@@ -48,6 +55,8 @@ namespace Search.IndexService
                     )
                 )
             );
+            if (!responseFromElastic.IsValid)
+                return null;
 
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
@@ -69,9 +78,11 @@ namespace Search.IndexService
             }
         }
 
-        public IEnumerable<IndexRequest> GetAllElementsQueue() 
+        public Result<IEnumerable<IndexRequest>, HttpStatusCode> GetAllElementsQueue() 
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.RequestsIndexName));
+            if (!responseFromElastic.IsValid)
+                return ElasticSearchResponseConverter.ToResultOnFail<IEnumerable<IndexRequest>, IndexRequest>(responseFromElastic);
 
             var result = responseFromElastic.Documents
                 .Select(x => new IndexRequest
@@ -80,7 +91,7 @@ namespace Search.IndexService
                     CreatedTime = x.CreatedTime,
                     Status = x.Status
                 });
-            return result;
+            return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(result);
         }
 
         private void ChangeStatusElementToInprogress(IndexRequest indexRequest)
@@ -112,7 +123,7 @@ namespace Search.IndexService
             return request;
         }
 
-        private bool CheckQueue(Uri url) 
+        private Result<bool, HttpStatusCode> CheckQueue(Uri url) 
         {
             var responseFromElastic = _client.Search(search => search
                 .Index(_options.RequestsIndexName)
@@ -128,8 +139,10 @@ namespace Search.IndexService
                     )
                 )
             );
+            if (!responseFromElastic.IsValid)
+                return ElasticSearchResponseConverter.ToResultOnFail<bool, IndexRequest>(responseFromElastic);
 
-            return !responseFromElastic.Documents.Any();
+            return Result<bool, HttpStatusCode>.Success(!responseFromElastic.Documents.Any());
         }
 
         private void EnsureIndexInElasticCreated()

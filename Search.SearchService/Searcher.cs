@@ -40,15 +40,7 @@ namespace Search.SearchService
                 )
             );
             if (!responseFromElastic.IsValid)
-                return ElasticSearchResponseConverter.ToResultOnFail<SearchResponse, Document>(
-                    responseFromElastic, () =>
-                    {
-                        if (responseFromElastic.ServerError.Status == HttpStatusCode.NotFound.ToInt())
-                            return HttpStatusCode.ServiceUnavailable;
-
-                        return null;
-                    }
-                );
+                return ElasticSearchResponseConverter.ToResultOnFail<SearchResponse, Document>(responseFromElastic);
 
             response = new SearchResponse
             {
