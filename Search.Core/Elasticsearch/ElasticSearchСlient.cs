@@ -1,49 +1,52 @@
 ﻿using Nest;
-using Search.Core.Entities;
 using System;
 
 namespace Search.Core.Elasticsearch
 {
-    public class ElasticSearchClient
+    public class ElasticSearchClient<TModel>
+        where TModel : class
     {
-        public event Action<Document, IIndexRequest<Document>, IndexResponse> OnIndex;
-
-        private readonly ElasticClient client;
+        private Action<TModel, IIndexRequest<TModel>, IndexResponse> _onIndex;
+        public event Action<TModel, IIndexRequest<TModel>, IndexResponse> OnIndex
+        {
+            add { _onIndex += value; }
+            remove { _onIndex -= value; }
+        }
 
         public ElasticSearchClient(ElasticSearchOptions options)
         {
-            client = new ElasticClient(
+            _client = new ElasticClient(
                 new ConnectionSettings(options.Url)
             );
         }
 
         public CreateIndexResponse CreateIndex(
             IndexName index,
-            Func<CreateIndexDescriptor, ICreateIndexRequest> selector
-        )
+            Func<CreateIndexDescriptor, ICreateIndexRequest> selector)
         {
-            return client.Indices.Create(index, selector);
+            return _client.Indices.Create(index, selector);
         }
 
         public void Index(
-            Document document,
-            Func<IndexDescriptor<Document>, IIndexRequest<Document>> selector
-        )
+            TModel document,
+            Func<IndexDescriptor<TModel>, IIndexRequest<TModel>> selector)
         {
-            var response = client.Index(document, selector);
+            var response = _client.Index(document, selector);
 
-            var desc = new IndexDescriptor<Document>();
-            OnIndex?.Invoke(document, selector(desc), response);
+            var desc = new IndexDescriptor<TModel>();
+            _onIndex?.Invoke(document, selector(desc), response);
         }
 
         public ExistsResponse IndexExists(Indices indices)
         {
-            return client.Indices.Exists(indices);
+            return _client.Indices.Exists(indices);
         }
 
-        public ISearchResponse<Document> Search(Func<SearchDescriptor<Document>, ISearchRequest> selector)
+        public ISearchResponse<TModel> Search(Func<SearchDescriptor<TModel>, ISearchRequest> selector)
         {
-            return client.Search(selector);
+            return _client.Search(selector);
         }
+
+        private readonly ElasticClient _client;
     }
 }

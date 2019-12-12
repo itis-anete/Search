@@ -1,43 +1,88 @@
-﻿using Search.Core.Elasticsearch;
+﻿using Microsoft.Extensions.Hosting;
+using MoreLinq;
+using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
-    public class Indexer
+    public class Indexer : BackgroundService
     {
-        public Indexer(ElasticSearchClient client, ElasticSearchOptions options)
+        private readonly ElasticSearchClient<Document> _client;
+        private readonly ElasticSearchOptions _options;
+        private readonly QueueForIndex indexRequestsQueue;
+
+        public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options, QueueForIndex indexRequestsQueue)
         {
             _client = client;
             _options = options;
-
-            EnsureIndexCreated();
+            this.indexRequestsQueue = indexRequestsQueue;
         }
 
-        public void Index(IndexRequest request)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var html = GetHtml(request.Url);
-            var parsedHtml = Parser.HtmlToText.ParseHtml(html);
+            EnsureIndexInElasticCreated();
 
-            var document = new Document()
+            while (!stoppingToken.IsCancellationRequested)
             {
-                Url = request.Url,
-                IndexedTime = DateTime.UtcNow,
-                Title = parsedHtml.Title,
-                Text = parsedHtml.Text
-            };
+                var request = indexRequestsQueue.WaitForIndexElement();
+                Index(request);
+            }
 
-            _client.Index(document, desc => desc
-                .Id(document.Url.ToString())
-                .Index(_options.DocumentsIndexName));
+            return Task.CompletedTask;
         }
 
-        private readonly ElasticSearchClient _client;
-        private readonly ElasticSearchOptions _options;
+        private void Index(IndexRequest request)
+        {
+            var urlsToParse = new Stack<Uri>();
+            urlsToParse.Push(request.Url);
 
-        private void EnsureIndexCreated()
+            var siteHost = request.Url.Host;
+            while (urlsToParse.Any())
+            {
+                var currentUrl = urlsToParse.Pop();
+                var html = GetHtml(currentUrl);
+                var parsedHtml = Parser.HtmlToText.ParseHtml(html);
+
+                parsedHtml.Links
+                    .Where(x => x.Host.EndsWith(siteHost))
+                    .ForEach(x => urlsToParse.Push(x));
+
+                var document = new Document()
+                {
+                    Url = request.Url,
+                    IndexedTime = DateTime.UtcNow,
+                    Title = parsedHtml.Title,
+                    Text = parsedHtml.Text
+                };
+
+                _client.Index(document, desc => desc
+                    .Id(document.Url.ToString())
+                    .Index(_options.DocumentsIndexName)
+                );
+            }
+
+            indexRequestsQueue.ChangeStatusElementToIndexed(request);
+        }
+
+        private string GetHtml(Uri url)
+        {
+            string html;
+            using (var client = new HttpClient())
+            using (HttpResponseMessage response = client.GetAsync(url).Result)
+            using (HttpContent content = response.Content)
+                html = content.ReadAsStringAsync().Result;
+
+            return html;
+        }
+
+        private void EnsureIndexInElasticCreated()
         {
             var response = _client.IndexExists(_options.DocumentsIndexName);
             if (response.Exists)
@@ -57,17 +102,6 @@ namespace Search.IndexService
                     )
                 )
             );
-        }
-
-        private string GetHtml(Uri url)
-        {
-            string html;
-            using (var client = new HttpClient())
-            using (HttpResponseMessage response = client.GetAsync(url).Result)
-            using (HttpContent content = response.Content)
-                html = content.ReadAsStringAsync().Result;
-            
-            return html;
         }
     }
 }

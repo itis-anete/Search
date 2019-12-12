@@ -4,14 +4,13 @@ using Search.Core.Entities;
 using Search.Core.Extensions;
 using System.Linq;
 using System.Net;
-using System.Net.Sockets;
 
 namespace Search.SearchService
 {
     public class Searcher
     {
         public Searcher(
-            ElasticSearchClient client,
+            ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             IRequestCache searchCache = null)
         {
@@ -41,15 +40,7 @@ namespace Search.SearchService
                 )
             );
             if (!responseFromElastic.IsValid)
-                return ElasticSearchResponseConverter.ToResultOnFail<SearchResponse, Document>(
-                    responseFromElastic, () =>
-                    {
-                        if (responseFromElastic.ServerError.Status == HttpStatusCode.NotFound.ToInt())
-                            return HttpStatusCode.ServiceUnavailable;
-
-                        return null;
-                    }
-                );
+                return ElasticSearchResponseConverter.ToResultOnFail<SearchResponse, Document>(responseFromElastic);
 
             response = new SearchResponse
             {
@@ -66,7 +57,7 @@ namespace Search.SearchService
             return Result<SearchResponse, HttpStatusCode>.Success(response);
         }
 
-        private readonly ElasticSearchClient _client;
+        private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
         private readonly IRequestCache _searchCache;
     }

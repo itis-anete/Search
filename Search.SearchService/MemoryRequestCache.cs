@@ -13,7 +13,7 @@ namespace Search.SearchService
     public sealed class MemoryRequestCache : IRequestCache, IDisposable
     {
         public MemoryRequestCache(
-            ElasticSearchClient client,
+            ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             TimeSpan? maxRecordAge = null)
         {

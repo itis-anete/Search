@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Search.IndexService.Internal
 {
@@ -8,7 +9,6 @@ namespace Search.IndexService.Internal
 
         public string Text { get; set; }
 
-        public List<string> Links { get; set; }
-
+        public List<Uri> Links { get; set; }
     }
 }

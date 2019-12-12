@@ -1,50 +1,64 @@
-﻿using Search.Core.Elasticsearch;
+﻿using Microsoft.Extensions.Hosting;
+using Search.Core.Elasticsearch;
+using Search.Core.Entities;
 using System;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
-    public class Reindexer
+    public class Reindexer : IHostedService
     {
+        private readonly int reindexTime = -7;
+        private readonly TimeSpan indexingFrequency = TimeSpan.FromMinutes(15);
+        private readonly ElasticSearchClient<Document> _client;
+        private readonly ElasticSearchOptions _options;
+        private readonly QueueForIndex _queueForIndex;
+
+        private Timer _indexingTimer;
+
         public Reindexer(
-            ElasticSearchClient client,
+            ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
-            Indexer indexer,
-            bool autoReindexing = false,
-            TimeSpan? indexingFrequency = null,
-            TimeSpan? firstIndexingDeferral = null)
+            QueueForIndex queueForIndex)
         {
             _client = client;
             _options = options;
-            _indexer = indexer;
-            
-            if (autoReindexing)
-                _indexingTimer = new Timer(
-                    ReindexAll,
-                    null,
-                    firstIndexingDeferral ?? default(TimeSpan),
-                    indexingFrequency ?? TimeSpan.FromMinutes(15));
+            _queueForIndex = queueForIndex;
         }
 
-        public void ReindexAll() => ReindexAll(null);
-
-        private readonly ElasticSearchClient _client;
-        private readonly ElasticSearchOptions _options;
-        private readonly Indexer _indexer;
-        private readonly Timer _indexingTimer;
-
-        private void ReindexAll(object state)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            var response = _client.Search(desc => desc
+            _indexingTimer = new Timer(
+                SearchOldPages,
+                null,
+                TimeSpan.Zero,
+                indexingFrequency);
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _indexingTimer?.Dispose();
+            return Task.CompletedTask;
+        }
+
+        private void SearchOldPages(object state = null)
+        {
+            var responseFromElastic = _client.Search(search => search
                 .Index(_options.DocumentsIndexName)
-                .Query(query => query.MatchAll())
+                .Query(desc => desc
+                    .DateRange(d => d
+                        .Field(x => x.IndexedTime)
+                        .LessThan(DateTime.UtcNow.AddDays(reindexTime))
+                    )
+                )
             );
 
-            foreach (var document in response.Documents)
-            {
-                var indexRequest = new IndexRequest { Url = document.Url };
-                _indexer.Index(indexRequest);
-            }
+            foreach (var oldPage in responseFromElastic.Documents)
+                _queueForIndex.AddToQueueElement(oldPage.Url);
+
         }
     }
 }
