@@ -4,6 +4,7 @@ using System.Text;
 using System.Xml;
 using System.Net;
 using System.Collections;
+using System.Linq;
 
 namespace Search.IndexService
 {
@@ -24,7 +25,7 @@ namespace Search.IndexService
             }
             catch { }
 
-            var links = new List<string>();
+            var links = new List<Uri>();
             //var priority = new List<string>();
             //var lastModified = new List<string>();
             //var changeFreq = new List<string>();
@@ -36,14 +37,21 @@ namespace Search.IndexService
             {
                 if (node.InnerText != null)
                 {
-                    links.Add(node.InnerText);
+                    if (Uri.IsWellFormedUriString(node.InnerText, UriKind.Absolute))
+                        links.Add(new Uri(node.InnerText));
                 }
             }
 
+            var urlObject = new Uri(url);
+            var validatedLinks = links
+                .Distinct()
+                .Except(new[] { urlObject })
+                .Where(x => x.Host.EndsWith(urlObject.Host))
+                .ToArray();
             return new SiteMapContent()
             {
                 Url = uri,
-                Links = links,
+                Links = validatedLinks,
                 //Priority = priority,
                 //LastModified = lastModified,
                 //ChangeFrequency = changeFreq

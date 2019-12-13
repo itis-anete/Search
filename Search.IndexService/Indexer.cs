@@ -45,6 +45,9 @@ namespace Search.IndexService
             var urlsToParse = new Stack<Uri>();
             urlsToParse.Push(request.Url);
 
+            var siteMap = SiteMapGetter.GetContent(request.Url.ToString());
+            siteMap.Links.ForEach(x => urlsToParse.Push(x));
+
             var siteHost = request.Url.Host;
             var indexedUrls = new HashSet<Uri>();
             while (urlsToParse.Any())
