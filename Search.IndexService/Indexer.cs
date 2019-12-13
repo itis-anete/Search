@@ -46,7 +46,7 @@ namespace Search.IndexService
             urlsToParse.Push(request.Url);
 
             var siteHost = request.Url.Host;
-            var indexedUrls = new List<Uri>();
+            var indexedUrls = new HashSet<Uri>();
             while (urlsToParse.Any())
             {
                 var currentUrl = urlsToParse.Pop();
@@ -55,6 +55,7 @@ namespace Search.IndexService
 
                 parsedHtml.Links
                     .Where(x => x.Host.EndsWith(siteHost))
+                    .Except(indexedUrls)
                     .ForEach(x => urlsToParse.Push(x));
 
                 var document = new Document()
