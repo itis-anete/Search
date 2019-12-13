@@ -11,7 +11,7 @@ namespace Search.IndexService
     {
         public Uri Url { get; set; }
 
-        public List<string> Links { get; set; }
+        public Uri[] Links { get; set; }
 
         //public List<string> Priority { get; set; }
 
