@@ -84,14 +84,7 @@ namespace Search.IndexService
             if (!responseFromElastic.IsValid)
                 return ElasticSearchResponseConverter.ToResultOnFail<IEnumerable<IndexRequest>, IndexRequest>(responseFromElastic);
 
-            var result = responseFromElastic.Documents
-                .Select(x => new IndexRequest
-                {
-                    Url = x.Url,
-                    CreatedTime = x.CreatedTime,
-                    Status = x.Status
-                });
-            return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(result);
+            return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(responseFromElastic.Documents);
         }
 
         public void UpdateStatus(Uri url, IndexRequestStatus newStatus)
@@ -172,6 +165,7 @@ namespace Search.IndexService
                         .Properties(ps => ps
                             .Keyword(k => k.Name(x => x.Url))
                             .Date(d => d.Name(x => x.CreatedTime))
+                            .Text(t => t.Name(x => x.ErrorMessage))
                         )
                     )
                 )
