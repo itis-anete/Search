@@ -54,8 +54,11 @@ namespace Search.IndexService
             {
                 var currentUrl = urlsToParse.Pop();
                 var html = GetHtml(currentUrl);
-                var parsedHtml = Parser.HtmlToText.ParseHtml(html);
                 indexedUrls.Add(currentUrl);
+                if (html == null)
+                    continue;
+
+                var parsedHtml = Parser.HtmlToText.ParseHtml(html);
 
                 parsedHtml.Links
                     .Where(x => x.Host.EndsWith(siteHost))
@@ -94,13 +97,20 @@ namespace Search.IndexService
 
         private string GetHtml(Uri url)
         {
-            string html;
-            using (var client = new HttpClient())
-            using (HttpResponseMessage response = client.GetAsync(url).Result)
-            using (HttpContent content = response.Content)
-                html = content.ReadAsStringAsync().Result;
+            try
+            {
+                string html;
+                using (var client = new HttpClient())
+                using (HttpResponseMessage response = client.GetAsync(url).Result)
+                using (HttpContent content = response.Content)
+                    html = content.ReadAsStringAsync().Result;
 
-            return html;
+                return html;
+            }
+            catch 
+            {
+                return null;
+            }
         }
 
         private void EnsureIndexInElasticCreated()

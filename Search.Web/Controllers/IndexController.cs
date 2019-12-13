@@ -18,6 +18,8 @@ namespace Search.Web.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            if (!url.IsAbsoluteUri)
+                return BadRequest($"Url {url} is not absolute");
 
             var result = _queueForIndex.AddToQueueElement(url);
             return result.IsSuccess
