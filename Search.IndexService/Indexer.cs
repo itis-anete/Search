@@ -55,6 +55,7 @@ namespace Search.IndexService
                 var currentUrl = urlsToParse.Pop();
                 var html = GetHtml(currentUrl);
                 var parsedHtml = Parser.HtmlToText.ParseHtml(html);
+                indexedUrls.Add(currentUrl);
 
                 parsedHtml.Links
                     .Where(x => x.Host.EndsWith(siteHost))
@@ -73,7 +74,6 @@ namespace Search.IndexService
                     .Id(document.Url.ToString())
                     .Index(_options.DocumentsIndexName)
                 );
-                indexedUrls.Add(document.Url);
 
                 if (indexedUrls.Count + urlsToParse.Count > pagesPerSiteLimit)
                 {
