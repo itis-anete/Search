@@ -73,7 +73,7 @@ namespace Search.IndexService
             }
             else
             {
-                ChangeStatusElementToInprogress(indexRequest);
+                UpdateStatus(indexRequest.Url, IndexRequestStatus.InProgress);
                 return indexRequest;
             }
         }
@@ -84,30 +84,38 @@ namespace Search.IndexService
             if (!responseFromElastic.IsValid)
                 return ElasticSearchResponseConverter.ToResultOnFail<IEnumerable<IndexRequest>, IndexRequest>(responseFromElastic);
 
-            var result = responseFromElastic.Documents
-                .Select(x => new IndexRequest
-                {
-                    Url = x.Url,
-                    CreatedTime = x.CreatedTime,
-                    Status = x.Status
-                });
-            return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(result);
+            return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(responseFromElastic.Documents);
         }
 
-        private void ChangeStatusElementToInprogress(IndexRequest indexRequest)
-        {//method for change statua to inprogress 
-            indexRequest.Status = IndexRequestStatus.InProgress;
-            _client.Index(indexRequest, x => x
-                .Id(indexRequest.Url.ToString())
+        public void UpdateStatus(Uri url, IndexRequestStatus newStatus)
+        {
+            var response = _client.Get(
+                url.ToString(),
+                _options.RequestsIndexName
+            );
+            if (!response.IsValid)
+                return;
+
+            response.Source.Status = newStatus;
+            _client.Index(response.Source, x => x
+                .Id(response.Source.Url.ToString())
                 .Index(_options.RequestsIndexName)
             );
         }
 
-        public void ChangeStatusElementToIndexed(IndexRequest indexRequest) 
-        {//method for change status to indexed
-            indexRequest.Status = IndexRequestStatus.Indexed;
-            _client.Index(indexRequest, x => x
-                .Id(indexRequest.Url.ToString())
+        public void SetError(Uri url, string errorMessage)
+        {
+            var response = _client.Get(
+                url.ToString(),
+                _options.RequestsIndexName
+            );
+            if (!response.IsValid)
+                return;
+
+            response.Source.Status = IndexRequestStatus.Error;
+            response.Source.ErrorMessage = errorMessage;
+            _client.Index(response.Source, x => x
+                .Id(response.Source.Url.ToString())
                 .Index(_options.RequestsIndexName)
             );
         }
@@ -157,6 +165,7 @@ namespace Search.IndexService
                         .Properties(ps => ps
                             .Keyword(k => k.Name(x => x.Url))
                             .Date(d => d.Name(x => x.CreatedTime))
+                            .Text(t => t.Name(x => x.ErrorMessage))
                         )
                     )
                 )

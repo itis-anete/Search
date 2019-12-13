@@ -11,5 +11,7 @@ namespace Search.Core.Entities
         public DateTime CreatedTime { get; set; }
 
         public IndexRequestStatus Status { get; set; }
+
+        public string ErrorMessage { get; set; }
     }
 }
