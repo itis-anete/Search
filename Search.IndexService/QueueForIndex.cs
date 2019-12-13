@@ -141,9 +141,16 @@ namespace Search.IndexService
                         .Value(url)
                     )
                     &&
-                    !desc.Term(t => t
-                        .Field(x => x.Status)
-                        .Value(IndexRequestStatus.Indexed)
+                    (
+                        desc.Term(t => t
+                            .Field(x => x.Status)
+                            .Value(IndexRequestStatus.Pending)
+                        )
+                        ||
+                        desc.Term(t => t
+                            .Field(x => x.Status)
+                            .Value(IndexRequestStatus.InProgress)
+                        )
                     )
                 )
             );
