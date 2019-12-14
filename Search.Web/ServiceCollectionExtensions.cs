@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService;
+using Search.IndexService.Dto;
 using Search.SearchService;
 using System;
 
@@ -18,7 +19,7 @@ namespace Search.Web
                 Url = new Uri(elasticSearchUrl)
             });
 
-            services.AddSingleton<ElasticSearchClient<IndexRequest>>();
+            services.AddSingleton<ElasticSearchClient<IndexRequestDto>>();
             services.AddSingleton<ElasticSearchClient<Document>>();
         }
 

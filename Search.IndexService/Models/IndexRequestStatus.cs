@@ -1,4 +1,4 @@
-﻿namespace Search.Core.Entities
+﻿namespace Search.IndexService.Models
 {
     public enum IndexRequestStatus
     {

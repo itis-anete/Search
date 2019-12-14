@@ -3,6 +3,7 @@ using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
+using Search.IndexService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,15 +41,18 @@ namespace Search.IndexService
             return Task.CompletedTask;
         }
 
-        private void Index(IndexRequest request)
+        private void Index(PendingIndexRequest pendingRequest)
         {
-            var urlsToParse = new Stack<Uri>();
-            urlsToParse.Push(request.Url);
+            var inProgressRequest = pendingRequest.SetInProgress();
+            indexRequestsQueue.Update(inProgressRequest);
 
-            var siteMap = SiteMapGetter.GetContent(request.Url.ToString());
+            var urlsToParse = new Stack<Uri>();
+            urlsToParse.Push(inProgressRequest.Url);
+
+            var siteMap = SiteMapGetter.GetContent(inProgressRequest.Url.ToString());
             siteMap.Links.ForEach(x => urlsToParse.Push(x));
 
-            var siteHost = request.Url.Host;
+            var siteHost = inProgressRequest.Url.Host;
             var indexedUrls = new HashSet<Uri>();
             while (urlsToParse.Any())
             {
@@ -80,19 +84,20 @@ namespace Search.IndexService
 
                 if (indexedUrls.Count + urlsToParse.Count > pagesPerSiteLimit)
                 {
-                    indexRequestsQueue.SetError(
-                        request.Url,
-                        $"Can't index site {request.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
+                    var errorRequest = inProgressRequest.SetError(
+                        $"Can't index site {inProgressRequest.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
                             "The main page was indexed only."
                     );
                     indexedUrls
-                        .Except(new[] { request.Url })
+                        .Except(new[] { errorRequest.Url })
                         .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
+                    indexRequestsQueue.Update(errorRequest);
                     return;
                 }
             }
 
-            indexRequestsQueue.UpdateStatus(request.Url, IndexRequestStatus.Indexed);
+            var indexedRequest = inProgressRequest.SetIndexed();
+            indexRequestsQueue.Update(indexedRequest);
         }
 
         private string GetHtml(Uri url)
