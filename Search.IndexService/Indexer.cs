@@ -35,24 +35,25 @@ namespace Search.IndexService
             while (!stoppingToken.IsCancellationRequested)
             {
                 var request = indexRequestsQueue.WaitForIndexElement();
-                Index(request);
+                var inProgressRequest = request.SetInProgress();
+                indexRequestsQueue.Update(inProgressRequest);
+
+                var processedRequest = Index(inProgressRequest);
+                indexRequestsQueue.Update(processedRequest);
             }
 
             return Task.CompletedTask;
         }
 
-        private void Index(PendingIndexRequest pendingRequest)
+        private IndexRequest Index(InProgressIndexRequest request)
         {
-            var inProgressRequest = pendingRequest.SetInProgress();
-            indexRequestsQueue.Update(inProgressRequest);
-
             var urlsToParse = new Stack<Uri>();
-            urlsToParse.Push(inProgressRequest.Url);
+            urlsToParse.Push(request.Url);
 
-            var siteMap = SiteMapGetter.GetContent(inProgressRequest.Url.ToString());
+            var siteMap = SiteMapGetter.GetContent(request.Url.ToString());
             siteMap.Links.ForEach(x => urlsToParse.Push(x));
 
-            var siteHost = inProgressRequest.Url.Host;
+            var siteHost = request.Url.Host;
             var indexedUrls = new HashSet<Uri>();
             while (urlsToParse.Any())
             {
@@ -84,20 +85,17 @@ namespace Search.IndexService
 
                 if (indexedUrls.Count + urlsToParse.Count > pagesPerSiteLimit)
                 {
-                    var errorRequest = inProgressRequest.SetError(
-                        $"Can't index site {inProgressRequest.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
+                    indexedUrls
+                        .Except(new[] { request.Url })
+                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
+                    return request.SetError(
+                        $"Can't index site {request.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
                             "The main page was indexed only."
                     );
-                    indexedUrls
-                        .Except(new[] { errorRequest.Url })
-                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
-                    indexRequestsQueue.Update(errorRequest);
-                    return;
                 }
             }
 
-            var indexedRequest = inProgressRequest.SetIndexed();
-            indexRequestsQueue.Update(indexedRequest);
+            return request.SetIndexed();
         }
 
         private string GetHtml(Uri url)
