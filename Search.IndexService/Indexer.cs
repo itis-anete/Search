@@ -3,6 +3,7 @@ using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
+using Search.IndexService.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,13 +35,17 @@ namespace Search.IndexService
             while (!stoppingToken.IsCancellationRequested)
             {
                 var request = indexRequestsQueue.WaitForIndexElement();
-                Index(request);
+                var inProgressRequest = request.SetInProgress();
+                indexRequestsQueue.Update(inProgressRequest);
+
+                var processedRequest = Index(inProgressRequest);
+                indexRequestsQueue.Update(processedRequest);
             }
 
             return Task.CompletedTask;
         }
 
-        private void Index(IndexRequest request)
+        private IndexRequest Index(InProgressIndexRequest request)
         {
             var urlsToParse = new Stack<Uri>();
             urlsToParse.Push(request.Url);
@@ -80,19 +85,17 @@ namespace Search.IndexService
 
                 if (indexedUrls.Count + urlsToParse.Count > pagesPerSiteLimit)
                 {
-                    indexRequestsQueue.SetError(
-                        request.Url,
-                        $"Can't index site {request.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
-                            "The main page was indexed only."
-                    );
                     indexedUrls
                         .Except(new[] { request.Url })
                         .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
-                    return;
+                    return request.SetError(
+                        $"Can't index site {request.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
+                            "The main page was indexed only."
+                    );
                 }
             }
 
-            indexRequestsQueue.UpdateStatus(request.Url, IndexRequestStatus.Indexed);
+            return request.SetIndexed();
         }
 
         private string GetHtml(Uri url)

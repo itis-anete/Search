@@ -1,13 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using Search.IndexService.Models;
+using System;
 
-namespace Search.Core.Entities
+namespace Search.IndexService.Dto
 {
-    public class IndexRequest
+    public class IndexRequestDto
     {
-        [Required]
         public Uri Url { get; set; }
-
+        
         public DateTime CreatedTime { get; set; }
 
         public IndexRequestStatus Status { get; set; }

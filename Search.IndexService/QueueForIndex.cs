@@ -1,8 +1,10 @@
-﻿using RailwayResults;
+﻿using MoreLinq;
+using RailwayResults;
 using Search.Core.Elasticsearch;
-using Search.Core.Entities;
+using Search.IndexService.Dto;
+using Search.IndexService.Models;
+using Search.IndexService.Models.Converters;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -11,16 +13,16 @@ namespace Search.IndexService
 {
     public class QueueForIndex
     {
-        public QueueForIndex(ElasticSearchClient<IndexRequest> client, ElasticSearchOptions options)
+        private readonly ElasticSearchClient<IndexRequestDto> _client;
+        private readonly ElasticSearchOptions _options;
+
+        public QueueForIndex(ElasticSearchClient<IndexRequestDto> client, ElasticSearchOptions options)
         {
             _client = client;
             _options = options;
 
             EnsureIndexInElasticCreated();
         }
-
-        private readonly ElasticSearchClient<IndexRequest> _client;
-        private readonly ElasticSearchOptions _options;
 
         public Result<HttpStatusCode> AddToQueueElement(Uri url)
         {
@@ -30,21 +32,15 @@ namespace Search.IndexService
 
             if (checkResult.Value)
             {
-                var indexRequest = new IndexRequest()
-                {
-                    Url = url,
-                    CreatedTime = DateTime.UtcNow,
-                    Status = IndexRequestStatus.Pending
-                };
-                
-                _client.Index(indexRequest, x => x
-                    .Id(indexRequest.Url.ToString())
+                var dto = new PendingIndexRequest(url, DateTime.UtcNow).ToDto();
+                _client.Index(dto, x => x
+                    .Id(dto.Url.ToString())
                     .Index(_options.RequestsIndexName));
             }
             return Result<HttpStatusCode>.Success();
         }
 
-        public IndexRequest GetIndexElement()
+        public PendingIndexRequest GetIndexElement()
         {
             var responseFromElastic = _client.Search(search => search
                 .Index(_options.RequestsIndexName)
@@ -58,71 +54,38 @@ namespace Search.IndexService
             if (!responseFromElastic.IsValid)
                 return null;
 
-            var result = responseFromElastic.Documents
-                .Select(x => new IndexRequest
-                {
-                    Url = x.Url,
-                    CreatedTime = x.CreatedTime,
-                    Status = x.Status
-                });
-            IndexRequest indexRequest = result.FirstOrDefault(x => x.CreatedTime == result.Min(w => w.CreatedTime));
-
-            if (indexRequest == null)
-            {
-                return null;
-            }
-            else
-            {
-                UpdateStatus(indexRequest.Url, IndexRequestStatus.InProgress);
-                return indexRequest;
-            }
+            var requestDto = responseFromElastic.Documents
+                .MinBy(x => x.CreatedTime)
+                .FirstOrDefault();
+            return requestDto == null
+                ? null
+                : (PendingIndexRequest)requestDto.FromDto();
         }
 
-        public Result<IEnumerable<IndexRequest>, HttpStatusCode> GetAllElementsQueue() 
+        public Result<IndexRequest[], HttpStatusCode> GetAllElementsQueue() 
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.RequestsIndexName));
             if (!responseFromElastic.IsValid)
-                return ElasticSearchResponseConverter.ToResultOnFail<IEnumerable<IndexRequest>, IndexRequest>(responseFromElastic);
+                return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[], IndexRequestDto>(responseFromElastic);
 
-            return Result<IEnumerable<IndexRequest>, HttpStatusCode>.Success(responseFromElastic.Documents);
+            var results = responseFromElastic.Documents
+                .Select(x => x.FromDto())
+                .ToArray();
+            return Result<IndexRequest[], HttpStatusCode>.Success(results);
         }
 
-        public void UpdateStatus(Uri url, IndexRequestStatus newStatus)
+        public void Update(IndexRequest indexRequest)
         {
-            var response = _client.Get(
-                url.ToString(),
-                _options.RequestsIndexName
-            );
-            if (!response.IsValid)
-                return;
-
-            response.Source.Status = newStatus;
-            _client.Index(response.Source, x => x
-                .Id(response.Source.Url.ToString())
+            var dto = indexRequest.ToDto();
+            _client.Index(dto, x => x
+                .Id(dto.Url.ToString())
                 .Index(_options.RequestsIndexName)
             );
         }
 
-        public void SetError(Uri url, string errorMessage)
+        public PendingIndexRequest WaitForIndexElement()
         {
-            var response = _client.Get(
-                url.ToString(),
-                _options.RequestsIndexName
-            );
-            if (!response.IsValid)
-                return;
-
-            response.Source.Status = IndexRequestStatus.Error;
-            response.Source.ErrorMessage = errorMessage;
-            _client.Index(response.Source, x => x
-                .Id(response.Source.Url.ToString())
-                .Index(_options.RequestsIndexName)
-            );
-        }
-
-        public IndexRequest WaitForIndexElement()
-        {
-            IndexRequest request = GetIndexElement();
+            var request = GetIndexElement();
             while (request == null)
             {
                 Thread.Sleep(250);
@@ -155,7 +118,7 @@ namespace Search.IndexService
                 )
             );
             if (!responseFromElastic.IsValid)
-                return ElasticSearchResponseConverter.ToResultOnFail<bool, IndexRequest>(responseFromElastic);
+                return ElasticSearchResponseConverter.ToResultOnFail<bool, IndexRequestDto>(responseFromElastic);
 
             return Result<bool, HttpStatusCode>.Success(!responseFromElastic.Documents.Any());
         }
@@ -168,7 +131,7 @@ namespace Search.IndexService
 
             _client.CreateIndex(_options.RequestsIndexName, index => index
                 .Mappings(ms => ms
-                    .Map<IndexRequest>(m => m
+                    .Map<IndexRequestDto>(m => m
                         .Properties(ps => ps
                             .Keyword(k => k.Name(x => x.Url))
                             .Date(d => d.Name(x => x.CreatedTime))

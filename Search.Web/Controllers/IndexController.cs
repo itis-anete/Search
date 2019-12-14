@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Core.Extensions;
 using Search.IndexService;
+using Search.IndexService.Dto;
+using Search.IndexService.Models.Converters;
 using System;
+using System.Linq;
 
 namespace Search.Web.Controllers
 {
@@ -30,10 +33,13 @@ namespace Search.Web.Controllers
         [HttpGet]
         public IActionResult GetQueue()
         {
-            var result = _queueForIndex.GetAllElementsQueue();
-            return result.IsSuccess
-                ? (IActionResult)Ok(result.Value)
-                : StatusCode(result.Error.ToInt());
+            var requests = _queueForIndex.GetAllElementsQueue();
+            if (requests.IsFailure)
+                return StatusCode(requests.Error.ToInt());
+
+            return Ok(
+                requests.Value.Select(x => x.ToDto())
+            );
         }
 
         private readonly QueueForIndex _queueForIndex;
