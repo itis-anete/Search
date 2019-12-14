@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.SearchService", "Sea
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.IndexService", "Search.IndexService\Search.IndexService.csproj", "{96D116E2-0068-4C07-A96B-56C81A04FB6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RailwayResults", "RailwayResults\RailwayResults.csproj", "{C776DF81-B4EB-40AF-9882-D4645684991A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RailwayResults", "RailwayResults\RailwayResults.csproj", "{C776DF81-B4EB-40AF-9882-D4645684991A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpHelper", "FSharpHelper\FSharpHelper.fsproj", "{82CE1237-8B8A-4CAB-9EA5-8B6717E12BE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{C776DF81-B4EB-40AF-9882-D4645684991A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C776DF81-B4EB-40AF-9882-D4645684991A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C776DF81-B4EB-40AF-9882-D4645684991A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82CE1237-8B8A-4CAB-9EA5-8B6717E12BE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82CE1237-8B8A-4CAB-9EA5-8B6717E12BE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82CE1237-8B8A-4CAB-9EA5-8B6717E12BE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82CE1237-8B8A-4CAB-9EA5-8B6717E12BE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
