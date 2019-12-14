@@ -2,6 +2,7 @@
 using Search.Core.Extensions;
 using Search.IndexService;
 using Search.IndexService.Dto;
+using Search.IndexService.Models.Converters;
 using System;
 using System.Linq;
 
@@ -37,7 +38,7 @@ namespace Search.Web.Controllers
                 return StatusCode(requests.Error.ToInt());
 
             return Ok(
-                requests.Value.Select(x => IndexRequestDto.FromModel(x))
+                requests.Value.Select(x => x.ToDto())
             );
         }
 

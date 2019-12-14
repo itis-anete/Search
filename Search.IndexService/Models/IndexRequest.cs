@@ -1,5 +1,4 @@
-﻿using Search.IndexService.Dto;
-using System;
+﻿using System;
 
 namespace Search.IndexService.Models
 {
@@ -15,21 +14,6 @@ namespace Search.IndexService.Models
         {
             Url = url;
             CreatedTime = createdTime;
-        }
-
-        public static IndexRequest FromDto(IndexRequestDto dto)
-        {
-            return dto.Status switch
-            {
-                IndexRequestStatus.Pending => new PendingIndexRequest(dto.Url, dto.CreatedTime),
-                IndexRequestStatus.InProgress => new InProgressIndexRequest(dto.Url, dto.CreatedTime),
-                IndexRequestStatus.Indexed => new IndexedIndexRequest(dto.Url, dto.CreatedTime),
-                IndexRequestStatus.Error => new ErrorIndexRequest(dto.Url, dto.CreatedTime, dto.ErrorMessage),
-                _ => throw new NotSupportedException(
-                        $"Статус запроса {dto.Status} не поддерживается.{Environment.NewLine}" +
-                        GetRequestInfoString(dto.Url, dto.CreatedTime)
-                    )
-            };
         }
 
         protected static string GetRequestInfoString(Uri url, DateTime createdTime) =>
