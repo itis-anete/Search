@@ -31,7 +31,7 @@ namespace Search.IndexService.Internal
 
             private static string GetTitle(HtmlDocument doc)
             {
-                return doc.DocumentNode.SelectSingleNode("//title").InnerText;
+                return doc.DocumentNode.SelectSingleNode("//title").InnerText ?? "";
             }
 
             private static string ConvertDoc(HtmlDocument doc)
