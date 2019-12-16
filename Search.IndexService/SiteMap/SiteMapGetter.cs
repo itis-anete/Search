@@ -11,13 +11,12 @@ namespace Search.IndexService
     /// <summary>
     /// Класс получения контента SiteMap
     /// </summary>
-    internal class SiteMapGetter
+    public class SiteMapGetter
     {
-
         public static SiteMapContent GetContent(string url)
         {
             var doc = new XmlDocument();
-            string content = getURLContent(url);
+            string content = GetURLContent(url);
 
             try
             {
@@ -26,21 +25,10 @@ namespace Search.IndexService
             catch { }
 
             var links = new List<Uri>();
-            //var priority = new List<string>();
-            //var lastModified = new List<string>();
-            //var changeFreq = new List<string>();
             var uri = new Uri(url);
 
             var xnList = doc.GetElementsByTagName("url");
-
-            foreach (XmlNode node in xnList)
-            {
-                if (node.InnerText != null)
-                {
-                    if (Uri.IsWellFormedUriString(node.InnerText, UriKind.Absolute))
-                        links.Add(new Uri(node.InnerText));
-                }
-            }
+            links = GetLinks(xnList, links);
 
             var urlObject = new Uri(url);
             var validatedLinks = links
@@ -48,6 +36,7 @@ namespace Search.IndexService
                 .Except(new[] { urlObject })
                 .Where(x => x.Host.EndsWith(urlObject.Host))
                 .ToArray();
+
             return new SiteMapContent()
             {
                 Url = uri,
@@ -56,6 +45,19 @@ namespace Search.IndexService
                 //LastModified = lastModified,
                 //ChangeFrequency = changeFreq
             };
+        }
+
+        public static List<Uri> GetLinks(XmlNodeList nodeList, List<Uri> list)
+        {
+            foreach (XmlNode node in nodeList)
+            {
+                if (node.InnerText != null)
+                {
+                    if (Uri.IsWellFormedUriString(node.InnerText, UriKind.Absolute))
+                        list.Add(new Uri(node.InnerText));
+                }
+            }
+            return list;
         }
 
         private static string robotAgent = "Mozilla 5.0; RobsRobot 1.2; www.strictly-software.com;";
@@ -72,7 +74,7 @@ namespace Search.IndexService
 
         private static ArrayList BlockedUrls = new ArrayList();
 
-        internal static string getURLContent(string URL)
+        public static string GetURLContent(string URL)
         {
             content = string.Empty;
             lastError = "";
@@ -156,7 +158,7 @@ namespace Search.IndexService
             return content;
         }
 
-        public static bool URLIsAllowed(string URL)
+        public bool URLIsAllowed(string URL)
         {
             if (BlockedUrls.Count == 0)
                 return true;
