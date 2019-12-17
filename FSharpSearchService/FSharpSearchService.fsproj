@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="CacheRecord.fs" />
+    <Compile Include="Internal\RequestComparer.fs" />
+    <Compile Include="Internal\CacheRecord.fs" />
     <Compile Include="MemoryRequestCache.fs" />
     <Compile Include="Searcher.fs" />
     <Compile Include="SearchResult.fs" />

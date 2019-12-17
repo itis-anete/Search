@@ -4,6 +4,12 @@ open System
 
 type CacheRecord()=
 
+    public new (response:SearchResponse,createTime:TimeSpan)as newCacheRecord=
+        CacheRecord()
+        then
+            newCacheRecord.response<-response
+            newCacheRecord.creationTime<-createTime
+
     [<DefaultValue>]
     val mutable public Response :SearchResponse
     member this.response
