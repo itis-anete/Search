@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="CacheRecord.fs" />
+    <Compile Include="MemoryRequestCache.fs" />
+    <Compile Include="Searcher.fs" />
+    <Compile Include="SearchResult.fs" />
+    <Compile Include="SearchResponse.fs" />
+    <Compile Include="SearchRequest.fs" />
+    <Compile Include="IRequestCache.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RailwayResults\RailwayResults.csproj" />
+    <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
+  </ItemGroup>
+
+</Project>
