@@ -41,6 +41,13 @@
 
 
 <script>
+
+    $('#queryInput').keydown(function (e) {
+        if (e.keyCode === 13) {
+            search();
+        }
+    });
+
     function search() {
         $(document).ready(function () {
             var queryInput = document.getElementById("queryInput");
