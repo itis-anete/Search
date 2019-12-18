@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Search.IndexService", "Sear
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RailwayResults", "RailwayResults\RailwayResults.csproj", "{C776DF81-B4EB-40AF-9882-D4645684991A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharpSearchService", "FSharpSearchService\FSharpSearchService.fsproj", "{8CD46CDA-C29B-4531-9D8F-F893784A0BCC}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Search.FearchFervice", "Search.FearchFervice\Search.FearchFervice.fsproj", "{8CD46CDA-C29B-4531-9D8F-F893784A0BCC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

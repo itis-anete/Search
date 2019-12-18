@@ -1,4 +1,4 @@
-﻿namespace FSharpSearchService
+﻿namespace Search.FearchFervice
 
 open Nest;
 open RailwayResults;
@@ -8,13 +8,13 @@ open System;
 open System.Linq;
 open System.Net;
 
-type Searcher private()=
+type Fearcher private() =
     [<DefaultValue>]
-    val mutable _client:ElasticSearchClient<Document>
+    val mutable _client: ElasticSearchClient<Document>
     [<DefaultValue>]
-    val mutable _options:ElasticSearchOptions
+    val mutable _options: ElasticSearchOptions
 
-    member this.Search(request: FSharpSearchService.SearchRequest): Result<SearchResponse, HttpStatusCode> =
+    member this.Search(request: Search.FearchFervice.FearchRequest): Result<FearchResponse, HttpStatusCode> =
         let inline (!>) (x: ^a) : ^b = ((^a or ^b) : (static member op_Implicit : ^a -> ^b) x)
         let matchings = [
             new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun (desc: QueryContainerDescriptor<Document>) ->
@@ -40,20 +40,20 @@ type Searcher private()=
                 ) :> ISearchRequest
             )
         if (not responseFromElastic.IsValid) then
-            ElasticSearchResponseConverter.ToResultOnFail<SearchResponse, Document>(responseFromElastic)
+            ElasticSearchResponseConverter.ToResultOnFail<FearchResponse, Document>(responseFromElastic)
         else
-            Result<SearchResponse, HttpStatusCode>.Success(
-                new SearchResponse(
+            Result<FearchResponse, HttpStatusCode>.Success(
+                new FearchResponse(
                     Results = responseFromElastic.Documents
                         .Select(fun document ->
-                            new SearchResult(Url = document.Url, Title = document.Title)
+                            new FearchResult(Url = document.Url, Title = document.Title)
                         )
                         .ToList()
                     )
                 );
         
     public new(client: ElasticSearchClient<Document>, options: ElasticSearchOptions) as this =
-        Searcher()
+        Fearcher()
         then
             this._client<-client
             this._options<-options

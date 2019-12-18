@@ -5,10 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="SearchRequest.fs" />
-    <Compile Include="SearchResult.fs" />
-    <Compile Include="SearchResponse.fs" />
-    <Compile Include="Searcher.fs" />
+    <Compile Include="FearchRequest.fs" />
+    <Compile Include="FearchResult.fs" />
+    <Compile Include="FearchResponse.fs" />
+    <Compile Include="Fearcher.fs" />
   </ItemGroup>
 
   <ItemGroup>
