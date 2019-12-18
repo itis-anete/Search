@@ -68,7 +68,11 @@ namespace Search.IndexService
                 var html = await GetHtml(currentUrl);
                 indexedUrls.Add(currentUrl);
                 if (html == null)
+                {
+                    if (currentUrl == request.Url)
+                        return request.SetError($"Не удалось загрузить страницу {request.Url}");
                     continue;
+                }
 
                 var parsedHtml = Parser.HtmlToText.ParseHtml(html);
 
