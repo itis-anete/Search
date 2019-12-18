@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
@@ -22,15 +23,18 @@ namespace Search.IndexService
         private readonly SiteMapGetter siteMapGetter;
         private readonly HttpClient httpClient;
 
-        private const int pagesPerSiteLimit = 100;
+        private readonly int pagesPerSiteLimit;
 
         public Indexer(
+            IOptionsMonitor<IndexerOptions> indexerOptions,
             ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             QueueForIndex indexRequestsQueue,
             IHttpClientFactory httpClientFactory,
             SiteMapGetter siteMapGetter)
         {
+            pagesPerSiteLimit = indexerOptions.CurrentValue.PagesPerSiteLimit;
+
             _client = client;
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;

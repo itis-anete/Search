@@ -28,9 +28,9 @@ namespace Search.Web
 
         public static void AddBackgroundServices(this IServiceCollection services)
         {
-            services.AddHostedService<Indexer>();
             services.AddSingleton<SiteMapGetter>();
             services.AddSingleton<SiteMapIndex>();
+            services.AddHostedService<Indexer>();
 
             services.AddHostedService<Reindexer>();
         }
@@ -56,6 +56,11 @@ namespace Search.Web
                 headers.ForEach(h =>
                     client.DefaultRequestHeaders.Add(h.Key, h.Value));
             });
+        }
+
+        public static void ConfigureAllOptions(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<IndexerOptions>(configuration);
         }
 
         private static string GetElasticSearchUrl(IConfiguration configuration)

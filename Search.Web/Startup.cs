@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
-using System.Net;
-using System.Net.Http;
 
 namespace Search.Web
 {
@@ -25,6 +21,8 @@ namespace Search.Web
         {
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.ConfigureAllOptions(Configuration);
 
             services.ConfigureHttpClient(Configuration);
             services.AddElasticSearch(Configuration);
