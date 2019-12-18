@@ -3,27 +3,23 @@
 open RailwayResults;
 open Search.Core.Elasticsearch;
 open Search.Core.Entities;
-open System.Linq;
+open System;
 open System.Net;
 
 type Searcher private()=
-     [<DefaultValue>]
-     val mutable _client:ElasticSearchClient<Document>
-     [<DefaultValue>]
-     val mutable _options:ElasticSearchOptions
-     [<DefaultValue>]
-     val mutable _searchCache:IRequestCache
+    [<DefaultValue>]
+    val mutable _client:ElasticSearchClient<Document>
+    [<DefaultValue>]
+    val mutable _options:ElasticSearchOptions
 
-     member Search(request:SearchRequest):Result<SearchResponse, HttpStatusCode> =
+    member this.Search(request: SearchRequest):Result<SearchResponse, HttpStatusCode> =
+        raise (NotImplementedException())
         
-    
-
-     new(client:ElasticSearchClient<Document>,options:ElasticSearchOptions,searchCache:IRequestCache) as this=
-     Searcher()
-     then
-        this._client<-client
-        this._options<-options
-        this._searchCache<-searchCache
+    public new(client: ElasticSearchClient<Document>, options: ElasticSearchOptions) as this =
+        Searcher()
+        then
+            this._client<-client
+            this._options<-options
 
         
 
