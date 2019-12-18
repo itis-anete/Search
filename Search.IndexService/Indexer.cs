@@ -95,14 +95,15 @@ namespace Search.IndexService
                     .Index(_options.DocumentsIndexName)
                 );
 
-                if (indexedUrls.Count + urlsToParse.Count > pagesPerSiteLimit)
+                var foundUrlsCount = indexedUrls.Count + urlsToParse.Count;
+                if (foundUrlsCount > pagesPerSiteLimit)
                 {
                     indexedUrls
                         .Except(new[] { request.Url })
                         .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
                     return request.SetError(
-                        $"Can't index site {request.Url} due to limit of {pagesPerSiteLimit} pages per site. " +
-                            "The main page was indexed only."
+                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimit} страниц на сайт " +
+                        $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
                     );
                 }
             }
