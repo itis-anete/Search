@@ -7,7 +7,7 @@ using System.Text;
 /// </summary>
 namespace Search.IndexService
 {
-    internal class SiteMapContent
+    public class SiteMapContent
     {
         public Uri Url { get; set; }
 

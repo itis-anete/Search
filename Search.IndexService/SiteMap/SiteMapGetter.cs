@@ -5,57 +5,70 @@ using System.Xml;
 using System.Net;
 using System.Collections;
 using System.Linq;
+using Search.IndexService.SiteMap;
 
 namespace Search.IndexService
 {
     /// <summary>
     /// Класс получения контента SiteMap
     /// </summary>
-    internal class SiteMapGetter
+    public class SiteMapGetter
     {
-
-        public static SiteMapContent GetContent(string url)
+        public static XmlDocument GetContent(string url)
         {
             var doc = new XmlDocument();
-            string content = getURLContent(url);
+            string content = GetURLContent(url);
 
             try
             {
                 doc.LoadXml(content);
             }
             catch { }
+            return doc;
+        }
+        public static SiteMapContent GetSiteMapContent(string url)
+        {
+            var doc = GetContent(url);
 
             var links = new List<Uri>();
-            //var priority = new List<string>();
-            //var lastModified = new List<string>();
-            //var changeFreq = new List<string>();
             var uri = new Uri(url);
+            XmlNodeList xnList;
 
-            var xnList = doc.GetElementsByTagName("url");
+            try
+            {
+                xnList = doc.GetElementsByTagName("url");
+                links = GetLinks(xnList, links);
 
-            foreach (XmlNode node in xnList)
+                var urlObject = new Uri(url);
+                var validatedLinks = links
+                    .Distinct()
+                    .Except(new[] { urlObject })
+                    .Where(x => x.Host.EndsWith(urlObject.Host))
+                    .ToArray();
+
+                return new SiteMapContent()
+                {
+                    Url = uri,
+                    Links = validatedLinks
+                };
+            }
+            catch
+            {
+                return SiteMapIndex.GetContentByIndex(url);
+            }            
+        }
+
+        public static List<Uri> GetLinks(XmlNodeList nodeList, List<Uri> list)
+        {
+            foreach (XmlNode node in nodeList)
             {
                 if (node.InnerText != null)
                 {
                     if (Uri.IsWellFormedUriString(node.InnerText, UriKind.Absolute))
-                        links.Add(new Uri(node.InnerText));
+                        list.Add(new Uri(node.InnerText));
                 }
             }
-
-            var urlObject = new Uri(url);
-            var validatedLinks = links
-                .Distinct()
-                .Except(new[] { urlObject })
-                .Where(x => x.Host.EndsWith(urlObject.Host))
-                .ToArray();
-            return new SiteMapContent()
-            {
-                Url = uri,
-                Links = validatedLinks,
-                //Priority = priority,
-                //LastModified = lastModified,
-                //ChangeFrequency = changeFreq
-            };
+            return list;
         }
 
         private static string robotAgent = "Mozilla 5.0; RobsRobot 1.2; www.strictly-software.com;";
@@ -72,7 +85,7 @@ namespace Search.IndexService
 
         private static ArrayList BlockedUrls = new ArrayList();
 
-        internal static string getURLContent(string URL)
+        public static string GetURLContent(string URL)
         {
             content = string.Empty;
             lastError = "";
@@ -156,7 +169,7 @@ namespace Search.IndexService
             return content;
         }
 
-        public static bool URLIsAllowed(string URL)
+        public bool URLIsAllowed(string URL)
         {
             if (BlockedUrls.Count == 0)
                 return true;
