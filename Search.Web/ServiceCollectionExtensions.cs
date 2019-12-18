@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService;
 using Search.IndexService.Dto;
 using Search.SearchService;
 using System;
+using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Search.Web
 {
@@ -37,6 +40,19 @@ namespace Search.Web
             services.AddSingleton<QueueForIndex>();
 
             services.AddSingleton<ServiceContainer>();
+        }
+
+        public static void ConfigureHttpClient(this IServiceCollection services, IConfiguration configuration)
+        {
+            var headers = new Dictionary<string, string>();
+            configuration
+                .GetSection("HttpClientConfig")
+                .Bind("Headers", headers);
+            services.AddHttpClient("Page downloader", client =>
+            {
+                headers.ForEach(h =>
+                    client.DefaultRequestHeaders.Add(h.Key, h.Value));
+            });
         }
 
         private static string GetElasticSearchUrl(IConfiguration configuration)

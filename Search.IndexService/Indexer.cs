@@ -18,17 +18,23 @@ namespace Search.IndexService
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex indexRequestsQueue;
+        private readonly HttpClient httpClient;
 
         private const int pagesPerSiteLimit = 100;
 
-        public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options, QueueForIndex indexRequestsQueue)
+        public Indexer(
+            ElasticSearchClient<Document> client,
+            ElasticSearchOptions options,
+            QueueForIndex indexRequestsQueue,
+            IHttpClientFactory httpClientFactory)
         {
             _client = client;
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;
+            httpClient = httpClientFactory.CreateClient("Page downloader");
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             EnsureIndexInElasticCreated();
 
@@ -38,14 +44,12 @@ namespace Search.IndexService
                 var inProgressRequest = request.SetInProgress();
                 indexRequestsQueue.Update(inProgressRequest);
 
-                var processedRequest = Index(inProgressRequest);
+                var processedRequest = await Index(inProgressRequest);
                 indexRequestsQueue.Update(processedRequest);
             }
-
-            return Task.CompletedTask;
         }
 
-        private IndexRequest Index(InProgressIndexRequest request)
+        private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
             var urlsToParse = new Stack<Uri>();
             urlsToParse.Push(request.Url);
@@ -58,7 +62,7 @@ namespace Search.IndexService
             while (urlsToParse.Any())
             {
                 var currentUrl = urlsToParse.Pop();
-                var html = GetHtml(currentUrl);
+                var html = await GetHtml(currentUrl);
                 indexedUrls.Add(currentUrl);
                 if (html == null)
                     continue;
@@ -98,17 +102,13 @@ namespace Search.IndexService
             return request.SetIndexed();
         }
 
-        private string GetHtml(Uri url)
+        private async Task<string> GetHtml(Uri url)
         {
             try
             {
-                string html;
-                using (var client = new HttpClient())
-                using (HttpResponseMessage response = client.GetAsync(url).Result)
-                using (HttpContent content = response.Content)
-                    html = content.ReadAsStringAsync().Result;
-
-                return html;
+                using var response = await httpClient.GetAsync(url);
+                using var content = response.Content;
+                return await content.ReadAsStringAsync();
             }
             catch 
             {
