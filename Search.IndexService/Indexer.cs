@@ -76,7 +76,7 @@ namespace Search.IndexService
                     continue;
                 }
 
-                var parsedHtml = Parser.HtmlToText.ParseHtml(html);
+                var parsedHtml = Parser.HtmlToText.ParseHtml(html, request.Url);
                 parsedHtml.Links
                     .Where(x => x.Host.EndsWith(siteHost))
                     .Except(indexedUrls)

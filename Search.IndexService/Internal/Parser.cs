@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using HtmlAgilityPack;
+using Microsoft.VisualBasic.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,7 @@ namespace Search.IndexService.Internal
     {
         public static class HtmlToText
         {
-            public static ParsedHtml ParseHtml(string html)
+            public static ParsedHtml ParseHtml(string html, Uri url)
             {
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
@@ -24,7 +25,7 @@ namespace Search.IndexService.Internal
                 {
                     Title = GetTitle(doc),
                     Text = DeleteExcessWhitespaces(text),
-                    Links = GetLinks(html)
+                    Links = GetLinks(html, url)
 
                 };
             }
@@ -61,19 +62,35 @@ namespace Search.IndexService.Internal
                         sb.AppendLine(node.Text);
                 }
             }
-            private static List<Uri> GetLinks(string htmlText)
+            private static List<Uri> GetLinks(string htmlText, Uri baseUrl)
             {
                 var parser = new HtmlParser();
                 var document = parser.ParseDocument(htmlText);
                 var href = new List<Uri>();
-                foreach (IElement element in document.QuerySelectorAll("a"))
+                foreach (var element in document.QuerySelectorAll("a"))
                 {
-                    string el = element.GetAttribute("href");
-                    if (el != null && el.StartsWith("http"))
+                    var el = element.GetAttribute("href");
+                    if (el != null)
                     {
                         var hrefAttribute = element.GetAttribute("href");
-                        if (Uri.IsWellFormedUriString(hrefAttribute, UriKind.Absolute))
-                            href.Add(new Uri(hrefAttribute));
+                        if (
+                            Uri.TryCreate(hrefAttribute, UriKind.Absolute, out var link)
+                            || Uri.TryCreate(baseUrl, hrefAttribute, out link)
+                        )
+                        {
+                            if (link.Scheme != baseUrl.Scheme)
+                            {
+                                var strLink = link.ToString();
+                                link = new Uri(
+                                    baseUrl.Scheme +
+                                        ':' +
+                                        strLink.Substring(
+                                            strLink.IndexOf(':') + 1
+                                        )
+                                );
+                            }
+                            href.Add(link);
+                        }
                     }
                 }
                 return href;
