@@ -8,7 +8,6 @@ using Search.IndexService.Dto;
 using Search.SearchService;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 
 namespace Search.Web
 {
@@ -29,6 +28,8 @@ namespace Search.Web
         public static void AddBackgroundServices(this IServiceCollection services)
         {
             services.AddHostedService<Indexer>();
+            services.AddSingleton<SiteMapGetter>();
+
             services.AddHostedService<Reindexer>();
         }
 

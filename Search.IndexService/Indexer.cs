@@ -18,6 +18,7 @@ namespace Search.IndexService
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex indexRequestsQueue;
+        private readonly SiteMapGetter siteMapGetter;
         private readonly HttpClient httpClient;
 
         private const int pagesPerSiteLimit = 100;
@@ -26,11 +27,13 @@ namespace Search.IndexService
             ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             QueueForIndex indexRequestsQueue,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            SiteMapGetter siteMapGetter)
         {
             _client = client;
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;
+            this.siteMapGetter = siteMapGetter;
             httpClient = httpClientFactory.CreateClient("Page downloader");
         }
 
@@ -54,7 +57,7 @@ namespace Search.IndexService
             var urlsToParse = new Stack<Uri>();
             urlsToParse.Push(request.Url);
 
-            var siteMap = SiteMapGetter.GetContent(request.Url.ToString());
+            var siteMap = await siteMapGetter.GetSiteMap(request.Url);
             siteMap.Links.ForEach(x => urlsToParse.Push(x));
 
             var siteHost = request.Url.Host;
@@ -107,8 +110,10 @@ namespace Search.IndexService
             try
             {
                 using var response = await httpClient.GetAsync(url);
-                using var content = response.Content;
-                return await content.ReadAsStringAsync();
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                return await response.Content.ReadAsStringAsync();
             }
             catch 
             {
