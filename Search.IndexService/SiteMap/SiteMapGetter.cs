@@ -5,6 +5,7 @@ using System.Xml;
 using System.Net;
 using System.Collections;
 using System.Linq;
+using Search.IndexService.SiteMap;
 
 namespace Search.IndexService
 {
@@ -13,7 +14,7 @@ namespace Search.IndexService
     /// </summary>
     public class SiteMapGetter
     {
-        public static SiteMapContent GetContent(string url)
+        public static XmlDocument GetContent(string url)
         {
             var doc = new XmlDocument();
             string content = GetURLContent(url);
@@ -23,28 +24,38 @@ namespace Search.IndexService
                 doc.LoadXml(content);
             }
             catch { }
+            return doc;
+        }
+        public static SiteMapContent GetSiteMapContent(string url)
+        {
+            var doc = GetContent(url);
 
             var links = new List<Uri>();
             var uri = new Uri(url);
+            XmlNodeList xnList;
 
-            var xnList = doc.GetElementsByTagName("url");
-            links = GetLinks(xnList, links);
-
-            var urlObject = new Uri(url);
-            var validatedLinks = links
-                .Distinct()
-                .Except(new[] { urlObject })
-                .Where(x => x.Host.EndsWith(urlObject.Host))
-                .ToArray();
-
-            return new SiteMapContent()
+            try
             {
-                Url = uri,
-                Links = validatedLinks,
-                //Priority = priority,
-                //LastModified = lastModified,
-                //ChangeFrequency = changeFreq
-            };
+                xnList = doc.GetElementsByTagName("url");
+                links = GetLinks(xnList, links);
+
+                var urlObject = new Uri(url);
+                var validatedLinks = links
+                    .Distinct()
+                    .Except(new[] { urlObject })
+                    .Where(x => x.Host.EndsWith(urlObject.Host))
+                    .ToArray();
+
+                return new SiteMapContent()
+                {
+                    Url = uri,
+                    Links = validatedLinks
+                };
+            }
+            catch
+            {
+                return SiteMapIndex.GetContentByIndex(url);
+            }            
         }
 
         public static List<Uri> GetLinks(XmlNodeList nodeList, List<Uri> list)
