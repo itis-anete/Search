@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Core.Extensions;
 using Search.IndexService;
-using Search.IndexService.Dto;
 using Search.IndexService.Models.Converters;
 using System;
 using System.Linq;
@@ -21,8 +20,10 @@ namespace Search.Web.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            if (url == null)
+                return BadRequest("Не задан URL.");
             if (!url.IsAbsoluteUri)
-                return BadRequest($"Url {url} is not absolute");
+                return BadRequest($"\"{url}\" не является абсолютным URL.");
 
             var result = _queueForIndex.AddToQueueElement(url);
             return result.IsSuccess

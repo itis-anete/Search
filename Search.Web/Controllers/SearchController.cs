@@ -17,6 +17,8 @@ namespace Search.Web.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            if (request == null)
+                return BadRequest("Не заданы параметры поискового запроса.")
 
             var result = _searcher.Search(request);
             return result.IsSuccess
