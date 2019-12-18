@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Search.Core.Extensions;
-using Search.SearchService;
+using Search.FearchFervice;
 
 namespace Search.Web.Controllers
 {
@@ -9,23 +9,23 @@ namespace Search.Web.Controllers
     {
         public SearchController(ServiceContainer services)
         {
-            _searcher = services.Searcher;
+            _fearcher = services.Fearcher;
         }
         
         [HttpGet]
-        public IActionResult Search([FromQuery] SearchRequest request)
+        public IActionResult Search([FromQuery] FearchRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             if (request == null)
                 return BadRequest("Не заданы параметры поискового запроса.");
 
-            var result = _searcher.Search(request);
+            var result = _fearcher.Search(request);
             return result.IsSuccess
                 ? (IActionResult)Ok(result.Value)
                 : StatusCode(result.Error.ToInt());
         }
 
-        private readonly Searcher _searcher;
+        private readonly Fearcher _fearcher;
     }
 }

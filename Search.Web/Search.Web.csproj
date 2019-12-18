@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
+    <ProjectReference Include="..\Search.FearchFervice\Search.FearchFervice.fsproj" />
     <ProjectReference Include="..\Search.IndexService\Search.IndexService.csproj" />
-    <ProjectReference Include="..\Search.SearchService\Search.SearchService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

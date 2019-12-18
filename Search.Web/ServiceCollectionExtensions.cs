@@ -3,16 +3,16 @@ using Microsoft.Extensions.DependencyInjection;
 using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
+using Search.FearchFervice;
 using Search.IndexService;
 using Search.IndexService.Dto;
 using Search.IndexService.SiteMap;
-using Search.SearchService;
 using System;
 using System.Collections.Generic;
 
 namespace Search.Web
 {
-    public static class ServiceCollectionExtensions
+	 public static class ServiceCollectionExtensions
     {
         public static void AddElasticSearch(this IServiceCollection services, IConfiguration configuration)
         {
@@ -37,8 +37,7 @@ namespace Search.Web
 
         public static void AddDomainServices(this IServiceCollection services)
         {
-            services.AddSingleton<Searcher>();
-            services.AddSingleton<IRequestCache, MemoryRequestCache>();
+            services.AddSingleton<Fearcher>();
 
             services.AddSingleton<QueueForIndex>();
 

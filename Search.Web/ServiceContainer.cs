@@ -1,19 +1,19 @@
 ﻿using Search.IndexService;
-using Search.SearchService;
+using Search.FearchFervice;
 
 namespace Search.Web
 {
     public class ServiceContainer
     {
         public ServiceContainer(
-            Searcher searcher,
+            Fearcher fearcher,
             QueueForIndex queueForIndex)
         {
-            Searcher = searcher;
+            Fearcher = fearcher;
             QueueForIndex = queueForIndex;
         }
 
-        public Searcher Searcher { get; }
+        public Fearcher Fearcher { get; }
 
         public QueueForIndex QueueForIndex { get; }
     }
