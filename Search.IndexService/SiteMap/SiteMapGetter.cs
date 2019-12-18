@@ -1,188 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Xml;
-using System.Net;
-using System.Collections;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Search.IndexService.SiteMap;
 
-namespace Search.IndexService
+namespace Search.IndexService.SiteMap
 {
     /// <summary>
     /// Класс получения контента SiteMap
     /// </summary>
     public class SiteMapGetter
     {
-        public static XmlDocument GetContent(string url)
-        {
-            var doc = new XmlDocument();
-            string content = GetURLContent(url);
+        private readonly HttpClient httpClient;
+        private readonly SiteMapIndex siteMapIndex;
 
-            try
-            {
-                doc.LoadXml(content);
-            }
-            catch { }
-            return doc;
+        public SiteMapGetter(IHttpClientFactory httpClientFactory, SiteMapIndex siteMapIndex)
+        {
+            httpClient = httpClientFactory.CreateClient("Page downloader");
+            this.siteMapIndex = siteMapIndex;
         }
-        public static SiteMapContent GetSiteMapContent(string url)
+
+        public async Task<SiteMapContent> GetSiteMap(Uri url)
         {
-            var doc = GetContent(url);
+            var doc = await GetContent(url);
 
-            var links = new List<Uri>();
-            var uri = new Uri(url);
-            XmlNodeList xnList;
-
-            try
-            {
-                xnList = doc.GetElementsByTagName("url");
-                links = GetLinks(xnList, links);
-
-                var urlObject = new Uri(url);
-                var validatedLinks = links
-                    .Distinct()
-                    .Except(new[] { urlObject })
-                    .Where(x => x.Host.EndsWith(urlObject.Host))
-                    .ToArray();
-
-                return new SiteMapContent()
+            var rootElement = doc?.DocumentElement?.Name;
+            if (rootElement == null)
+                return new SiteMapContent
                 {
-                    Url = uri,
-                    Links = validatedLinks
+                    Url = url,
+                    Links = Array.Empty<Uri>()
                 };
-            }
-            catch
+            if (rootElement == "sitemapindex")
+                return await siteMapIndex.GetContentByIndex(url, doc);
+
+            var xnList = doc.GetElementsByTagName("url");
+            var links = GetLinks(xnList);
+
+            var validatedLinks = links
+                .Distinct()
+                .Except(new[] { url })
+                .Where(x => x.Host.EndsWith(url.Host))
+                .ToArray();
+
+            return new SiteMapContent()
             {
-                return SiteMapIndex.GetContentByIndex(url);
-            }            
+                Url = url,
+                Links = validatedLinks
+            };
         }
 
-        public static List<Uri> GetLinks(XmlNodeList nodeList, List<Uri> list)
+        public static List<Uri> GetLinks(XmlNodeList nodeList)
         {
+            var links = new List<Uri>();
             foreach (XmlNode node in nodeList)
             {
                 if (node.InnerText != null)
                 {
                     if (Uri.IsWellFormedUriString(node.InnerText, UriKind.Absolute))
-                        list.Add(new Uri(node.InnerText));
+                        links.Add(new Uri(node.InnerText));
                 }
             }
-            return list;
+            return links;
         }
 
-        private static string robotAgent = "Mozilla 5.0; RobsRobot 1.2; www.strictly-software.com;";
-
-        private static string proxyServer = "";
-
-        private static WebProxy proxy;
-
-        private static string content = string.Empty;
-
-        private static int statusCode = -1;
-
-        private static string lastError = string.Empty;
-
-        private static ArrayList BlockedUrls = new ArrayList();
-
-        public static string GetURLContent(string URL)
+        public async Task<XmlDocument> GetContent(Uri url)
         {
-            content = string.Empty;
-            lastError = "";
-            statusCode = -1;
-
-            WebClient client = new WebClient();
-
-            if (!String.IsNullOrEmpty(proxyServer))
-            {
-                if (proxy == null)
-                {
-                    proxy = new WebProxy(proxyServer, true);
-                    client.Proxy = proxy;
-                }
-            }
-
-            client.Headers["User-Agent"] = robotAgent;
-
-            client.Encoding = Encoding.UTF8;
-
+            var content = await GetURLContent(url);
+            var doc = new XmlDocument();
             try
             {
-                using (client)
-                {
-                    content = client.DownloadString(URL);
-                }
-                statusCode = 200;
+                doc.LoadXml(content);
+                return doc;
             }
-            catch (WebException ex)
+            catch
             {
-                if (ex.Status == WebExceptionStatus.NameResolutionFailure)
-                {
-                    lastError = "Bad Domain Name";
-                }
-                else if (ex.Status == WebExceptionStatus.ProtocolError)
-                {
-                    HttpWebResponse HTTPResponse = (HttpWebResponse)ex.Response;
-
-                    statusCode = (int)HTTPResponse.StatusCode;
-
-                    if (HTTPResponse.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        lastError = "Page Not Found";
-                    }
-                    else if (HTTPResponse.StatusCode == HttpStatusCode.Forbidden)
-                    {
-                        lastError = "Access Forbidden";
-                    }
-                    else if (HTTPResponse.StatusCode == HttpStatusCode.InternalServerError)
-                    {
-                        lastError = "Server Error";
-                    }
-                    else if (HTTPResponse.StatusCode == HttpStatusCode.Gone)
-                    {
-                        lastError = "Page No Longer Available";
-                    }
-                    else
-                    {
-                        lastError = HTTPResponse.StatusDescription;
-                    }
-                }
-                else
-                {
-                    lastError = "Error: " + ex.ToString();
-                }
+                return null;
             }
-            catch (Exception ex)
-            {
-                lastError = "Error: " + ex.ToString();
-            }
-            finally
-            {
-                client.Dispose();
-            }
-
-            if (!String.IsNullOrEmpty(lastError))
-            {
-                Console.WriteLine(statusCode.ToString() + ": " + lastError);
-            }
-
-            return content;
         }
 
-        public bool URLIsAllowed(string URL)
+        public async Task<string> GetURLContent(Uri url)
         {
-            if (BlockedUrls.Count == 0)
-                return true;
-
-            Uri checkURL = new Uri(URL);
-            URL = checkURL.AbsolutePath.ToLower();
-
-            if (URL == "/sitemap.xml")
+            try
             {
-                return false;
+                var response = await httpClient.GetAsync(url);
+                var content = await response.Content.ReadAsStringAsync();
+                return content;
             }
-            return true;
+            catch
+            {
+                return null;
+            }
         }
-
     }
 }

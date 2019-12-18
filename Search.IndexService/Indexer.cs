@@ -4,6 +4,7 @@ using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexService.Internal;
 using Search.IndexService.Models;
+using Search.IndexService.SiteMap;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,17 +19,26 @@ namespace Search.IndexService
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex indexRequestsQueue;
+        private readonly SiteMapGetter siteMapGetter;
+        private readonly HttpClient httpClient;
 
         private const int pagesPerSiteLimit = 100;
 
-        public Indexer(ElasticSearchClient<Document> client, ElasticSearchOptions options, QueueForIndex indexRequestsQueue)
+        public Indexer(
+            ElasticSearchClient<Document> client,
+            ElasticSearchOptions options,
+            QueueForIndex indexRequestsQueue,
+            IHttpClientFactory httpClientFactory,
+            SiteMapGetter siteMapGetter)
         {
             _client = client;
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;
+            this.siteMapGetter = siteMapGetter;
+            httpClient = httpClientFactory.CreateClient("Page downloader");
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             EnsureIndexInElasticCreated();
 
@@ -38,33 +48,35 @@ namespace Search.IndexService
                 var inProgressRequest = request.SetInProgress();
                 indexRequestsQueue.Update(inProgressRequest);
 
-                var processedRequest = Index(inProgressRequest);
+                var processedRequest = await Index(inProgressRequest);
                 indexRequestsQueue.Update(processedRequest);
             }
-
-            return Task.CompletedTask;
         }
 
-        private IndexRequest Index(InProgressIndexRequest request)
+        private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
-            var urlsToParse = new Stack<Uri>();
-            urlsToParse.Push(request.Url);
+            var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
+            var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
 
-            var siteMap = SiteMapGetter.GetSiteMapContent(request.Url.ToString());
+            var urlsToParse = new Stack<Uri>();
             siteMap.Links.ForEach(x => urlsToParse.Push(x));
+            urlsToParse.Push(request.Url);
 
             var siteHost = request.Url.Host;
             var indexedUrls = new HashSet<Uri>();
             while (urlsToParse.Any())
             {
                 var currentUrl = urlsToParse.Pop();
-                var html = GetHtml(currentUrl);
+                var html = await GetHtml(currentUrl);
                 indexedUrls.Add(currentUrl);
                 if (html == null)
+                {
+                    if (currentUrl == request.Url)
+                        return request.SetError($"Не удалось загрузить страницу {request.Url}");
                     continue;
+                }
 
                 var parsedHtml = Parser.HtmlToText.ParseHtml(html);
-
                 parsedHtml.Links
                     .Where(x => x.Host.EndsWith(siteHost))
                     .Except(indexedUrls)
@@ -98,17 +110,15 @@ namespace Search.IndexService
             return request.SetIndexed();
         }
 
-        private string GetHtml(Uri url)
+        private async Task<string> GetHtml(Uri url)
         {
             try
             {
-                string html;
-                using (var client = new HttpClient())
-                using (HttpResponseMessage response = client.GetAsync(url).Result)
-                using (HttpContent content = response.Content)
-                    html = content.ReadAsStringAsync().Result;
+                using var response = await httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                    return null;
 
-                return html;
+                return await response.Content.ReadAsStringAsync();
             }
             catch 
             {
