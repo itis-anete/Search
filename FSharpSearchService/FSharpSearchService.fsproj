@@ -6,10 +6,10 @@
 
   <ItemGroup>
     <Compile Include="SearchRequest.fs" />
-    <Compile Include="RequestComparer.fs" />
-    <Compile Include="CacheRecord.fs" />
     <Compile Include="SearchResult.fs" />
     <Compile Include="SearchResponse.fs" />
+    <Compile Include="RequestComparer.fs" />
+    <Compile Include="CacheRecord.fs" />
     <Compile Include="IRequestCache.fs" />
     <Compile Include="MemoryRequestCache.fs" />
     <Compile Include="Searcher.fs" />

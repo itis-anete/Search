@@ -9,14 +9,20 @@ open System.Diagnostics;
 open System.Linq;
 open System.Threading;
 
-type MemoryRequestCache = 
+type MemoryRequestCache private()= 
     [<DefaultValue>]
     val mutable _options:ElasticSearchOptions
+    [<DefaultValue>]
     val mutable _maxRecordAge:TimeSpan
+    [<DefaultValue>]
     val mutable _ageStopwatch:Stopwatch
+    [<DefaultValue>]
     val mutable _ageCheckingTimer:Timer
+    [<DefaultValue>]
     val mutable _disposed:bool
+    [<DefaultValue>]
     val mutable Comparer:RequestComparer ->RequestComparer
+    [<DefaultValue>]
     val mutable _cache:ConcurrentDictionary<SearchRequest, CacheRecord>  
     //_cache = new ConcurrentDictionary<SearchRequest, CacheRecord>(Comparer);
 
@@ -25,24 +31,25 @@ type MemoryRequestCache =
         then
             this._options<-options
             this._maxRecordAge<-maxRecordAge
-            client.OnIndex+=ClearOnIndexing
-            let ageCheckFrequency=_maxRecordAge/2
+            client.add_OnIndex(ClearOnIndexing,)
+            let ageCheckFrequency=maxRecordAge / 2
             this._ageStopwatch<-Stopwatch.StartNew()
-            this._ageCheckingTimer<-new Timer(CheckAgeOfAllRecords,null,ageCheckFrequency,ageCheckFrequency);
+            this._ageCheckingTimer<-new Timer(CheckAgeOfAllRecords(),null,ageCheckFrequency,ageCheckFrequency);
 
 
     interface IRequestCache with
         member this.Add: request:SearchRequest * response:SearchResponse = 
-            _cache[request]=new CacheRecord(response, _ageStopwatch.Elapsed);
+            this._cache.AddOrUpdate(request,new CacheRecord(response, _ageStopwatch.Elapsed);
         member this.GetResponse(request: SearchRequest): SearchResponse = 
-            if(_cache.TryGetValue(request, out var record))then return record.Response;
+            if(this._cache.TryGetValue(request, out var record))then return record.Response;
                 else null
         member this.IsCache(request: SearchRequest): bool = 
-            CheckRecordAge(request, resetAge: true);
-            return _cache.ContainsKey(request);
-        member this.Remove(request:SearchRequest) =
-            _cache.TryRemove(request, out var record);
-        member this.TryGetResponse(request: 'a, response: 'a): bool = 
+             CheckRecordAge(request, resetAge: true);
+             this._cache.ContainsKey(request);
+        member this.Remove(request:SearchRequest):bool =
+            this._cache.TryRemove(request, out var record)
+            true
+        member this.TryGetResponse(request:SearchRequest,response: SearchResponse): bool = 
             raise (System.NotImplementedException())
     interface IDisposable with
         member this.Dispose(): unit = 

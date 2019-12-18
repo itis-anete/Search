@@ -12,6 +12,6 @@ type IRequestCache=
 
         abstract Add:request:SearchRequest * response:SearchResponse
 
-        abstract Remove:SearchRequest->
+        abstract Remove:SearchRequest->bool
         
     end
