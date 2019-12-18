@@ -8,8 +8,14 @@ html, body {
 }
 
 canvas {
-    width:59%;
+    width: 59%;
     height: 50%;
+    
+}
+#pictur{
+    position:relative;
+    display:inline-block;
+    width:auto;
 }
 
 body {

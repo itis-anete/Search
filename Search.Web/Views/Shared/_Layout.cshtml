@@ -5,35 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title</title>
     <link rel="stylesheet" type="text/css" href="~/css/prod.css">
+    <link rel="stylesheet" type="text/css" href="~/css/index.css" >
 </head>
 <body>
-	<partial name="_CookieConsentPartial" />
+    <partial name="_CookieConsentPartial" />
+    <div id="popup1" class="overlay">
+        <div class="popup">
 
-	<div class="container body-content">
-		<canvas id="canvas"></canvas>
-		<script src="~/js/fabric.js"></script>
+            <h2>Index Query please!</h2>
+            <a class="close" href="#">&times;</a>
+            <input id="indexQuery" type="text" class="content" placeholder="Indexid" required>
 
-		<script>
-			var canvas = document.getElementById('canvas'),
-				context = canvas.getContext('3d');
-			canvas.width = window.innerWidth / 2;
-			canvas.height = window.innerHeight / 2;
+        </div>
+    </div>
+    <script>
+         $('#indexQuery').keydown(function (e) {
+            if (e.keyCode === 13) {
+                indexesSite();
+            }
+         });
 
-			var canvas1 = new fabric.StaticCanvas('canvas');
-			var textSearch = new fabric.Text("Search", {
-				fontFamily: 'Liana',
-				left: 70,
-				top: 50,
-				width: 150,
-				fontSize: 100,
-				fill: 'white'
-			});
-			canvas1.add(textSearch);
-		</script>
+        function indexesSite(){
+            $(document).ready(function () {
+            var queryInput = document.getElementById("queryInput");
+            var query = queryInput.value;
 
-		@RenderBody()
-	</div>
+                fetch('api/Index/Index?=Query' + query);
+            });
+        }
+    </script>
 
-	@RenderSection("Scripts", required: false)
+    <div class="box">
+        <a class="button" href="#popup1">Indexing</a>
+    </div>
+
+    <canvas id="pictur"></canvas>
+
+    <script src="~/js/fabric.js"></script>
+
+    <script>
+        var canvas = document.getElementById('pictur'),
+            context = canvas.getContext('3d');
+        canvas.width = window.innerWidth / 2;
+        canvas.height = window.innerHeight / 2;
+
+        var canvas1 = new fabric.StaticCanvas('pictur');
+        var textSearch = new fabric.Text("Search", {
+            fontFamily: 'Liana',
+            left: 70,
+            top: 50,
+            width: 150,
+            fontSize: 100,
+            fill: 'white'
+        });
+        canvas1.add(textSearch);
+    </script>
+
+    @RenderBody()
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

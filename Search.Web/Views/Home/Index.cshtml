@@ -5,26 +5,27 @@
 <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 
 <style>
-    .block_after {
-    position: relative;
-    top: 70px;
-    bottom: 0;
-    left: 0px;
-    right: 0;
-    width: 560px;
-    height: 90px;
-    margin: 10px;
-    background: #e6eef7;
-    color: rgb(13, 7, 65);
-    display: none;
-    border-radius:25px;
-    margin-left: auto;
-    margin-right: auto;
-}
 
-.block_after.topDown {
-    top: 50px;
-}
+    .block_after {
+        position: relative;
+        top: 20px;
+        bottom: 0;
+        left: 0px;
+        right: 0;
+        width: 560px;
+        height: 90px;
+        margin: 10px;
+        background: #e6eef7;
+        color: rgb(13, 7, 65);
+        display: none;
+        border-radius: 25px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .block_after.topDown {
+            top: 50px;
+        }
 </style>
 
 <div id="cover">
@@ -41,7 +42,6 @@
     </div>
 </div>
 <div class='block'></div>
-
 
 <script>
 
@@ -68,15 +68,15 @@
     function searchQuery(result) {
         $(document.body).ready(function () {
             $('.block_after').remove();
-                for (var i = 0; i < result.length; i++) {
-                    $('.block').queue(function () {
-                        $(this).append('<div class="block_after">' + '<p>' + result[i].title + '</p>' + '<a href="'+ result[i].url+'">'+result[i].url +'</a>'+ '</div>');
-                        $(this).addClass("topDown");
-                        $(this).dequeue();
-                    });
-                    $('.block_after').css({ fontSize: 20 + 'px', padding: 15 + 'px' });
-                    $('.block_after').show("slow");
-                }   
+            for (var i = 0; i < result.length; i++) {
+                $('.block').queue(function () {
+                    $(this).append('<div class="block_after">' + '<p id="c">' + result[i].title + '</p>' + '<a id="suk" href="' + result[i].url + '">' + result[i].url + '</a>' + '</div>');
+                    $(this).addClass("topDown");
+                    $(this).dequeue();
+                });
+                $('.block_after').css({ fontSize: 20 + 'px', padding: 15 + 'px' });
+                $('.block_after').show("slow");
+            }
         });
     }
 </script>
