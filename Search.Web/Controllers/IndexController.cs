@@ -17,7 +17,7 @@ namespace Search.Web.Controllers
         }
         
         [HttpPost]
-        public IActionResult Index([FromBody] Uri url)
+        public IActionResult Index([FromQuery] Uri url)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
