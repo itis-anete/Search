@@ -17,13 +17,13 @@ type Fearcher private() =
     member this.Search(request: Search.FearchFervice.FearchRequest): Result<FearchResponse, HttpStatusCode> =
         let inline (!>) (x: ^a) : ^b = ((^a or ^b) : (static member op_Implicit : ^a -> ^b) x)
         let matchings = [
-            new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun (desc: QueryContainerDescriptor<Document>) ->
-                desc.Match(fun (m: MatchQueryDescriptor<Document>) ->
+            new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun desc ->
+                desc.Match(fun m ->
                     m.Field(fun x -> x.Title).Query(request.Query) :> IMatchQuery
                 )
             );
-            new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun (desc: QueryContainerDescriptor<Document>) ->
-                desc.Match(fun (m: MatchQueryDescriptor<Document>) ->
+            new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun desc ->
+                desc.Match(fun m ->
                     m.Field(fun x -> x.Text).Query(request.Query) :> IMatchQuery
                 )
             )
@@ -31,15 +31,15 @@ type Fearcher private() =
         let responseFromElastic = this._client.Search(fun search ->
             search
                 .Index(!> Indices.Index(this._options.DocumentsIndexName))
-                .From(!> request.From)
-                .Size(!> request.Size)
+                .From(request.From)
+                .Size(request.Size)
                 .Query(fun desc ->
                     desc.Bool(fun b ->
                         b.Should(matchings) :> IBoolQuery
                     )
                 ) :> ISearchRequest
             )
-        if (not responseFromElastic.IsValid) then
+        if not responseFromElastic.IsValid then
             ElasticSearchResponseConverter.ToResultOnFail<FearchResponse, Document>(responseFromElastic)
         else
             Result<FearchResponse, HttpStatusCode>.Success(
