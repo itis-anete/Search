@@ -50,7 +50,17 @@ namespace Search.IndexService
                 var inProgressRequest = request.SetInProgress();
                 indexRequestsQueue.Update(inProgressRequest);
 
-                var processedRequest = await Index(inProgressRequest);
+                IndexRequest processedRequest;
+                try
+                {
+                    processedRequest = await Index(inProgressRequest);
+                }
+                catch (Exception error)
+                {
+                    var errorRequest = inProgressRequest.SetError(error.ToString());
+                    indexRequestsQueue.Update(errorRequest);
+                    continue;
+                }
                 indexRequestsQueue.Update(processedRequest);
             }
         }
@@ -84,6 +94,12 @@ namespace Search.IndexService
                 }
 
                 var parsedHtml = Parser.HtmlToText.ParseHtml(html, request.Url);
+                if (parsedHtml == null)
+                {
+                    if (currentUrl == request.Url)
+                        return request.SetError($"Не удалось проиндексировать страницу {request.Url}");
+                    continue;
+                }
                 parsedHtml.Links
                     .Where(x => x.Host.EndsWith(siteHost))
                     .Except(indexedUrls)
