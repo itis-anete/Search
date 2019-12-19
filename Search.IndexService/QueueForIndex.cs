@@ -64,7 +64,14 @@ namespace Search.IndexService
 
         public Result<IndexRequest[], HttpStatusCode> GetAllElementsQueue() 
         {
-            var responseFromElastic = _client.Search(search => search.Index(_options.RequestsIndexName));
+            var countResponse = _client.GetCount(_options.RequestsIndexName);
+            if (!countResponse.IsValid)
+                return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[]>(countResponse);
+
+            var responseFromElastic = _client.Search(search => search
+                .Index(_options.RequestsIndexName)
+                .Size((int)countResponse.Count)
+            );
             if (!responseFromElastic.IsValid)
                 return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[]>(responseFromElastic);
 

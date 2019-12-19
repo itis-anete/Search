@@ -43,6 +43,11 @@ namespace Search.Core.Elasticsearch
             return _client.Get(documentPath, x => x.Index(indexName));
         }
 
+        public CountResponse GetCount(IndexName indexName)
+        {
+            return _client.Count<TModel>(count => count.Index(indexName));
+        }
+
         public void Index(
             TModel document,
             Func<IndexDescriptor<TModel>, IIndexRequest<TModel>> selector)
