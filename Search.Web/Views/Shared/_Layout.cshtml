@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title</title>
     <link rel="stylesheet" type="text/css" href="~/css/prod.css">
-    <link rel="stylesheet" type="text/css" href="~/css/index.css" >
+    <link rel="stylesheet" type="text/css" href="~/css/index.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
     <partial name="_CookieConsentPartial" />
@@ -18,55 +20,60 @@
             <a class="listQuery">?</a>
         </div>
     </div>
-    <script>
-         $('#indexQuery').keydown(function (e) {
-            if (e.keyCode === 13) {
-                indexesSite();
-            }
-         });
-
-        class indexPagex {
-             constructor(url, status) {
-                this.url = url;
-                this.status = status;
-             }
-        }
-
-        function indexesSite(){
-            $(document).ready(function () {
-            var queryInput = document.getElementById("queryInput");
-            var query = queryInput.value;
-
-                fetch('api/Index/Index?=Query' + query);
-                listIndexing('api/Index/GetQuery');
-                });
-        }
-
-        function listIndexing(listQuer) {
-        $(document.body).ready(function() {
-        $('.listQuery').on('click', function() {
-            for (var i = 0; i < listQuer.length; i++) {
-                if (listQuer[i].errorMessage == null) {
-                    pages[i] = new indexPagex(listQuer[i].url, "ok");
-
-                } else {
-                    pages[i] = new indexPagex(listQuer[i].url, "error");
-                }
-            }
-            for (var i = 0; i < pages.length; i++) {
-                console.log(pages[i].url, pages[i].status);
-
-            }
-            alert(pages.map(e => `Url: "${e.url}";    Status: ${e.status}`).join("\n"));
-        });
-
-    });
-}
-    </script>
 
     <div class="box">
         <a class="button" href="#popup1">Indexing</a>
     </div>
+
+    <script>
+        $('#indexQuery').keydown(function (e) {
+            if (e.keyCode === 13) {
+                indexesSite();
+            }
+        });
+
+        class indexPagex {
+            constructor(url, status) {
+                this.url = url;
+                this.status = status;
+            }
+        }
+
+        function indexesSite() {
+            $(document).ready(function () {
+                var queryInput = document.getElementById("indexQuery");
+                var url = queryInput.value;
+
+               
+                fetch("api/Index/Index?Url=" + url, {
+                    method: 'POST'
+                });
+            });
+        }
+
+        var pages = [];
+
+        function listIndexing(listQuer) {
+            $(document.body).ready(function () {
+                $('.listQuery').on('click', function () {
+                    for (var i = 0; i < listQuer.length; i++) {
+                        if (listQuer[i].errorMessage == null) {
+                            pages[i] = new indexPagex(listQuer[i].url, "ok");
+
+                        } else {
+                            pages[i] = new indexPagex(listQuer[i].url, "error");
+                        }
+                    }
+                    for (var i = 0; i < pages.length; i++) {
+                        console.log(pages[i].url, pages[i].status);
+
+                    }
+                    alert(pages.map(e => `Url: "${e.url}";    Status: ${e.status}`).join("\n"));
+                });
+
+            });
+        }
+    </script>
 
     <canvas id="pictur"></canvas>
 
