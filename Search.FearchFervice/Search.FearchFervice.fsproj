@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="FearchRequest.fs" />
+    <Compile Include="FearchResult.fs" />
+    <Compile Include="FearchResponse.fs" />
+    <Compile Include="Fearcher.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RailwayResults\RailwayResults.csproj" />
+    <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
+  </ItemGroup>
+
+</Project>
