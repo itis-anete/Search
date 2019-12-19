@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
+using Search.IndexService.Models;
 using System;
 using System.Linq;
 using System.Threading;
@@ -12,18 +13,21 @@ namespace Search.IndexService
     {
         private readonly int reindexTime = -7;
         private readonly TimeSpan indexingFrequency = TimeSpan.FromMinutes(15);
-        private readonly ElasticSearchClient<Document> _client;
+        private readonly ElasticSearchClient<Document> _documentsClient;
+        private readonly ElasticSearchClient<IndexRequest> _requestsClient;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex _queueForIndex;
 
         private Timer _indexingTimer;
 
         public Reindexer(
-            ElasticSearchClient<Document> client,
+            ElasticSearchClient<Document> documentsClient,
+            ElasticSearchClient<IndexRequest> requestsClient,
             ElasticSearchOptions options,
             QueueForIndex queueForIndex)
         {
-            _client = client;
+            _documentsClient = documentsClient;
+            _requestsClient = requestsClient;
             _options = options;
             _queueForIndex = queueForIndex;
         }
@@ -46,18 +50,43 @@ namespace Search.IndexService
 
         private void SearchOldPages(object state = null)
         {
-            var responseFromElastic = _client.Search(search => search
+            var responseWithDocuments = _documentsClient.Search(search => search
                 .Index(_options.DocumentsIndexName)
-                .Query(desc => desc
-                    .DateRange(d => d
+                .Query(desc =>
+                    desc.DateRange(d => d
                         .Field(x => x.IndexedTime)
                         .LessThan(DateTime.UtcNow.AddDays(reindexTime))
                     )
                 )
             );
+            if (!responseWithDocuments.IsValid)
+                return;
 
-            foreach (var oldPage in responseFromElastic.Documents)
-                _queueForIndex.AddToQueueElement(oldPage.Url);
+            var documentsUrls = responseWithDocuments.Documents
+                .Select(x => x.Url)
+                .ToArray();
+            var responseWithRequests = _requestsClient.Search(search => search
+                .Index(_options.RequestsIndexName)
+                .Query(desc =>
+                    desc.Terms(t => t
+                        .Field(x => x.Url)
+                        .Terms(documentsUrls)
+                    )
+                    &&
+                    desc.Term(t => t
+                        .Field(x => x.Status)
+                        .Value(IndexRequestStatus.Indexed)
+                    )
+                )
+            );
+            if (!responseWithRequests.IsValid)
+                return;
+
+            var urlsToReindex = responseWithRequests.Documents
+                .Select(x => x.Url)
+                .ToArray();
+            foreach (var url in urlsToReindex)
+                _queueForIndex.AddToQueueElement(url);
 
         }
     }
