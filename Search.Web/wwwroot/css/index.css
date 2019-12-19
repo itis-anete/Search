@@ -1,0 +1,109 @@
+a {
+    background: #9c78aac2;
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 700;
+    border: 1px solid #104d7c;
+    text-shadow: 0px 1px 1px #946ca3;
+}
+
+a:hover {
+    background: rgb(239, 185, 255);
+    border: 1px solid #b091b4;
+    box-shadow: #8d7e94 0px 0px 10px -4px inset;
+}
+
+a:active {
+    background: #2c3942;
+    border: 1px solid #062235;
+    box-shadow: #08436d 0px 0px 10px -2px;
+}
+
+h1 {
+    text-align: center;
+    font-family: Tahoma, Arial, sans-serif;
+    color: rgb(44, 53, 105);
+    margin: 80px 0;
+}
+
+.button {
+    font-size: 20px;
+    padding: 10px;
+    color: #fff;
+    box-shadow: 0 5px 2px 0 rgb(42, 12, 90);
+    border-radius: 20px/50px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
+    margin-left: 90%;
+    margin-top: 10px;
+}
+
+.button:hover {
+    background: rgb(119, 63, 136);
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    transition: opacity 500ms;
+    visibility: hidden;
+    opacity: 0;
+}
+
+.overlay:target {
+    visibility: visible;
+    opacity: 1;
+}
+
+.popup {
+    margin: 70px auto;
+    margin-right: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 5px;
+    width: 30%;
+    position: relative;
+    transition: all 5s ease-in-out;
+}
+
+.popup h2 {
+    margin-top: 0;
+    color: #333;
+    font-family: Tahoma, Arial, sans-serif;
+}
+
+.popup .close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    transition: all 200ms;
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+
+.popup .close:hover {
+    color: rgb(96, 41, 168);
+}
+
+.popup .content {
+    max-height: 30%;
+    overflow: auto;
+}
+
+.popup input {
+    background: transparent;
+    border: none;
+    padding: 10px;
+    width: 90%;
+    font-size: 20px;
+}
