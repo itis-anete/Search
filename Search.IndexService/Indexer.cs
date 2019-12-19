@@ -57,14 +57,19 @@ namespace Search.IndexService
 
         private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
+            var siteHost = GetHost(request.Url);
+
             var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
             var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
 
             var urlsToParse = new Stack<Uri>();
-            siteMap.Links.ForEach(x => urlsToParse.Push(x));
+            siteMap.Links
+                .Where(x => x.Host.EndsWith(siteHost))
+                .Except(new[] { request.Url })
+                .Distinct()
+                .ForEach(x => urlsToParse.Push(x));
             urlsToParse.Push(request.Url);
 
-            var siteHost = request.Url.Host;
             var indexedUrls = new HashSet<Uri>();
             while (urlsToParse.Any())
             {
@@ -149,6 +154,21 @@ namespace Search.IndexService
                     )
                 )
             );
+        }
+
+        private static string GetHost(Uri url)
+        {
+            var hostStr = url.Host.ToString();
+
+            var lastDotIndex = hostStr.LastIndexOf('.');
+            if (lastDotIndex < 0)
+                return hostStr;
+
+            var nextToLastDotIndex = hostStr.Substring(0, lastDotIndex).LastIndexOf('.');
+            if (nextToLastDotIndex < 0)
+                return hostStr;
+
+            return hostStr.Substring(nextToLastDotIndex + 1, hostStr.Length - nextToLastDotIndex - 1);
         }
     }
 }

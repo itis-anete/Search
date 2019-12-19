@@ -55,18 +55,12 @@ namespace Search.IndexService.SiteMap
                 return await GetContentByIndex(url, doc);
 
             var xnList = doc.GetElementsByTagName("url");
-            var links = GetLinks(xnList);
-
-            var validatedLinks = links
-                .Distinct()
-                .Except(new[] { url })
-                .Where(x => x.Host.EndsWith(url.Host))
-                .ToArray();
+            var links = GetLinks(xnList).ToArray();
 
             return new SiteMapContent()
             {
                 Url = url,
-                Links = validatedLinks
+                Links = links
             };
         }
 
