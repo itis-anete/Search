@@ -16,18 +16,6 @@ namespace Search.IndexService.SiteMap
             httpClient = httpClientFactory.CreateClient("Page downloader");
         }
 
-        public async Task<List<SiteMapContent>> GetSiteMapContentsByIndex(XmlDocument doc)
-        {
-            var xnList = doc.GetElementsByTagName("sitemap");
-            var siteMaps = GetLinks(xnList);
-
-            var siteContent = new List<SiteMapContent>();
-            foreach (var siteMap in siteMaps)
-                siteContent.Add(await GetSiteMap(siteMap));
-
-            return siteContent;
-        }
-
         public async Task<SiteMapContent> GetContentByIndex(Uri url, XmlDocument doc)
         {
             var contents = await GetSiteMapContentsByIndex(doc);
@@ -40,7 +28,19 @@ namespace Search.IndexService.SiteMap
             };
         }
 
-        public async Task<SiteMapContent> GetSiteMap(Uri url)
+        private async Task<List<SiteMapContent>> GetSiteMapContentsByIndex(XmlDocument doc)
+        {
+            var xnList = doc.GetElementsByTagName("sitemap");
+            var siteMaps = GetLinks(xnList);
+
+            var siteContent = new List<SiteMapContent>();
+            foreach (var siteMap in siteMaps)
+                siteContent.Add(await GetSiteMap(siteMap));
+
+            return siteContent;
+        }
+
+        private async Task<SiteMapContent> GetSiteMap(Uri url)
         {
             var doc = await GetContent(url);
 
@@ -70,7 +70,7 @@ namespace Search.IndexService.SiteMap
             };
         }
 
-        public static List<Uri> GetLinks(XmlNodeList nodeList)
+        private static List<Uri> GetLinks(XmlNodeList nodeList)
         {
             var links = new List<Uri>();
             foreach (XmlNode node in nodeList)
@@ -84,7 +84,7 @@ namespace Search.IndexService.SiteMap
             return links;
         }
 
-        public async Task<XmlDocument> GetContent(Uri url)
+        private async Task<XmlDocument> GetContent(Uri url)
         {
             var content = await GetURLContent(url);
             var doc = new XmlDocument();
@@ -99,7 +99,7 @@ namespace Search.IndexService.SiteMap
             }
         }
 
-        public async Task<string> GetURLContent(Uri url)
+        private async Task<string> GetURLContent(Uri url)
         {
             try
             {

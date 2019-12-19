@@ -4,7 +4,6 @@ using System.Xml;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Search.IndexService.SiteMap;
 
 namespace Search.IndexService.SiteMap
 {
@@ -52,7 +51,7 @@ namespace Search.IndexService.SiteMap
             };
         }
 
-        public static List<Uri> GetLinks(XmlNodeList nodeList)
+        private static List<Uri> GetLinks(XmlNodeList nodeList)
         {
             var links = new List<Uri>();
             foreach (XmlNode node in nodeList)
@@ -66,7 +65,7 @@ namespace Search.IndexService.SiteMap
             return links;
         }
 
-        public async Task<XmlDocument> GetContent(Uri url)
+        private async Task<XmlDocument> GetContent(Uri url)
         {
             var content = await GetURLContent(url);
             var doc = new XmlDocument();
@@ -81,7 +80,7 @@ namespace Search.IndexService.SiteMap
             }
         }
 
-        public async Task<string> GetURLContent(Uri url)
+        private async Task<string> GetURLContent(Uri url)
         {
             try
             {
