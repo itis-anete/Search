@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
+    <ProjectReference Include="..\Search.IndexHelpers\Search.IndexHelpers.fsproj" />
   </ItemGroup>
 
 </Project>

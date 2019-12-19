@@ -4,6 +4,7 @@ using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.FearchFervice;
+using Search.IndexHelpers;
 using Search.IndexService;
 using Search.IndexService.Dto;
 using Search.IndexService.SiteMap;
@@ -30,6 +31,7 @@ namespace Search.Web
         {
             services.AddSingleton<SiteMapGetter>();
             services.AddSingleton<SiteMapIndex>();
+            services.AddSingleton<PagesPerSiteLimiter>();
             services.AddHostedService<Indexer>();
 
             services.AddHostedService<Reindexer>();
@@ -59,7 +61,7 @@ namespace Search.Web
 
         public static void ConfigureAllOptions(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<IndexerOptions>(configuration);
+            services.Configure<PagesPerSiteLimiterOptions>(configuration);
         }
 
         private static string GetElasticSearchUrl(IConfiguration configuration)
