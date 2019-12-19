@@ -15,7 +15,7 @@
             <h2>Index Query please!</h2>
             <a class="close" href="#">&times;</a>
             <input id="indexQuery" type="text" class="content" placeholder="Indexid" required>
-
+            <a class="listQuery">?</a>
         </div>
     </div>
     <script>
@@ -25,14 +25,43 @@
             }
          });
 
+        class indexPagex {
+             constructor(url, status) {
+                this.url = url;
+                this.status = status;
+             }
+        }
+
         function indexesSite(){
             $(document).ready(function () {
             var queryInput = document.getElementById("queryInput");
             var query = queryInput.value;
 
                 fetch('api/Index/Index?=Query' + query);
-            });
+                listIndexing('api/Index/GetQuery');
+                });
         }
+
+        function listIndexing(listQuer) {
+        $(document.body).ready(function() {
+        $('.listQuery').on('click', function() {
+            for (var i = 0; i < listQuer.length; i++) {
+                if (listQuer[i].errorMessage == null) {
+                    pages[i] = new indexPagex(listQuer[i].url, "ok");
+
+                } else {
+                    pages[i] = new indexPagex(listQuer[i].url, "error");
+                }
+            }
+            for (var i = 0; i < pages.length; i++) {
+                console.log(pages[i].url, pages[i].status);
+
+            }
+            alert(pages.map(e => `Url: "${e.url}";    Status: ${e.status}`).join("\n"));
+        });
+
+    });
+}
     </script>
 
     <div class="box">
