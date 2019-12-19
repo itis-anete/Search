@@ -15,10 +15,10 @@ namespace Search.Core.Elasticsearch
         )
             where TDocument : class
         {
-            if (response.OriginalException.InnerException is SocketException)
+            if (response.OriginalException?.InnerException is SocketException)
                 return Result<TValue, HttpStatusCode>.Fail(HttpStatusCode.ServiceUnavailable);
 
-            if (response.ServerError.Status == HttpStatusCode.NotFound.ToInt())
+            if (response.ServerError?.Status == HttpStatusCode.NotFound.ToInt())
                 return Result<TValue, HttpStatusCode>.Fail(HttpStatusCode.ServiceUnavailable);
 
             var statusCode = customErrorHandler?.Invoke() ?? HttpStatusCode.InternalServerError;
