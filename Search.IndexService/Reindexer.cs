@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
+using Search.IndexService.Dto;
 using Search.IndexService.Models;
 using System;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Search.IndexService
         private readonly int reindexTime = -7;
         private readonly TimeSpan indexingFrequency = TimeSpan.FromMinutes(15);
         private readonly ElasticSearchClient<Document> _documentsClient;
-        private readonly ElasticSearchClient<IndexRequest> _requestsClient;
+        private readonly ElasticSearchClient<IndexRequestDto> _requestsClient;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex _queueForIndex;
 
@@ -22,7 +23,7 @@ namespace Search.IndexService
 
         public Reindexer(
             ElasticSearchClient<Document> documentsClient,
-            ElasticSearchClient<IndexRequest> requestsClient,
+            ElasticSearchClient<IndexRequestDto> requestsClient,
             ElasticSearchOptions options,
             QueueForIndex queueForIndex)
         {
@@ -87,7 +88,6 @@ namespace Search.IndexService
                 .ToArray();
             foreach (var url in urlsToReindex)
                 _queueForIndex.AddToQueueElement(url);
-
         }
     }
 }
