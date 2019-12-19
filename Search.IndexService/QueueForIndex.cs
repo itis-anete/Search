@@ -66,7 +66,7 @@ namespace Search.IndexService
         {
             var responseFromElastic = _client.Search(search => search.Index(_options.RequestsIndexName));
             if (!responseFromElastic.IsValid)
-                return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[], IndexRequestDto>(responseFromElastic);
+                return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[]>(responseFromElastic);
 
             var results = responseFromElastic.Documents
                 .Select(x => x.FromDto())
@@ -118,7 +118,7 @@ namespace Search.IndexService
                 )
             );
             if (!responseFromElastic.IsValid)
-                return ElasticSearchResponseConverter.ToResultOnFail<bool, IndexRequestDto>(responseFromElastic);
+                return ElasticSearchResponseConverter.ToResultOnFail<bool>(responseFromElastic);
 
             return Result<bool, HttpStatusCode>.Success(!responseFromElastic.Documents.Any());
         }

@@ -9,11 +9,9 @@ namespace Search.Core.Elasticsearch
 {
     public static class ElasticSearchResponseConverter
     {
-        public static Result<TValue, HttpStatusCode> ToResultOnFail<TValue, TDocument>(
-            ISearchResponse<TDocument> response,
-            Func<HttpStatusCode?> customErrorHandler = null
-        )
-            where TDocument : class
+        public static Result<TValue, HttpStatusCode> ToResultOnFail<TValue>(
+            IResponse response,
+            Func<HttpStatusCode?> customErrorHandler = null)
         {
             if (response.OriginalException?.InnerException is SocketException)
                 return Result<TValue, HttpStatusCode>.Fail(HttpStatusCode.ServiceUnavailable);

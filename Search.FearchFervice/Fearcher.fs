@@ -40,7 +40,7 @@ type Fearcher private() =
                 ) :> ISearchRequest
             )
         if not responseFromElastic.IsValid then
-            ElasticSearchResponseConverter.ToResultOnFail<FearchResponse, Document>(responseFromElastic)
+            ElasticSearchResponseConverter.ToResultOnFail<FearchResponse>(responseFromElastic)
         else
             Result<FearchResponse, HttpStatusCode>.Success(
                 new FearchResponse(
