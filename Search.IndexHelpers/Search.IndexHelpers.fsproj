@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="PagesPerSiteLimiterOptions.fs" />
+    <Compile Include="PagesPerSiteLimiter.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Search.Core\Search.Core.csproj" />
+  </ItemGroup>
+
+</Project>
