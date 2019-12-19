@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
+using Search.IndexHelpers;
 using Search.IndexService.Internal;
 using Search.IndexService.Models;
 using Search.IndexService.SiteMap;
@@ -21,24 +21,22 @@ namespace Search.IndexService
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex indexRequestsQueue;
         private readonly SiteMapGetter siteMapGetter;
+        private readonly PagesPerSiteLimiter pagesPerSiteLimiter;
         private readonly HttpClient httpClient;
 
-        private readonly int pagesPerSiteLimit;
-
         public Indexer(
-            IOptionsMonitor<IndexerOptions> indexerOptions,
             ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
             QueueForIndex indexRequestsQueue,
             IHttpClientFactory httpClientFactory,
-            SiteMapGetter siteMapGetter)
+            SiteMapGetter siteMapGetter,
+            PagesPerSiteLimiter pagesPerSiteLimiter)
         {
-            pagesPerSiteLimit = indexerOptions.CurrentValue.PagesPerSiteLimit;
-
             _client = client;
             _options = options;
             this.indexRequestsQueue = indexRequestsQueue;
             this.siteMapGetter = siteMapGetter;
+            this.pagesPerSiteLimiter = pagesPerSiteLimiter;
             httpClient = httpClientFactory.CreateClient("Page downloader");
         }
 
@@ -100,13 +98,13 @@ namespace Search.IndexService
                 );
 
                 var foundUrlsCount = indexedUrls.Count + urlsToParse.Count;
-                if (foundUrlsCount > pagesPerSiteLimit)
+                if (pagesPerSiteLimiter.IsLimitReached(foundUrlsCount))
                 {
                     indexedUrls
                         .Except(new[] { request.Url })
                         .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
                     return request.SetError(
-                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimit} страниц на сайт " +
+                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
                         $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
                     );
                 }
@@ -125,7 +123,7 @@ namespace Search.IndexService
 
                 return await response.Content.ReadAsStringAsync();
             }
-            catch 
+            catch
             {
                 return null;
             }
@@ -136,7 +134,7 @@ namespace Search.IndexService
             var response = _client.IndexExists(_options.DocumentsIndexName);
             if (response.Exists)
                 return;
-            
+
             _client.CreateIndex(_options.DocumentsIndexName, index => index
                 .Settings(ElasticSearchOptions.AnalysisSettings)
                 .Mappings(mappings => mappings
