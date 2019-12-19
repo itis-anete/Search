@@ -42,8 +42,6 @@ namespace Search.Web
             services.AddSingleton<Fearcher>();
 
             services.AddSingleton<QueueForIndex>();
-
-            services.AddSingleton<ServiceContainer>();
         }
 
         public static void ConfigureHttpClient(this IServiceCollection services, IConfiguration configuration)

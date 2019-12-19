@@ -7,9 +7,9 @@ namespace Search.Web.Controllers
     [Route("api/[controller]")]
     public class SearchController : Controller
     {
-        public SearchController(ServiceContainer services)
+        public SearchController(Fearcher fearcher)
         {
-            _fearcher = services.Fearcher;
+            _fearcher = fearcher;
         }
         
         [HttpGet]

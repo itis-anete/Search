@@ -10,9 +10,9 @@ namespace Search.Web.Controllers
     [Route("api/[controller]/[action]")]
     public class IndexController : ControllerBase
     {
-        public IndexController(ServiceContainer services)
+        public IndexController(QueueForIndex queueForIndex)
         {
-            _queueForIndex = services.QueueForIndex;
+            _queueForIndex = queueForIndex;
         }
         
         [HttpPost]
