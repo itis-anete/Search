@@ -44,7 +44,10 @@
                 var queryInput = document.getElementById("indexQuery");
                 var url = queryInput.value;
 
-                fetch('api/Index/Index?Url=' + url);
+               
+                fetch("api/Index/Index?Url=" + url, {
+                    method: 'POST'
+                });
             });
         }
 
