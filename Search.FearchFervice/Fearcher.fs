@@ -14,15 +14,15 @@ type Fearcher private() =
     [<DefaultValue>]
     val mutable _options: ElasticSearchOptions
 
-    member this.Search(request: Search.FearchFervice.FearchRequest): Result<FearchResponse, HttpStatusCode> =
+    member this.Search(request: FearchRequest): Result<FearchResponse, HttpStatusCode> =
         let inline (!>) (x: ^a) : ^b = ((^a or ^b) : (static member op_Implicit : ^a -> ^b) x)
         let matchings = [
-            new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun desc ->
+            Func<QueryContainerDescriptor<Document>, QueryContainer>(fun desc ->
                 desc.Match(fun m ->
                     m.Field(fun x -> x.Title).Query(request.Query) :> IMatchQuery
                 )
             );
-            new Func<QueryContainerDescriptor<Document>, QueryContainer>(fun desc ->
+            Func<QueryContainerDescriptor<Document>, QueryContainer>(fun desc ->
                 desc.Match(fun m ->
                     m.Field(fun x -> x.Text).Query(request.Query) :> IMatchQuery
                 )
@@ -43,10 +43,10 @@ type Fearcher private() =
             ElasticSearchResponseConverter.ToResultOnFail<FearchResponse>(responseFromElastic)
         else
             Result<FearchResponse, HttpStatusCode>.Success(
-                new FearchResponse(
+                FearchResponse(
                     Results = responseFromElastic.Documents
                         .Select(fun document ->
-                            new FearchResult(Url = document.Url, Title = document.Title)
+                            FearchResult(Url = document.Url, Title = document.Title)
                         )
                         .ToList()
                     )
