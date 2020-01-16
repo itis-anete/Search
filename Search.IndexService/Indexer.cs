@@ -118,17 +118,17 @@ namespace Search.IndexService
                     .Index(_options.DocumentsIndexName)
                 );
 
+                if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
+                    continue;
+                
+                indexedUrls
+                    .Except(new[] {request.Url})
+                    .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
                 var foundUrlsCount = indexedUrls.Count + urlsToParse.Count;
-                if (pagesPerSiteLimiter.IsLimitReached(foundUrlsCount))
-                {
-                    indexedUrls
-                        .Except(new[] { request.Url })
-                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
-                    return request.SetError(
-                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
-                        $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
-                    );
-                }
+                return request.SetError(
+                    $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
+                    $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
+                );
             }
 
             return request.SetIndexed();
