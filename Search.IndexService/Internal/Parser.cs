@@ -78,6 +78,8 @@ namespace Search.IndexService.Internal
                             || Uri.TryCreate(baseUrl, hrefAttribute, out link)
                         )
                         {
+                            if (link.Scheme != Uri.UriSchemeHttp && link.Scheme != Uri.UriSchemeHttps)
+                                continue;
                             if (link.Scheme != baseUrl.Scheme)
                             {
                                 var strLink = link.ToString();
