@@ -16,26 +16,20 @@ namespace Search.IndexService.Internal
         {
             public static ParsedHtml ParseHtml(string html, Uri url)
             {
-                try
+                var doc = new HtmlDocument();
+                doc.LoadHtml(html);
+                var text = ConvertDoc(doc);
+                DeleteSymbols(doc, text);
+                
+                return new ParsedHtml
                 {
-                    var doc = new HtmlDocument();
-                    doc.LoadHtml(html);
-                    var text = ConvertDoc(doc);
-                    DeleteSymbols(doc, text);
-                    
-                    return new ParsedHtml
-                    {
-                        Title = GetTitle(doc),
-                        Text = DeleteExcessWhitespaces(text),
-                        Links = GetLinks(html, url)
-                    };
-                }
-                catch
-                {
-                    return null;
-                }
+                    Title = GetTitle(doc),
+                    Text = DeleteExcessWhitespaces(text),
+                    Links = GetLinks(html, url)
+
+                };
             }
-            
+
             private static string GetTitle(HtmlDocument doc)
             {
                 return doc.DocumentNode.SelectSingleNode("//title").InnerText ?? "";
