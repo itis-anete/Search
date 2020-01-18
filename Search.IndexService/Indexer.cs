@@ -68,6 +68,7 @@ namespace Search.IndexService
         private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
             var siteHost = GetHost(request.Url);
+            var siteHostWithDotBefore = '.' + siteHost;
 
             var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
             var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
@@ -101,7 +102,7 @@ namespace Search.IndexService
                     continue;
                 }
                 parsedHtml.Links
-                    .Where(x => x.Host.EndsWith(siteHost))
+                    .Where(x => x.Host == siteHost || x.Host.EndsWith(siteHostWithDotBefore))
                     .Except(indexedUrls)
                     .ForEach(x => urlsToParse.Push(x));
 
