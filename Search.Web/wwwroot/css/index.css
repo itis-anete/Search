@@ -46,6 +46,27 @@ h1 {
     background: rgb(119, 63, 136);
 }
 
+.listQuery {
+    position: absolute;
+    bottom: 10px;
+    font-size: 1em;
+    padding: 7px;
+    color: #fff;
+    border-radius: 80px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
+    box-shadow: #002742 0px 0px 10px -2px;
+}
+
+    .listQuery:hover {
+        background: rgba(122, 66, 136, 0.678);
+    }
+
+.button_ok {
+    height: auto;
+}
+    
 .overlay {
     position: fixed;
     top: 0;
@@ -106,4 +127,108 @@ h1 {
     padding: 10px;
     width: 90%;
     font-size: 20px;
+}
+
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1;
+    /* Sit on top */
+    padding-top: 100px;
+    /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+}
+
+.modal-content {
+    position: relative;
+    background-color: #E1BEE7;
+    margin: auto;
+    padding: 0;
+    border: 5px solid rgb(236, 209, 248);
+    width: 50%;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+@-webkit-keyframes animatetop {
+    from {
+        top: -300px;
+        opacity: 0
+    }
+
+    to {
+        top: 0;
+        opacity: 1
+    }
+}
+
+@keyframes animatetop {
+    from {
+        top: -300px;
+        opacity: 0
+    }
+
+    to {
+        top: 0;
+        opacity: 1
+    }
+}
+
+.close {
+    color: rgb(0, 0, 0);
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+.modal-header {
+    padding: 2px 16px;
+    background-color: rgba(249, 212, 255, 0.815);
+    color: rgb(0, 0, 0);
+}
+
+.modal-body {
+    padding: 2px 16px;
+}
+
+table {
+    width: 100%;
+    /* Ўирина таблицы */
+    background: white;
+    /* ÷вет фона таблицы */
+    color: rgb(0, 0, 0);
+    /* ÷вет текста */
+    border-spacing: 1px;
+    /* –ассто€ние между €чейками */
+}
+
+td,
+th {
+    background: rgb(255, 224, 248);
+    /* ÷вет фона €чеек */
+    padding: 5px;
+    /* ѕол€ вокруг текста */
 }
