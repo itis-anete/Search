@@ -94,13 +94,15 @@ namespace Search.IndexService
                     continue;
                 }
 
-                var parsedHtml = Parser.HtmlToText.ParseHtml(html, request.Url);
-                if (parsedHtml == null)
+                var parsedHtmlResult = Parser.HtmlToText.ParseHtml(html, request.Url);
+                if (parsedHtmlResult.IsFailure)
                 {
-                    if (currentUrl == request.Url)
-                        return request.SetError($"Не удалось проиндексировать страницу {request.Url}");
-                    continue;
+                    if (currentUrl != request.Url)
+                        continue;
+                    return request.SetError($"Не удалось проиндексировать страницу {request.Url}");
                 }
+
+                var parsedHtml = parsedHtmlResult.Value;
                 parsedHtml.Links
                     .Where(x => x.Host == siteHost || x.Host.EndsWith(siteHostWithDotBefore))
                     .Except(indexedUrls)

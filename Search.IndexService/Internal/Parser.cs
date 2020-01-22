@@ -1,12 +1,11 @@
-﻿using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
+﻿using AngleSharp.Html.Parser;
 using HtmlAgilityPack;
-using Microsoft.VisualBasic.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using RailwayResults;
 
 namespace Search.IndexService.Internal
 {
@@ -14,22 +13,28 @@ namespace Search.IndexService.Internal
     {
         public static class HtmlToText
         {
-            public static ParsedHtml ParseHtml(string html, Uri url)
+            public static Result<ParsedHtml, string> ParseHtml(string html, Uri url)
             {
-                var doc = new HtmlDocument();
-                doc.LoadHtml(html);
-                var text = ConvertDoc(doc);
-                DeleteSymbols(doc, text);
-                
-                return new ParsedHtml
+                try
                 {
-                    Title = GetTitle(doc),
-                    Text = DeleteExcessWhitespaces(text),
-                    Links = GetLinks(html, url)
-
-                };
+                    var doc = new HtmlDocument();
+                    doc.LoadHtml(html);
+                    var text = ConvertDoc(doc);
+                    DeleteSymbols(doc, text);
+                    
+                    return Result<ParsedHtml, string>.Success(new ParsedHtml
+                    {
+                        Title = GetTitle(doc),
+                        Text = DeleteExcessWhitespaces(text),
+                        Links = GetLinks(html, url)
+                    });
+                }
+                catch (Exception error)
+                {
+                    return Result<ParsedHtml, string>.Fail(error.ToString());
+                }
             }
-
+            
             private static string GetTitle(HtmlDocument doc)
             {
                 return doc?.DocumentNode?.SelectSingleNode("//title")?.InnerText ?? "";
