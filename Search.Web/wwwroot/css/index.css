@@ -163,7 +163,9 @@ h1 {
     -webkit-animation-name: animatetop;
     -webkit-animation-duration: 0.4s;
     animation-name: animatetop;
-    animation-duration: 0.4s
+    animation-duration: 0.4s;
+    border-radius: 10px;
+    font-family: italic, cursive;
 }
 
 @-webkit-keyframes animatetop {
@@ -195,6 +197,7 @@ h1 {
     float: right;
     font-size: 28px;
     font-weight: bold;
+    border-radius:20px;
 }
 
     .close:hover,
@@ -208,6 +211,7 @@ h1 {
     padding: 2px 16px;
     background-color: rgba(249, 212, 255, 0.815);
     color: rgb(0, 0, 0);
+    border-radius: 10px;
 }
 
 .modal-body {
@@ -223,6 +227,7 @@ table {
     /* Цвет текста */
     border-spacing: 1px;
     /* Расстояние между ячейками */
+    border-radius: 10px;
 }
 
 td,
@@ -231,4 +236,5 @@ th {
     /* Цвет фона ячеек */
     padding: 5px;
     /* Поля вокруг текста */
+    border-radius: 10px;
 }

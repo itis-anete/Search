@@ -108,14 +108,20 @@
                             pages[i] = new indexPagex(listQuer[i].url, "error");
                         }
                     }
-                    for (var i = 0; i < pages.length; i++) {
-                        console.log(pages[i].url, pages[i].status);
-                        listPages(pages[i].url, pages[i].status);
+
+                    if (pages.length == 0) {
+                        listPages("Пусто", "Пусто");
+                    } else {
+                         for (var i = 0; i < pages.length; i++) {
+                            console.log(pages[i].url, pages[i].status);
+                            listPages(pages[i].url, pages[i].status);
+                          }
                     }
                 }
 
                 span.onclick = function () {
                     modal.style.display = "none";
+                    $('#tab1 tbody tr').remove();
                 }
 
                 window.onclick = function (event) {
