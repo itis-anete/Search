@@ -42,7 +42,7 @@
             <a class="close" href="#">&times;</a>
             <input id="indexQuery" type="text" class="content" placeholder="Indexid" required>
             <a class="listQuery">?</a>
-            <button class="button_ok">Ok</button>
+            <button class="button_ok" onclick="indexesSite()">Ok</button>
         </div>
     </div>
 
@@ -51,9 +51,10 @@
     </div>
 
     <script>
+
         $('#indexQuery').keydown(function (e) {
-            if ((e.keyCode === 13) || (e.keyCode == '.button_ok')) {
-                indexesSite();
+            if (e.keyCode === 13)  {
+                indexesSite();                
             }
         });
 
@@ -65,6 +66,11 @@
 
                 fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
+                }).then(function (response) {
+                    response.json().then(function (parsedJson) {
+                    var results = parsedJson.results;
+                    var r = (results.errorMessage == null)? "Страница успешно проиндексирована" : "Страница не проиндексирована";
+                        alert(r);
                 });
             });
         }
