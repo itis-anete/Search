@@ -7,11 +7,13 @@ using Search.IndexService.Internal;
 using Search.IndexService.Models;
 using Search.IndexService.SiteMap;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using RailwayResults;
 
 namespace Search.IndexService
 {
@@ -73,68 +75,83 @@ namespace Search.IndexService
             var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
             var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
 
-            var urlsToParse = new Stack<Uri>();
-            siteMap.Links
-                .Where(x => x.Host.EndsWith(siteHost))
-                .Except(new[] { request.Url })
+            var urlsToParse = new ConcurrentStack<Uri>();
+            var urlsFromSiteMap = siteMap.Links
+                .Where(uri =>
+                    uri.Host.EndsWith(siteHost) &&
+                    uri != request.Url)
                 .Distinct()
-                .ForEach(x => urlsToParse.Push(x));
+                .ToArray();
+            
             urlsToParse.Push(request.Url);
+            urlsToParse.PushRange(urlsFromSiteMap);
 
-            var indexedUrls = new HashSet<Uri>();
-            while (urlsToParse.Any())
+            var indexedUrls = new ConcurrentDictionary<Uri, byte>();
+            while (!urlsToParse.IsEmpty)
             {
-                var currentUrl = urlsToParse.Pop();
-                var html = await GetHtml(currentUrl);
-                indexedUrls.Add(currentUrl);
-                if (html == null)
-                {
-                    if (currentUrl == request.Url)
-                        return request.SetError($"Не удалось загрузить страницу {request.Url}");
-                    continue;
-                }
-
-                var parsedHtmlResult = Parser.HtmlToText.ParseHtml(html, request.Url);
-                if (parsedHtmlResult.IsFailure)
-                {
-                    if (currentUrl != request.Url)
-                        continue;
-                    return request.SetError($"Не удалось проиндексировать страницу {request.Url}");
-                }
-
-                var parsedHtml = parsedHtmlResult.Value;
-                parsedHtml.Links
-                    .Where(x => x.Host == siteHost || x.Host.EndsWith(siteHostWithDotBefore))
-                    .Except(indexedUrls)
-                    .ForEach(x => urlsToParse.Push(x));
-
-                var document = new Document()
-                {
-                    Url = currentUrl,
-                    IndexedTime = DateTime.UtcNow,
-                    Title = parsedHtml.Title,
-                    Text = parsedHtml.Text
-                };
-
-                _client.Index(document, desc => desc
-                    .Id(document.Url.ToString())
-                    .Index(_options.DocumentsIndexName)
-                );
-
+                urlsToParse.TryPop(out var currentUrl);
+                indexedUrls.TryAdd(currentUrl, default);
+                var indexResult = await IndexPage(currentUrl, request, siteHost, urlsToParse, indexedUrls);
+                if (indexResult.IsFailure)
+                    return request.SetError(indexResult.Error);
+                
                 if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
                     continue;
-                
-                indexedUrls
-                    .Except(new[] {request.Url})
+                indexedUrls.Keys
+                    .Where(uri => uri != request.Url)
                     .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
-                var foundUrlsCount = indexedUrls.Count + urlsToParse.Count;
                 return request.SetError(
                     $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
-                    $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
+                    $"(найдено не менее {indexedUrls.Count} страниц). Проиндексирована только главная страница."
                 );
             }
 
             return request.SetIndexed();
+        }
+
+        private async Task<Result<string>> IndexPage(
+            Uri currentUrl,
+            IndexRequest request,
+            string siteHost,
+            ConcurrentStack<Uri> urlsToParse,
+            ConcurrentDictionary<Uri, byte> indexedUrls)
+        {
+            var html = await GetHtml(currentUrl);
+            if (html == null)
+            {
+                if (currentUrl == request.Url)
+                    return Result<string>.Fail($"Не удалось загрузить страницу {request.Url}");
+                return Result<string>.Success(); // TODO: лучше не замалчивать ошибку
+            }
+
+            var parsedHtmlResult = Parser.HtmlToText.ParseHtml(html, request.Url);
+            if (parsedHtmlResult.IsFailure)
+            {
+                if (currentUrl == request.Url)
+                    return Result<string>.Fail($"Не удалось проиндексировать страницу {request.Url}");
+                return Result<string>.Success(); // TODO: лучше не замалчивать ошибку
+            }
+
+            var parsedHtml = parsedHtmlResult.Value;
+            parsedHtml.Links
+                .Where(uri =>
+                    uri.Host.EndsWith(siteHost) &&
+                    !indexedUrls.ContainsKey(uri))
+                .ForEach(urlsToParse.Push);
+
+            var document = new Document
+            {
+                Url = currentUrl,
+                IndexedTime = DateTime.UtcNow,
+                Title = parsedHtml.Title,
+                Text = parsedHtml.Text
+            };
+
+            _client.Index(document, desc => desc
+                .Id(document.Url.ToString())
+                .Index(_options.DocumentsIndexName)
+            );
+            return Result<string>.Success();
         }
 
         private async Task<string> GetHtml(Uri url)
