@@ -20,7 +20,7 @@ namespace Search.IndexService.Internal
                 {
                     var doc = new HtmlDocument();
                     doc.LoadHtml(html);
-                    if (doc.ParseErrors.Any())
+                    if (doc.DocumentNode.Element("html") == null)
                         return Result<ParsedHtml, string>.Fail(doc.ParseErrors.First().Reason);
                     
                     var text = ConvertDoc(doc);
