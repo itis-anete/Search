@@ -3,6 +3,7 @@ using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using RailwayResults;
@@ -19,6 +20,9 @@ namespace Search.IndexService.Internal
                 {
                     var doc = new HtmlDocument();
                     doc.LoadHtml(html);
+                    if (doc.DocumentNode.Element("html") == null)
+                        return Result<ParsedHtml, string>.Fail(doc.ParseErrors.First().Reason);
+                    
                     var text = ConvertDoc(doc);
                     DeleteSymbols(doc, text);
                     
