@@ -89,7 +89,7 @@ namespace Search.IndexService
             var isUrlFromRequestIndexed = false;
             
             var semaphore = new SemaphoreSlim(256);
-            var indexingTasks = new ConcurrentBag<Task>();
+            var indexingTasks = new ConcurrentDictionary<Task, byte>();
             var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
             while (!urlsToIndex.IsEmpty)
             {
@@ -107,26 +107,32 @@ namespace Search.IndexService
                 indexedUrls.TryAdd(currentUrl, default);
 
                 semaphore.Wait();
-                indexingTasks.Add(
+                indexingTasks.TryAdd(
                     IndexPage(currentUrl, request, siteHost, siteHostWithDotBefore, urlsToIndex, indexedUrls)
                         .ContinueWith(task =>
                         {
                             semaphore.Release();
+                            indexingTasks.TryRemove(task, out _);
                             completedIndexingTasks.Push(task);
-                        })
+                        }),
+                    default
                 );
                 
                 indexingResult = CheckResultOfCompletedTasks();
                 if (indexingResult.IsFailure)
                     return request.SetError(indexingResult.Error);
 
-                while (urlsToIndex.IsEmpty &&
-                       indexingTasks.TryTake(out var indexingTask))
+                while (urlsToIndex.IsEmpty)
+                {
+                    var indexingTask = indexingTasks.Keys.FirstOrDefault();
+                    if (indexingTask == null)
+                        break;
                     indexingTask.Wait();
-                
+                }
+
                 if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
                     continue;
-                Task.WaitAll(indexingTasks.ToArray());
+                Task.WaitAll(indexingTasks.Keys.ToArray());
                 indexedUrls.Keys
                     .Where(uri => uri != request.Url)
                     .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
@@ -136,7 +142,7 @@ namespace Search.IndexService
                 );
             }
 
-            Task.WaitAll(indexingTasks.ToArray());
+            Task.WaitAll(indexingTasks.Keys.ToArray());
             indexingResult = CheckResultOfCompletedTasks();
             if (indexingResult.IsFailure)
                 return request.SetError(indexingResult.Error);
