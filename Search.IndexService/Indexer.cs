@@ -68,6 +68,7 @@ namespace Search.IndexService
         private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
             var siteHost = GetHost(request.Url);
+            var siteHostWithDotBefore = '.' + siteHost;
 
             var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
             var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
@@ -93,15 +94,17 @@ namespace Search.IndexService
                     continue;
                 }
 
-                var parsedHtml = Parser.HtmlToText.ParseHtml(html, request.Url);
-                if (parsedHtml == null)
+                var parsedHtmlResult = Parser.HtmlToText.ParseHtml(html, request.Url);
+                if (parsedHtmlResult.IsFailure)
                 {
-                    if (currentUrl == request.Url)
-                        return request.SetError($"Не удалось проиндексировать страницу {request.Url}");
-                    continue;
+                    if (currentUrl != request.Url)
+                        continue;
+                    return request.SetError($"Не удалось проиндексировать страницу {request.Url}");
                 }
+
+                var parsedHtml = parsedHtmlResult.Value;
                 parsedHtml.Links
-                    .Where(x => x.Host.EndsWith(siteHost))
+                    .Where(x => x.Host == siteHost || x.Host.EndsWith(siteHostWithDotBefore))
                     .Except(indexedUrls)
                     .ForEach(x => urlsToParse.Push(x));
 
@@ -118,17 +121,17 @@ namespace Search.IndexService
                     .Index(_options.DocumentsIndexName)
                 );
 
+                if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
+                    continue;
+                
+                indexedUrls
+                    .Except(new[] {request.Url})
+                    .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
                 var foundUrlsCount = indexedUrls.Count + urlsToParse.Count;
-                if (pagesPerSiteLimiter.IsLimitReached(foundUrlsCount))
-                {
-                    indexedUrls
-                        .Except(new[] { request.Url })
-                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
-                    return request.SetError(
-                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
-                        $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
-                    );
-                }
+                return request.SetError(
+                    $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
+                    $"(найдено не менее {foundUrlsCount} страниц). Проиндексирована только главная страница."
+                );
             }
 
             return request.SetIndexed();

@@ -1,12 +1,11 @@
-﻿using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
+﻿using AngleSharp.Html.Parser;
 using HtmlAgilityPack;
-using Microsoft.VisualBasic.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using RailwayResults;
 
 namespace Search.IndexService.Internal
 {
@@ -14,7 +13,7 @@ namespace Search.IndexService.Internal
     {
         public static class HtmlToText
         {
-            public static ParsedHtml ParseHtml(string html, Uri url)
+            public static Result<ParsedHtml, string> ParseHtml(string html, Uri url)
             {
                 try
                 {
@@ -23,22 +22,22 @@ namespace Search.IndexService.Internal
                     var text = ConvertDoc(doc);
                     DeleteSymbols(doc, text);
                     
-                    return new ParsedHtml
+                    return Result<ParsedHtml, string>.Success(new ParsedHtml
                     {
                         Title = GetTitle(doc),
                         Text = DeleteExcessWhitespaces(text),
                         Links = GetLinks(html, url)
-                    };
+                    });
                 }
-                catch
+                catch (Exception error)
                 {
-                    return null;
+                    return Result<ParsedHtml, string>.Fail(error.ToString());
                 }
             }
             
             private static string GetTitle(HtmlDocument doc)
             {
-                return doc.DocumentNode.SelectSingleNode("//title").InnerText ?? "";
+                return doc?.DocumentNode?.SelectSingleNode("//title")?.InnerText ?? "";
             }
 
             private static string ConvertDoc(HtmlDocument doc)
@@ -84,6 +83,8 @@ namespace Search.IndexService.Internal
                             || Uri.TryCreate(baseUrl, hrefAttribute, out link)
                         )
                         {
+                            if (link.Scheme != Uri.UriSchemeHttp && link.Scheme != Uri.UriSchemeHttps)
+                                continue;
                             if (link.Scheme != baseUrl.Scheme)
                             {
                                 var strLink = link.ToString();
