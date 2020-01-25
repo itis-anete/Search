@@ -85,17 +85,9 @@ namespace Search.IndexService.Internal
                         {
                             if (link.Scheme != Uri.UriSchemeHttp && link.Scheme != Uri.UriSchemeHttps)
                                 continue;
-                            if (link.Scheme != baseUrl.Scheme)
-                            {
-                                var strLink = link.ToString();
-                                link = new Uri(
-                                    baseUrl.Scheme +
-                                        ':' +
-                                        strLink.Substring(
-                                            strLink.IndexOf(':') + 1
-                                        )
-                                );
-                            }
+                            if (!string.IsNullOrEmpty(link.Query))
+                                continue;
+                            
                             href.Add(link);
                         }
                     }
