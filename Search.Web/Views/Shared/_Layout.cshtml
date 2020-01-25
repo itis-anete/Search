@@ -41,7 +41,7 @@
             <h2>Index Query please!</h2>
             <a class="close" href="#">&times;</a>
             <input id="indexQuery" type="text" class="content" placeholder="Indexid" required>
-            <a class="listQuery">?</a>
+            <a class="listQuery" >?</a>
             <button class="button_ok" onclick="indexesSite()">Ok</button>
         </div>
     </div>
@@ -74,11 +74,6 @@
     </script>
 
     <script>
-
-        var list = fetch("api/Index/GetQueue", {
-            method:'GET'
-        });
-
         var pages = [];
 
         class indexPagex {
@@ -87,12 +82,12 @@
                 this.status = status;
             }
         }
+        domElement();
 
-        domElement(list);
-
-        function domElement(listQuer) {
+        function domElement() {
 
             $(document).ready(function () {
+
                 var modal = document.getElementById('myModal');
 
                 var btn = document.getElementsByClassName("listQuery")[0];
@@ -100,17 +95,20 @@
                 var span = document.getElementsByClassName("close")[0];
 
                 btn.onclick = function () {
-                    modal.style.display = "block";
+                    var listQuer = fetch("api/Index/GetQueue", {
+                        method: 'GET'
+                    }).then(function (response) {
+                        response.json();
+                    });
 
+                    modal.style.display = "block";
                     for (var i = 0; i < listQuer.length; i++) {
                         if (listQuer[i].errorMessage == null) {
                             pages[i] = new indexPagex(listQuer[i].url, "ok");
-
                         } else {
                             pages[i] = new indexPagex(listQuer[i].url, "error");
                         }
                     }
-
                     if (pages.length == 0) {
                         listPages("Пусто", "Пусто");
                     } else {
@@ -120,19 +118,16 @@
                           }
                     }
                 }
-
                 span.onclick = function () {
                     modal.style.display = "none";
                     $('#tab1 tbody tr').remove();
                 }
-
                 window.onclick = function (event) {
                     if (event.target == modal) {
                         this.modal.style.display = "none";
                     }
                 }
             });
-
         }
 
         function listPages(url, status) {
