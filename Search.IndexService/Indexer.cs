@@ -78,22 +78,41 @@ namespace Search.IndexService
             var urlsToParse = new ConcurrentStack<Uri>();
             var urlsFromSiteMap = siteMap.Links
                 .Where(uri =>
-                    uri.Host.EndsWith(siteHost) &&
+                    (uri.Host == siteHost || uri.Host.EndsWith(siteHostWithDotBefore)) &&
                     uri != request.Url)
                 .Distinct()
                 .ToArray();
             
+            if (urlsFromSiteMap.Length > 0)
+                urlsToParse.PushRange(urlsFromSiteMap);
             urlsToParse.Push(request.Url);
-            urlsToParse.PushRange(urlsFromSiteMap);
 
+            Result<string> indexingResult;
+            var semaphore = new SemaphoreSlim(256);
+            var indexingTasks = new ConcurrentBag<Task>();
+            var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
-            while (!urlsToParse.IsEmpty)
+            while (urlsToParse.TryPop(out var currentUrl))
             {
-                urlsToParse.TryPop(out var currentUrl);
                 indexedUrls.TryAdd(currentUrl, default);
-                var indexResult = await IndexPage(currentUrl, request, siteHost, urlsToParse, indexedUrls);
-                if (indexResult.IsFailure)
-                    return request.SetError(indexResult.Error);
+                
+                semaphore.Wait();
+                indexingTasks.Add(
+                    IndexPage(currentUrl, request, siteHost, siteHostWithDotBefore, urlsToParse, indexedUrls)
+                        .ContinueWith(task =>
+                        {
+                            semaphore.Release();
+                            completedIndexingTasks.Push(task);
+                        })
+                );
+                
+                indexingResult = CheckResultOfCompletedTasks();
+                if (indexingResult.IsFailure)
+                    return request.SetError(indexingResult.Error);
+
+                while (urlsToParse.IsEmpty &&
+                       indexingTasks.TryTake(out var indexingTask))
+                    indexingTask.Wait();
                 
                 if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
                     continue;
@@ -106,13 +125,31 @@ namespace Search.IndexService
                 );
             }
 
+            Task.WaitAll(indexingTasks.ToArray());
+            indexingResult = CheckResultOfCompletedTasks();
+            if (indexingResult.IsFailure)
+                return request.SetError(indexingResult.Error);
+
             return request.SetIndexed();
+
+            Result<string> CheckResultOfCompletedTasks()
+            {
+                while (completedIndexingTasks.TryPop(out var completedTask))
+                {
+                    var result = completedTask.Result;
+                    if (result.IsFailure)
+                        return result;
+                }
+
+                return Result<string>.Success();
+            }
         }
 
         private async Task<Result<string>> IndexPage(
             Uri currentUrl,
             IndexRequest request,
             string siteHost,
+            string siteHostWithDotBefore,
             ConcurrentStack<Uri> urlsToParse,
             ConcurrentDictionary<Uri, byte> indexedUrls)
         {
@@ -135,7 +172,7 @@ namespace Search.IndexService
             var parsedHtml = parsedHtmlResult.Value;
             parsedHtml.Links
                 .Where(uri =>
-                    uri.Host.EndsWith(siteHost) &&
+                    (uri.Host == siteHost || uri.Host.EndsWith(siteHostWithDotBefore)) &&
                     !indexedUrls.ContainsKey(uri))
                 .ForEach(urlsToParse.Push);
 
