@@ -88,7 +88,7 @@ namespace Search.IndexService
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
             var isUrlFromRequestIndexed = false;
             
-            var semaphore = new SemaphoreSlim(256);
+            var semaphore = new SemaphoreSlim(32);
             var indexingTasks = new ConcurrentDictionary<Task, byte>();
             var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
             while (!urlsToIndex.IsEmpty)
