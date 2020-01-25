@@ -171,19 +171,22 @@ namespace Search.IndexService
             ConcurrentDictionary<Uri, byte> urlsToIndex,
             ConcurrentDictionary<Uri, byte> indexedUrls)
         {
-            var html = await GetHtml(currentUrl);
-            if (html == null)
+            var htmlResult = await GetHtml(currentUrl);
+            if (htmlResult.IsFailure)
             {
                 if (currentUrl == request.Url)
-                    return Result<string>.Fail($"Не удалось загрузить страницу {request.Url}");
+                    return Result<string>.Fail($"Не удалось загрузить страницу {request.Url}\n" +
+                                               htmlResult.Error);
                 return Result<string>.Success(); // TODO: лучше не замалчивать ошибку
             }
 
+            var html = htmlResult.Value;
             var parsedHtmlResult = Parser.HtmlToText.ParseHtml(html, request.Url);
             if (parsedHtmlResult.IsFailure)
             {
                 if (currentUrl == request.Url)
-                    return Result<string>.Fail($"Не удалось проиндексировать страницу {request.Url}");
+                    return Result<string>.Fail($"Не удалось проиндексировать страницу {request.Url}\n" +
+                                               parsedHtmlResult.Error);
                 return Result<string>.Success(); // TODO: лучше не замалчивать ошибку
             }
 
@@ -209,19 +212,20 @@ namespace Search.IndexService
             return Result<string>.Success();
         }
 
-        private async Task<string> GetHtml(Uri url)
+        private async Task<Result<string, string>> GetHtml(Uri url)
         {
             try
             {
                 using var response = await httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
-                    return null;
+                    return Result<string, string>.Fail(response.ReasonPhrase);
 
-                return await response.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync();
+                return Result<string, string>.Success(content);
             }
-            catch
+            catch (Exception error)
             {
-                return null;
+                return Result<string, string>.Fail(error.ToString());
             }
         }
 
