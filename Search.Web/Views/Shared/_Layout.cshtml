@@ -63,14 +63,10 @@
                 var queryInput = document.getElementById("indexQuery");
                 var url = queryInput.value;
 
-
                 fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
                 }).then(function (response) {
-                    response.json().then(function (parsedJson) {
-                    var results = parsedJson.results;
-                    var r = (results.errorMessage == null)? "Страница успешно проиндексирована" : "Страница не проиндексирована";
-                        alert(r);
+                    alert((response.status==200)?"Страница проиндексирована":"Страница не проиндексирована");
                 });
             });
         }
