@@ -116,6 +116,7 @@ namespace Search.IndexService
                 
                 if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
                     continue;
+                Task.WaitAll(indexingTasks.ToArray());
                 indexedUrls.Keys
                     .Where(uri => uri != request.Url)
                     .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
