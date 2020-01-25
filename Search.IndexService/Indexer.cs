@@ -75,30 +75,40 @@ namespace Search.IndexService
             var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
             var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
 
-            var urlsToParse = new ConcurrentStack<Uri>();
-            var urlsFromSiteMap = siteMap.Links
+            var urlsToIndex = new ConcurrentDictionary<Uri, byte>();
+            urlsToIndex.TryAdd(request.Url, default);
+            siteMap.Links
                 .Where(uri =>
                     (uri.Host == siteHost || uri.Host.EndsWith(siteHostWithDotBefore)) &&
                     uri != request.Url)
                 .Distinct()
-                .ToArray();
-            
-            if (urlsFromSiteMap.Length > 0)
-                urlsToParse.PushRange(urlsFromSiteMap);
-            urlsToParse.Push(request.Url);
+                .ForEach(uri => urlsToIndex.TryAdd(uri, default));
 
             Result<string> indexingResult;
+            var indexedUrls = new ConcurrentDictionary<Uri, byte>();
+            var isUrlFromRequestIndexed = false;
+            
             var semaphore = new SemaphoreSlim(256);
             var indexingTasks = new ConcurrentBag<Task>();
             var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
-            var indexedUrls = new ConcurrentDictionary<Uri, byte>();
-            while (urlsToParse.TryPop(out var currentUrl))
+            while (!urlsToIndex.IsEmpty)
             {
+                Uri currentUrl;
+                if (!isUrlFromRequestIndexed)
+                {
+                    currentUrl = request.Url;
+                    isUrlFromRequestIndexed = true;
+                }
+                else
+                {
+                    currentUrl = urlsToIndex.Keys.First();
+                    urlsToIndex.TryRemove(currentUrl, out _);
+                }
                 indexedUrls.TryAdd(currentUrl, default);
-                
+
                 semaphore.Wait();
                 indexingTasks.Add(
-                    IndexPage(currentUrl, request, siteHost, siteHostWithDotBefore, urlsToParse, indexedUrls)
+                    IndexPage(currentUrl, request, siteHost, siteHostWithDotBefore, urlsToIndex, indexedUrls)
                         .ContinueWith(task =>
                         {
                             semaphore.Release();
@@ -110,7 +120,7 @@ namespace Search.IndexService
                 if (indexingResult.IsFailure)
                     return request.SetError(indexingResult.Error);
 
-                while (urlsToParse.IsEmpty &&
+                while (urlsToIndex.IsEmpty &&
                        indexingTasks.TryTake(out var indexingTask))
                     indexingTask.Wait();
                 
@@ -151,7 +161,7 @@ namespace Search.IndexService
             IndexRequest request,
             string siteHost,
             string siteHostWithDotBefore,
-            ConcurrentStack<Uri> urlsToParse,
+            ConcurrentDictionary<Uri, byte> urlsToIndex,
             ConcurrentDictionary<Uri, byte> indexedUrls)
         {
             var html = await GetHtml(currentUrl);
@@ -175,7 +185,7 @@ namespace Search.IndexService
                 .Where(uri =>
                     (uri.Host == siteHost || uri.Host.EndsWith(siteHostWithDotBefore)) &&
                     !indexedUrls.ContainsKey(uri))
-                .ForEach(urlsToParse.Push);
+                .ForEach(uri => urlsToIndex.TryAdd(uri, default));
 
             var document = new Document
             {
