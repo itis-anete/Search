@@ -58,6 +58,13 @@
             }
         });
 
+        var statusPage = {
+            1: "В очереди",
+            2: "Идет обработка",
+            3: "Страница индексирована",
+            4:"Ошибка"
+        }
+
         function indexesSite() {
             $(document).ready(function () {
                 var queryInput = document.getElementById("indexQuery");
@@ -66,8 +73,25 @@
                 fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
                 }).then(function (response) {
-                    alert((response.status==200)?"Страница проиндексирована":"Страница не проиндексирована");
+                    statusQueue(response,url);
                 });
+            });
+        }
+
+        function statusQueue(response,urlSite) {
+            fetch("api/Index/GetQueue", { method: 'GET' }).then(function (response) {
+                        response.json().then(function (parsedJson) {
+                            var result = parsedJson;
+                            for (var i = 0; i < result.length; i++) {
+                                if (result[i].url == urlSite) {
+                                    for (let key in statusPage) {
+                                        if (result[i].status == key)
+                                            alert(statusPage[key]);
+                                    }
+                                }
+                            }
+                            
+                        });         
             });
         }
 
@@ -118,12 +142,17 @@
 
         function statusPages(listQuer) {
             for (var i = 0; i < listQuer.length; i++) {
-                        if (listQuer[i].errorMessage == null) {
-                            pages[i] = new indexPagex(listQuer[i].url, "индексировано");
-                        } else {
+                if (listQuer[i].status == 1) {
+                            pages[i] = new indexPagex(listQuer[i].url, "В очереди");
+                } if (listQuer[i].status == 2){
+                    pages[i] = new indexPagex(listQuer[i].url, "Идет обработка");
+                } if (listQuer[i].status == 3){
+                    
+                    pages[i] = new indexPagex(listQuer[i].url, "Идет обработка");
+                } if (listQuer[i].status == 4) {
                             pages[i] = new indexPagex(listQuer[i].url, listQuer[i].errorMessage );
-                        }
-                    }
+                }
+            }
 
             if (pages.length == 0) {
                 listPages("Пусто", "Пусто");
@@ -133,9 +162,7 @@
                     listPages(pages[i].url, pages[i].status);
                 }
             
-            }
-            
-            
+            } 
         }
 
         function listPages(url, status) {
