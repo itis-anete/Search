@@ -100,10 +100,9 @@ namespace Search.IndexService
                     isUrlFromRequestIndexed = true;
                 }
                 else
-                {
                     currentUrl = urlsToIndex.Keys.First();
-                    urlsToIndex.TryRemove(currentUrl, out _);
-                }
+
+                urlsToIndex.TryRemove(currentUrl, out _);
                 indexedUrls.TryAdd(currentUrl, default);
 
                 semaphore.Wait();
@@ -127,6 +126,8 @@ namespace Search.IndexService
                     var indexingTask = indexingTasks.Keys.FirstOrDefault();
                     if (indexingTask == null)
                         break;
+                    
+                    indexingTasks.TryRemove(indexingTask, out _);
                     indexingTask.Wait();
                 }
 
