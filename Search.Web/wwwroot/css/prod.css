@@ -21,7 +21,7 @@ canvas {
 body {
     margin: 0;
     background: linear-gradient(to right, rgb(67, 26, 88), #a3b4d3);
-    font-family:Liana;
+    font-family: Nunito;
 }
 
 .tb {
@@ -36,7 +36,6 @@ body {
 
 @font-face {
     font-family: 'Nunito';
-    src: url(~/ttf/9099.ttf);
 }
 
 input, button {

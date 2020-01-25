@@ -95,29 +95,15 @@
                 var span = document.getElementsByClassName("close")[0];
 
                 btn.onclick = function () {
-                    var listQuer = fetch("api/Index/GetQueue", {
-                        method: 'GET'
-                    }).then(function (response) {
-                        response.json();
+                    fetch("api/Index/GetQueue").then(function (response) {
+                        response.json().then(function (parsedJson) {
+                            var result = parsedJson.result;
+                            statusPages(result);
+                        });
+                        
                     });
-
-                    modal.style.display = "block";
-                    for (var i = 0; i < listQuer.length; i++) {
-                        if (listQuer[i].errorMessage == null) {
-                            pages[i] = new indexPagex(listQuer[i].url, "ok");
-                        } else {
-                            pages[i] = new indexPagex(listQuer[i].url, "error");
-                        }
-                    }
-                    if (pages.length == 0) {
-                        listPages("Пусто", "Пусто");
-                    } else {
-                         for (var i = 0; i < pages.length; i++) {
-                            console.log(pages[i].url, pages[i].status);
-                            listPages(pages[i].url, pages[i].status);
-                          }
-                    }
                 }
+
                 span.onclick = function () {
                     modal.style.display = "none";
                     $('#tab1 tbody tr').remove();
@@ -128,6 +114,28 @@
                     }
                 }
             });
+        }
+
+        function statusPages(listQuer) {
+            for (var i = 0; i < listQuer.length; i++) {
+                        if (listQuer[i].errorMessage == null) {
+                            pages[i] = new indexPagex(listQuer[i].url, "ok");
+                        } else {
+                            pages[i] = new indexPagex(listQuer[i].url, "error");
+                        }
+                    }
+
+            if (pages.length == 0) {
+                listPages("Пусто", "Пусто");
+            } else {
+                for (var i = 0; i < pages.length; i++) {
+                    console.log(pages[i].url, pages[i].status);
+                    listPages(pages[i].url, pages[i].status);
+                }
+            
+            }
+            modal.style.display = "block";
+            
         }
 
         function listPages(url, status) {
