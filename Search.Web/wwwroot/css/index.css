@@ -2,12 +2,11 @@ a {
     background: #9c78aac2;
     display: inline-block;
     padding: 5px 10px;
-    font-size: 14px;
-    color: #ffffff;
+    font-size: 17px;
+    
     text-decoration: none;
     font-weight: 700;
-    border: 1px solid #104d7c;
-    text-shadow: 0px 1px 1px #946ca3;
+    
 }
 
 a:hover {
@@ -132,7 +131,7 @@ h1 {
 .modal {
     display: none;
     /* Hidden by default */
-    position: fixed;
+    position: absolute;
     /* Stay in place */
     z-index: 1;
     /* Sit on top */
@@ -237,4 +236,5 @@ th {
     padding: 5px;
     /* Поля вокруг текста */
     border-radius: 10px;
+    font-size:12px;
 }

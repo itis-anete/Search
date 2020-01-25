@@ -86,7 +86,7 @@
 
         function domElement() {
 
-            $(document).ready(function () {
+            $(document.body).ready(function () {
 
                 var modal = document.getElementById('myModal');
 
@@ -95,13 +95,13 @@
                 var span = document.getElementsByClassName("close")[0];
 
                 btn.onclick = function () {
-                    fetch("api/Index/GetQueue").then(function (response) {
+                    fetch("api/Index/GetQueue", { method: 'GET' }).then(function (response) {
                         response.json().then(function (parsedJson) {
-                            var result = parsedJson.result;
-                            statusPages(result);
-                        });
-                        
+                            var result = parsedJson;
+                                statusPages(result);
+                        });         
                     });
+                    modal.style.display = "block";
                 }
 
                 span.onclick = function () {
@@ -119,9 +119,9 @@
         function statusPages(listQuer) {
             for (var i = 0; i < listQuer.length; i++) {
                         if (listQuer[i].errorMessage == null) {
-                            pages[i] = new indexPagex(listQuer[i].url, "ok");
+                            pages[i] = new indexPagex(listQuer[i].url, "индексировано");
                         } else {
-                            pages[i] = new indexPagex(listQuer[i].url, "error");
+                            pages[i] = new indexPagex(listQuer[i].url, listQuer[i].errorMessage );
                         }
                     }
 
@@ -134,7 +134,7 @@
                 }
             
             }
-            modal.style.display = "block";
+            
             
         }
 
