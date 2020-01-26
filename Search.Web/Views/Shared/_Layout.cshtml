@@ -71,19 +71,15 @@
                fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
                 }).then(function (response) {
-                    
                     if (response.status != 200) {
-
                         response.text().then(function (st) {
                             var r = st;
                             alert(r);
                         });
-                    
                     } else {
                         setTimeout(statusQueue, 2000, url);
-                    }
-                           
-                    });
+                    }    
+                });
             });
         }
 
@@ -97,15 +93,12 @@
                                         if (result[i].status == key) {
                                             alert(statusPage[key]);
                                         }
-
                                         if (result[i].status == 4) {
                                             alert(result[i].errorMessage);
-                                            
                                         }
                                     }
                                 }
                             }
-                            
                         });         
             });
         }
@@ -155,17 +148,16 @@
             });
         }
 
-        function statusPages(listQuer) {
-            for (var i = 0; i < listQuer.length; i++) {
-                if (listQuer[i].status == 1) {
-                            pages[i] = new indexPagex(listQuer[i].url, "В очереди");
-                } if (listQuer[i].status == 2){
-                    pages[i] = new indexPagex(listQuer[i].url, "Идет обработка");
-                } if (listQuer[i].status == 3){
-                    
-                    pages[i] = new indexPagex(listQuer[i].url, "Индексировано");
-                } if (listQuer[i].status == 4) {
-                            pages[i] = new indexPagex(listQuer[i].url, listQuer[i].errorMessage );
+        function statusPages(listQuery) {
+            for (var i = 0; i < listQuery.length; i++) {
+                if (listQuery[i].status == 1) {
+                    pages[i] = new indexPagex(listQuery[i].url, "В очереди");
+                } if (listQuery[i].status == 2){
+                    pages[i] = new indexPagex(listQuery[i].url, "Идет обработка (" + listQuery[i].indexedPagesCount + "/" + listQuery[i].foundPagesCount + " страниц проиндексировано)");
+                } if (listQuery[i].status == 3){
+                    pages[i] = new indexPagex(listQuery[i].url, "Проиндексировано " + listQuery[i].indexedPagesCount + " страниц\nДата индексации: " + listQuery[i].endIndexingTime);
+                } if (listQuery[i].status == 4) {
+                    pages[i] = new indexPagex(listQuery[i].url, listQuery[i].errorMessage);
                 }
             }
 
@@ -176,7 +168,6 @@
                     console.log(pages[i].url, pages[i].status);
                     listPages(pages[i].url, pages[i].status);
                 }
-            
             } 
         }
 
