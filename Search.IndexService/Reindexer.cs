@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
-using Search.IndexService.Dto;
+using Search.IndexService.Dbo;
 using Search.IndexService.Models;
 using System;
 using System.Linq;
@@ -14,14 +14,14 @@ namespace Search.IndexService
     {
         private readonly TimeSpan pageTimeToLive = TimeSpan.FromDays(1);
         private readonly TimeSpan indexingFrequency = TimeSpan.FromDays(1);
-        private readonly ElasticSearchClient<IndexRequestDto> _requestsClient;
+        private readonly ElasticSearchClient<IndexRequestDbo> _requestsClient;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex _queueForIndex;
 
         private Timer _indexingTimer;
 
         public Reindexer(
-            ElasticSearchClient<IndexRequestDto> requestsClient,
+            ElasticSearchClient<IndexRequestDbo> requestsClient,
             ElasticSearchOptions options,
             QueueForIndex queueForIndex)
         {

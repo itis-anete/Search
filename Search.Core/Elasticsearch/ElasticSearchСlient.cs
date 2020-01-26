@@ -1,17 +1,13 @@
 ﻿using Nest;
 using System;
+using System.Threading.Tasks;
 
 namespace Search.Core.Elasticsearch
 {
     public class ElasticSearchClient<TModel>
         where TModel : class
     {
-        private Action<TModel, IIndexRequest<TModel>, IndexResponse> _onIndex;
-        public event Action<TModel, IIndexRequest<TModel>, IndexResponse> OnIndex
-        {
-            add { _onIndex += value; }
-            remove { _onIndex -= value; }
-        }
+        public event Action<TModel, IIndexRequest<TModel>, IndexResponse> OnIndex;
 
         public ElasticSearchClient(ElasticSearchOptions options)
         {
@@ -55,7 +51,17 @@ namespace Search.Core.Elasticsearch
             var response = _client.Index(document, selector);
 
             var desc = new IndexDescriptor<TModel>();
-            _onIndex?.Invoke(document, selector(desc), response);
+            OnIndex?.Invoke(document, selector(desc), response);
+        }
+
+        public async Task IndexAsync(
+            TModel document,
+            Func<IndexDescriptor<TModel>, IIndexRequest<TModel>> selector)
+        {
+            var response = await _client.IndexAsync(document, selector);
+
+            var desc = new IndexDescriptor<TModel>();
+            OnIndex?.Invoke(document, selector(desc), response);
         }
 
         public ExistsResponse IndexExists(Indices indices)

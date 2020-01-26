@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using MoreLinq;
 using Search.Core.Elasticsearch;
-using Search.IndexService.Dto;
+using Search.IndexService.Dbo;
 using Search.IndexService.Models;
 using Search.IndexService.Models.Converters;
 
@@ -9,11 +9,11 @@ namespace Search.IndexService
 {
     public class HangingRequestsHandler
     {
-        private readonly ElasticSearchClient<IndexRequestDto> _elasticClient;
+        private readonly ElasticSearchClient<IndexRequestDbo> _elasticClient;
         private readonly ElasticSearchOptions _elasticOptions;
 
         public HangingRequestsHandler(
-            ElasticSearchClient<IndexRequestDto> elasticClient,
+            ElasticSearchClient<IndexRequestDbo> elasticClient,
             ElasticSearchOptions elasticOptions)
         {
             _elasticClient = elasticClient;
@@ -43,10 +43,10 @@ namespace Search.IndexService
                     "Незавершённых из-за аварийной остановки приложения запросов на индексацию не найдено");
             
             elasticResponse.Documents
-                .Select(request => (InProgressIndexRequest)request.FromDto())
+                .Select(request => (InProgressIndexRequest)request.ToModel())
                 .Select(request => request.SetError(
                     $"Не удалось проиндексировать сайт {request.Url} из-за аварийной остановки приложения"))
-                .ForEach(request => _elasticClient.Index(request.ToDto(), x => x
+                .ForEach(request => _elasticClient.Index(request.ToDbo(), x => x
                     .Id(request.Url.ToString())
                     .Index(_elasticOptions.RequestsIndexName))
                 );

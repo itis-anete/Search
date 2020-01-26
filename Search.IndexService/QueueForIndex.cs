@@ -1,22 +1,23 @@
 ﻿using MoreLinq;
 using RailwayResults;
 using Search.Core.Elasticsearch;
-using Search.IndexService.Dto;
+using Search.IndexService.Dbo;
 using Search.IndexService.Models;
 using Search.IndexService.Models.Converters;
 using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
     public class QueueForIndex
     {
-        private readonly ElasticSearchClient<IndexRequestDto> _client;
+        private readonly ElasticSearchClient<IndexRequestDbo> _client;
         private readonly ElasticSearchOptions _options;
 
-        public QueueForIndex(ElasticSearchClient<IndexRequestDto> client, ElasticSearchOptions options)
+        public QueueForIndex(ElasticSearchClient<IndexRequestDbo> client, ElasticSearchOptions options)
         {
             _client = client;
             _options = options;
@@ -32,7 +33,7 @@ namespace Search.IndexService
 
             if (checkResult.Value)
             {
-                var dto = new PendingIndexRequest(url, DateTime.UtcNow).ToDto();
+                var dto = new PendingIndexRequest(url, DateTime.UtcNow).ToDbo();
                 _client.Index(dto, x => x
                     .Id(dto.Url.ToString())
                     .Index(_options.RequestsIndexName));
@@ -59,7 +60,7 @@ namespace Search.IndexService
                 .FirstOrDefault();
             return requestDto == null
                 ? null
-                : (PendingIndexRequest)requestDto.FromDto();
+                : (PendingIndexRequest)requestDto.ToModel();
         }
 
         public Result<IndexRequest[], HttpStatusCode> GetAllElementsQueue() 
@@ -77,15 +78,24 @@ namespace Search.IndexService
                 return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[]>(responseFromElastic);
 
             var results = responseFromElastic.Documents
-                .Select(x => x.FromDto())
+                .Select(x => x.ToModel())
                 .ToArray();
             return Result<IndexRequest[], HttpStatusCode>.Success(results);
         }
 
         public void Update(IndexRequest indexRequest)
         {
-            var dto = indexRequest.ToDto();
+            var dto = indexRequest.ToDbo();
             _client.Index(dto, x => x
+                .Id(dto.Url.ToString())
+                .Index(_options.RequestsIndexName)
+            );
+        }
+
+        public async Task UpdateAsync(IndexRequest indexRequest)
+        {
+            var dto = indexRequest.ToDbo();
+            await _client.IndexAsync(dto, x => x
                 .Id(dto.Url.ToString())
                 .Index(_options.RequestsIndexName)
             );
@@ -139,7 +149,7 @@ namespace Search.IndexService
 
             _client.CreateIndex(_options.RequestsIndexName, index => index
                 .Mappings(ms => ms
-                    .Map<IndexRequestDto>(m => m
+                    .Map<IndexRequestDbo>(m => m
                         .Properties(ps => ps
                             .Keyword(k => k.Name(x => x.Url))
                             .Date(d => d.Name(x => x.CreatedTime))

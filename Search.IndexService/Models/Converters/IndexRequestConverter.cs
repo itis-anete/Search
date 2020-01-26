@@ -1,4 +1,4 @@
-﻿using Search.IndexService.Dto;
+﻿using Search.IndexService.Dbo;
 using System;
 using System.Collections.Generic;
 
@@ -6,7 +6,7 @@ namespace Search.IndexService.Models.Converters
 {
     public static class IndexRequestConverter
     {
-        private static readonly HashSet<IndexRequestStatus> supportedStatuses = new HashSet<IndexRequestStatus>
+        private static readonly HashSet<IndexRequestStatus> SupportedStatuses = new HashSet<IndexRequestStatus>
         {
             IndexRequestStatus.Pending,
             IndexRequestStatus.InProgress,
@@ -14,39 +14,62 @@ namespace Search.IndexService.Models.Converters
             IndexRequestStatus.Error
         };
 
-        public static IndexRequest FromDto(this IndexRequestDto dto)
+        public static IndexRequest ToModel(this IndexRequestDbo dbo)
         {
-            return dto.Status switch
+            return dbo.Status switch
             {
-                IndexRequestStatus.Pending => new PendingIndexRequest(dto.Url, dto.CreatedTime),
-                IndexRequestStatus.InProgress => new InProgressIndexRequest(dto.Url, dto.CreatedTime),
-                IndexRequestStatus.Indexed => new IndexedIndexRequest(dto.Url, dto.CreatedTime),
-                IndexRequestStatus.Error => new ErrorIndexRequest(dto.Url, dto.CreatedTime, dto.ErrorMessage),
+                IndexRequestStatus.Pending => new PendingIndexRequest(dbo.Url, dbo.CreatedTime),
+                IndexRequestStatus.InProgress => new InProgressIndexRequest(dbo.Url, dbo.CreatedTime, dbo.StartIndexingTime, dbo.IndexedPagesCount, dbo.FoundPagesCount),
+                IndexRequestStatus.Indexed => new IndexedIndexRequest(dbo.Url, dbo.CreatedTime, dbo.StartIndexingTime, dbo.IndexedPagesCount, dbo.EndIndexingTime),
+                IndexRequestStatus.Error => new ErrorIndexRequest(dbo.Url, dbo.CreatedTime, dbo.ErrorMessage),
                 _ => throw new NotSupportedException(
-                        GetStatusNotSupportedMessage(dto.Url, dto.CreatedTime, dto.Status)
+                        GetStatusNotSupportedMessage(dbo.Url, dbo.CreatedTime, dbo.Status)
                     )
             };
         }
 
-        public static IndexRequestDto ToDto(this IndexRequest model)
+        public static IndexRequestDbo ToDbo(this IndexRequest model)
         {
             if (model.Status.IsNotSupported())
                 throw new NotSupportedException(
                     GetStatusNotSupportedMessage(model.Url, model.CreatedTime, model.Status)
                 );
 
-            var dto = new IndexRequestDto
+            var dbo = new IndexRequestDbo
             {
                 Url = model.Url,
                 CreatedTime = model.CreatedTime,
                 Status = model.Status
             };
-            if (model.Status == IndexRequestStatus.Error)
-                dto.ErrorMessage = ((ErrorIndexRequest)model).ErrorMessage;
-            return dto;
+            switch (model.Status)
+            {
+                case IndexRequestStatus.InProgress:
+                {
+                    var inProgressModel = (InProgressIndexRequest)model;
+                    dbo.StartIndexingTime = inProgressModel.StartIndexingTime;
+                    dbo.IndexedPagesCount = inProgressModel.IndexedPagesCount;
+                    dbo.FoundPagesCount = inProgressModel.FoundPagesCount;
+                    break;
+                }
+                case IndexRequestStatus.Indexed:
+                {
+                    var indexedModel = (IndexedIndexRequest)model;
+                    dbo.StartIndexingTime = indexedModel.StartIndexingTime;
+                    dbo.IndexedPagesCount = indexedModel.IndexedPagesCount;
+                    dbo.EndIndexingTime = indexedModel.EndIndexingTime;
+                    break;
+                }
+                case IndexRequestStatus.Error:
+                {
+                    var errorModel = (ErrorIndexRequest)model;
+                    dbo.ErrorMessage = errorModel.ErrorMessage;
+                    break;
+                }
+            }
+            return dbo;
         }
 
-        private static bool IsNotSupported(this IndexRequestStatus status) => !supportedStatuses.Contains(status);
+        private static bool IsNotSupported(this IndexRequestStatus status) => !SupportedStatuses.Contains(status);
 
         private static string GetStatusNotSupportedMessage(Uri url, DateTime createdTime, IndexRequestStatus status) =>
             $"Статус запроса {status} не поддерживается.{Environment.NewLine}" +
