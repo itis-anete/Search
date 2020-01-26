@@ -99,7 +99,6 @@ namespace Search.IndexService
             var isUrlFromRequestIndexed = false;
             var indexedUrlsRoughCount = 0;
 
-            var currentProcess = Process.GetCurrentProcess();
             var semaphore = new SemaphoreSlim(8);
             var indexingTasks = new ConcurrentDictionary<Task, byte>();
             var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
@@ -154,8 +153,7 @@ namespace Search.IndexService
                 
                 if (indexedUrls.Count / 10 > indexedUrlsRoughCount / 10)
                 {
-                    GC.Collect();
-                    var usedMemoryInMegabytes = currentProcess.PrivateMemorySize64 / 1024 / 1024;
+                    var usedMemoryInMegabytes = GC.GetTotalMemory(true) / 1024 / 1024;
                     if (usedMemoryInMegabytes > MaxAvailableMemoryInMegabytes)
                     {
                         RollbackIndexing();
