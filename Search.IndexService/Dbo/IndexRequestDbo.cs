@@ -1,9 +1,9 @@
 ﻿using Search.IndexService.Models;
 using System;
 
-namespace Search.IndexService.Dto
+namespace Search.IndexService.Dbo
 {
-    public class IndexRequestDto
+    public class IndexRequestDbo
     {
         public Uri Url { get; set; }
         
@@ -12,13 +12,5 @@ namespace Search.IndexService.Dto
         public IndexRequestStatus Status { get; set; }
 
         public string ErrorMessage { get; set; }
-
-        public int FoundPages { get; set; }
-
-        public int IndexedPages { get; set; }
-
-        public DateTime StartIndexing { get; set; }
-
-        public DateTime FinishIndexing { get; set; }
     }
 }

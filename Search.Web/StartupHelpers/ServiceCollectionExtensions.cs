@@ -8,7 +8,7 @@ using Search.Core.Entities;
 using Search.FearchFervice;
 using Search.IndexHelpers;
 using Search.IndexService;
-using Search.IndexService.Dto;
+using Search.IndexService.Dbo;
 using Search.IndexService.SiteMap;
 using Search.Web.StartupHelpers.Adapters;
 
@@ -24,7 +24,7 @@ namespace Search.Web.StartupHelpers
                 Url = new Uri(elasticSearchUrl)
             });
 
-            services.AddSingleton<ElasticSearchClient<IndexRequestDto>>();
+            services.AddSingleton<ElasticSearchClient<IndexRequestDbo>>();
             services.AddSingleton<ElasticSearchClient<Document>>();
         }
 

@@ -39,7 +39,7 @@ namespace Search.Web.Controllers
                 return StatusCode(requests.Error.ToInt());
 
             return Ok(
-                requests.Value.Select(x => x.ToDto())
+                requests.Value.Select(x => x.ToDbo())
             );
         }
 
