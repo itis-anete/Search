@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Search.IndexService;
 
-namespace Search.Web.StartupHelpers
+namespace Search.Web.StartupHelpers.Adapters
 {
     public class HangingRequestsHandlerAdapter : IHostedService
     {

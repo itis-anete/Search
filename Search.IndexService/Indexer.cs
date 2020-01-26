@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using MoreLinq;
+﻿using MoreLinq;
 using Search.Core.Elasticsearch;
 using Search.Core.Entities;
 using Search.IndexHelpers;
@@ -8,7 +7,6 @@ using Search.IndexService.Models;
 using Search.IndexService.SiteMap;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -19,7 +17,7 @@ using Search.Core.Extensions;
 
 namespace Search.IndexService
 {
-    public class Indexer : BackgroundService
+    public class Indexer
     {
         private readonly ElasticSearchClient<Document> _client;
         private readonly ElasticSearchOptions _options;
@@ -44,7 +42,7 @@ namespace Search.IndexService
             httpClient = httpClientFactory.CreateClient("Page downloader");
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task RunAsync(CancellationToken stoppingToken)
         {
             EnsureIndexInElasticCreated();
 
