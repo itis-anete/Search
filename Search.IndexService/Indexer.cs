@@ -67,8 +67,16 @@ namespace Search.IndexService
             }
         }
 
+        private void UpdateIndexRequest(IndexRequest indexRequest)
+        {//метод для изменение состояниемодели в бд
+            indexRequestsQueue.Update(indexRequest);
+        }
+
         private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
+            //IndexRequest date = request;
+            request.StartIndexing = DateTime.Now;//установливаем время начало индексации
+
             var siteHost = GetHost(request.Url);
             var siteHostWithDotBefore = '.' + siteHost;
 
@@ -83,6 +91,9 @@ namespace Search.IndexService
                     uri != request.Url)
                 .Distinct()
                 .ForEach(uri => urlsToIndex.TryAdd(uri, default));
+
+            request.FoundPages = urlsToIndex.Count();//устанавливаем сколько связанных стр. найденно
+
 
             Result<string> indexingResult;
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
@@ -137,6 +148,10 @@ namespace Search.IndexService
                 indexedUrls.Keys
                     .Where(uri => uri != request.Url)
                     .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
+                request.IndexedPages = request.FoundPages - urlsToIndex.Count;//сколько стр. индексированно
+                request.FinishIndexing = DateTime.Now;//закончили индексация
+                UpdateIndexRequest(request);//обновляем данные
+
                 return request.SetError(
                     $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
                     $"(найдено не менее {indexedUrls.Count} страниц). Проиндексирована только главная страница."

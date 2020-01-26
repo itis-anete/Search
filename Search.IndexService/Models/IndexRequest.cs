@@ -10,6 +10,15 @@ namespace Search.IndexService.Models
 
         public abstract IndexRequestStatus Status { get; }
 
+        public int FoundPages { get; set; }
+
+        public int IndexedPages { get; set; }
+
+        public DateTime StartIndexing { get; set; }
+
+        public DateTime FinishIndexing { get; set; }
+
+
         public IndexRequest(Uri url, DateTime createdTime)
         {
             Url = url;
