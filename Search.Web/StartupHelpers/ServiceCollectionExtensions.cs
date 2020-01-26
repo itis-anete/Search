@@ -10,6 +10,7 @@ using Search.IndexHelpers;
 using Search.IndexService;
 using Search.IndexService.Dto;
 using Search.IndexService.SiteMap;
+using Search.Web.StartupHelpers.Adapters;
 
 namespace Search.Web.StartupHelpers
 {
@@ -38,7 +39,8 @@ namespace Search.Web.StartupHelpers
             services.AddSingleton<SiteMapGetter>();
             services.AddSingleton<SiteMapIndex>();
             services.AddSingleton<PagesPerSiteLimiter>();
-            services.AddHostedService<Indexer>();
+            services.AddSingleton<Indexer>();
+            services.AddHostedService<IndexerAdapter>();
             
             services.AddHostedService<Reindexer>();
         }
