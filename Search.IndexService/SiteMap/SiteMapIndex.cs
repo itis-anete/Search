@@ -28,16 +28,19 @@ namespace Search.IndexService.SiteMap
             };
         }
 
-        private async Task<List<SiteMapContent>> GetSiteMapContentsByIndex(XmlDocument doc)
+        private async Task<SiteMapContent[]> GetSiteMapContentsByIndex(XmlDocument doc)
         {
             var xnList = doc.GetElementsByTagName("sitemap");
             var siteMaps = GetLinks(xnList);
 
-            var siteContent = new List<SiteMapContent>();
-            foreach (var siteMap in siteMaps)
-                siteContent.Add(await GetSiteMap(siteMap));
+            var siteContentGettingTasks = siteMaps
+                .Select(GetSiteMap)
+                .ToArray();
+            await Task.WhenAll(siteContentGettingTasks);
 
-            return siteContent;
+            return siteContentGettingTasks
+                .Select(task => task.Result)
+                .ToArray();
         }
 
         private async Task<SiteMapContent> GetSiteMap(Uri url)
@@ -57,7 +60,7 @@ namespace Search.IndexService.SiteMap
             var xnList = doc.GetElementsByTagName("url");
             var links = GetLinks(xnList).ToArray();
 
-            return new SiteMapContent()
+            return new SiteMapContent
             {
                 Url = url,
                 Links = links

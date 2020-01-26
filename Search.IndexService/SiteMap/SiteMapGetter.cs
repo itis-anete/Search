@@ -38,7 +38,7 @@ namespace Search.IndexService.SiteMap
             var xnList = doc.GetElementsByTagName("url");
             var links = GetLinks(xnList).ToArray();
 
-            return new SiteMapContent()
+            return new SiteMapContent
             {
                 Url = url,
                 Links = links
