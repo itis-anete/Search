@@ -71,6 +71,7 @@ namespace Search.IndexService
             var responseFromElastic = _client.Search(search => search
                 .Index(_options.RequestsIndexName)
                 .Size((int)countResponse.Count)
+                .Sort(s => s.Descending(x => x.CreatedTime))
             );
             if (!responseFromElastic.IsValid)
                 return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[]>(responseFromElastic);

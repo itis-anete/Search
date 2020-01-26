@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Search.IndexService;
@@ -17,10 +16,7 @@ namespace Search.Web.StartupHelpers
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var (success, message) = _handler.CheckHangingRequests();
-            if (!success)
-                throw new Exception(message);
-            
+            _handler.CheckHangingRequests();
             return Task.CompletedTask;
         }
 

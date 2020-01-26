@@ -34,7 +34,7 @@ namespace Search.IndexService
             if (!elasticResponse.IsValid)
             {
                 if (!elasticResponse.TryGetServerErrorReason(out var errorMessage))
-                    errorMessage = "Неизвестная ошибка при обращении к Elasticsearch";
+                    errorMessage = "Не удалось установить соединение с Elasticsearch";
                 return (false, errorMessage);
             }
 
