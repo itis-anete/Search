@@ -27,7 +27,7 @@ namespace Search.IndexService
         private readonly PagesPerSiteLimiter pagesPerSiteLimiter;
         private readonly HttpClient httpClient;
 
-        private const long MaxAvailableMemoryInMegabytes = 900;
+        private const long MaxAvailableMemoryInMegabytes = 960;
 
         public Indexer(
             ElasticSearchClient<Document> client,
