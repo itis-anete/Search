@@ -54,6 +54,16 @@ namespace Search.Core.Elasticsearch
             OnIndex?.Invoke(document, selector(desc), response);
         }
 
+        public async Task IndexAsync(
+            TModel document,
+            Func<IndexDescriptor<TModel>, IIndexRequest<TModel>> selector)
+        {
+            var response = await _client.IndexAsync(document, selector);
+
+            var desc = new IndexDescriptor<TModel>();
+            OnIndex?.Invoke(document, selector(desc), response);
+        }
+
         public ExistsResponse IndexExists(Indices indices)
         {
             return _client.Indices.Exists(indices);

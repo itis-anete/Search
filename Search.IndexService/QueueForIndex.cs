@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Search.IndexService
 {
@@ -86,6 +87,15 @@ namespace Search.IndexService
         {
             var dto = indexRequest.ToDto();
             _client.Index(dto, x => x
+                .Id(dto.Url.ToString())
+                .Index(_options.RequestsIndexName)
+            );
+        }
+
+        public async Task UpdateAsync(IndexRequest indexRequest)
+        {
+            var dto = indexRequest.ToDto();
+            await _client.IndexAsync(dto, x => x
                 .Id(dto.Url.ToString())
                 .Index(_options.RequestsIndexName)
             );
