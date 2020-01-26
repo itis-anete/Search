@@ -27,6 +27,8 @@ namespace Search.IndexService
         private readonly PagesPerSiteLimiter pagesPerSiteLimiter;
         private readonly HttpClient httpClient;
 
+        private const long MaxAvailableMemoryInMegabytes = 960;
+
         public Indexer(
             ElasticSearchClient<Document> client,
             ElasticSearchOptions options,
@@ -96,7 +98,8 @@ namespace Search.IndexService
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
             var isUrlFromRequestIndexed = false;
             var indexedUrlsRoughCount = 0;
-            
+
+            var currentProcess = Process.GetCurrentProcess();
             var semaphore = new SemaphoreSlim(32);
             var indexingTasks = new ConcurrentDictionary<Task, byte>();
             var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
@@ -152,19 +155,22 @@ namespace Search.IndexService
                 if (indexedUrls.Count / 200 > indexedUrlsRoughCount / 200)
                 {
                     GC.Collect();
+                    var usedMemoryInMegabytes = currentProcess.PrivateMemorySize64 / 1024 / 1024;
+                    if (usedMemoryInMegabytes > MaxAvailableMemoryInMegabytes)
+                    {
+                        RollbackIndexing();
+                        return request.SetError(
+                            $"Не удалось проиндексировать сайт {request.Url} из-за нехватки оперативной памяти " +
+                            $"(использовано {usedMemoryInMegabytes} МБ)");
+                    }
+                    
                     indexedUrlsRoughCount = indexedUrls.Count;
                 }
 
                 // ReSharper disable once InvertIf
                 if (pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
                 {
-                    Task.WaitAll(indexingTasks.Keys.ToArray());
-                    _client.DeleteMany(
-                        indexedUrls.Keys
-                            .Where(uri => uri != request.Url)
-                            .Select(uri => uri.ToString()),
-                        _options.DocumentsIndexName
-                    );
+                    RollbackIndexing();
                     return request.SetError(GetTooManyPagesErrorMessage(
                         request.Url,
                         indexedUrls.Count,
@@ -193,6 +199,17 @@ namespace Search.IndexService
                 }
 
                 return Result<string>.Success();
+            }
+
+            void RollbackIndexing()
+            {
+                Task.WaitAll(indexingTasks.Keys.ToArray());
+                _client.DeleteMany(
+                    indexedUrls.Keys
+                        .Where(uri => uri != request.Url)
+                        .Select(uri => uri.ToString()),
+                    _options.DocumentsIndexName
+                );
             }
         }
 
