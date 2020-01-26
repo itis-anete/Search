@@ -14,42 +14,38 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close">&times;</span>
-                <h2>List Indexing Pages</h2>
+                <h2>Список сайтов</h2>
             </div>
             <div class="modal-body">
                 <table id="tab1" class="sortable">
                     <thead>
                         <tr>
-                            <th>Url</th>
-                            <th>Status</th>
+                            <th>URL</th>
+                            <th>Статус</th>
                         </tr>
                     </thead>
                     <tbody>
                     </tbody>
                 </table>
             </div>
-
         </div>
-
     </div>
 
     <div id="popup1" class="overlay">
         <div class="popup">
-
-            <h2>Index Query please!</h2>
+            <h2>Запросить индексацию</h2>
             <a class="close" href="#">&times;</a>
-            <input id="indexQuery" type="text" class="content" placeholder="Indexid" required>
+            <input id="indexQuery" type="text" class="content" placeholder="URL сайта" required>
             <a class="listQuery" >?</a>
-            <button class="button_ok" onclick="indexesSite()">Ok</button>
+            <button class="button_ok" onclick="indexesSite()">Поехали!</button>
         </div>
     </div>
 
     <div class="box">
-        <a class="button" href="#popup1">Indexing</a>
+        <a class="button" href="#popup1">Индексация</a>
     </div>
 
     <script>
-
         $('#indexQuery').keydown(function (e) {
             if (e.keyCode === 13)  {
                 indexesSite();                
