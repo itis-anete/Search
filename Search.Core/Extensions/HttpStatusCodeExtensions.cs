@@ -8,5 +8,10 @@ namespace Search.Core.Extensions
         {
             return (int)httpStatusCode;
         }
+
+        public static bool IsServerError(this HttpStatusCode httpStatusCode)
+        {
+            return httpStatusCode.ToInt() / 100 == HttpStatusCode.InternalServerError.ToInt() / 100;
+        }
     }
 }
