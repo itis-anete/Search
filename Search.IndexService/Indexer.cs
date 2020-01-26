@@ -64,6 +64,8 @@ namespace Search.IndexService
                     continue;
                 }
                 indexRequestsQueue.Update(processedRequest);
+                
+                GC.Collect();
             }
         }
 
