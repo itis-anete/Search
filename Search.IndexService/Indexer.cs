@@ -10,10 +10,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using RailwayResults;
+using Search.Core.Extensions;
 
 namespace Search.IndexService
 {
@@ -218,7 +220,13 @@ namespace Search.IndexService
             {
                 using var response = await httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                        return Result<string, string>.Fail($"Страница {url} не найдена");
+                    if (response.StatusCode.IsServerError())
+                        return Result<string, string>.Fail($"Страница {url} недоступна");
                     return Result<string, string>.Fail(response.ReasonPhrase);
+                }
 
                 var content = await response.Content.ReadAsStringAsync();
                 return Result<string, string>.Success(content);
