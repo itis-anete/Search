@@ -62,7 +62,7 @@
             1: "В очереди",
             2: "Идет обработка",
             3: "Страница индексирована",
-            4:"Ошибка"
+            4: "Error"
         }
 
         function indexesSite() {
@@ -73,20 +73,37 @@
                 fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
                 }).then(function (response) {
-                    statusQueue(response,url);
-                });
+
+                    if (response.status != 200) {
+
+                        response.text().then(function (st) {
+                            var r = st;
+                            alert(r);
+                        });
+                        } else {
+                            statusQueue(url);
+                        }
+                           
+                    });
             });
         }
 
-        function statusQueue(response,urlSite) {
+        function statusQueue(urlSite) {
             fetch("api/Index/GetQueue", { method: 'GET' }).then(function (response) {
                         response.json().then(function (parsedJson) {
                             var result = parsedJson;
                             for (var i = 0; i < result.length; i++) {
                                 if (result[i].url == urlSite) {
                                     for (let key in statusPage) {
-                                        if (result[i].status == key)
+                                        if (result[i].status == key) {
                                             alert(statusPage[key]);
+                                            break;
+                                        }
+
+                                        if (result[i].status == 4) {
+                                            alert(result[i].errorMessage);
+                                            break;
+                                        }
                                     }
                                 }
                             }
