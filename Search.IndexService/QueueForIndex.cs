@@ -59,7 +59,7 @@ namespace Search.IndexService
                 .FirstOrDefault();
             return requestDto == null
                 ? null
-                : (PendingIndexRequest)requestDto.FromDto();
+                : (PendingIndexRequest)requestDto.ToModel();
         }
 
         public Result<IndexRequest[], HttpStatusCode> GetAllElementsQueue() 
@@ -77,7 +77,7 @@ namespace Search.IndexService
                 return ElasticSearchResponseConverter.ToResultOnFail<IndexRequest[]>(responseFromElastic);
 
             var results = responseFromElastic.Documents
-                .Select(x => x.FromDto())
+                .Select(x => x.ToModel())
                 .ToArray();
             return Result<IndexRequest[], HttpStatusCode>.Success(results);
         }

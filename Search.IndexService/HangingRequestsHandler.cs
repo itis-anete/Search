@@ -43,7 +43,7 @@ namespace Search.IndexService
                     "Незавершённых из-за аварийной остановки приложения запросов на индексацию не найдено");
             
             elasticResponse.Documents
-                .Select(request => (InProgressIndexRequest)request.FromDto())
+                .Select(request => (InProgressIndexRequest)request.ToModel())
                 .Select(request => request.SetError(
                     $"Не удалось проиндексировать сайт {request.Url} из-за аварийной остановки приложения"))
                 .ForEach(request => _elasticClient.Index(request.ToDto(), x => x

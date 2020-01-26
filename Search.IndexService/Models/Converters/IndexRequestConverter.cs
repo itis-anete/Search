@@ -14,7 +14,7 @@ namespace Search.IndexService.Models.Converters
             IndexRequestStatus.Error
         };
 
-        public static IndexRequest FromDto(this IndexRequestDto dto)
+        public static IndexRequest ToModel(this IndexRequestDto dto)
         {
             return dto.Status switch
             {
