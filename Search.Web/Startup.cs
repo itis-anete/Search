@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Search.Web.StartupHelpers;
 
 namespace Search.Web
 {
@@ -35,6 +36,8 @@ namespace Search.Web
                     Version = "v1"
                 });
             });
+            
+            services.AddBackgroundServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
