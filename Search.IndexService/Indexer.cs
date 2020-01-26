@@ -233,7 +233,9 @@ namespace Search.IndexService
                 Text = parsedHtml.Text
             };
 
-            _client.Index(document, desc => desc
+#pragma warning disable 4014
+            _client.IndexAsync(document, desc => desc
+#pragma warning restore 4014
                 .Id(document.Url.ToString())
                 .Index(_options.DocumentsIndexName)
             );
