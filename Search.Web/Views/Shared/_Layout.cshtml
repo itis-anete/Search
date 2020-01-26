@@ -155,7 +155,7 @@
                 } if (listQuery[i].status == 2){
                     pages[i] = new indexPagex(listQuery[i].url, "Идет обработка (" + listQuery[i].indexedPagesCount + "/" + listQuery[i].foundPagesCount + " страниц проиндексировано)");
                 } if (listQuery[i].status == 3){
-                    pages[i] = new indexPagex(listQuery[i].url, "Проиндексировано " + listQuery[i].indexedPagesCount + " страниц");
+                    pages[i] = new indexPagex(listQuery[i].url, "Проиндексировано " + listQuery[i].indexedPagesCount + " страниц\nДата индексации: " + listQuery[i].endIndexingTime);
                 } if (listQuery[i].status == 4) {
                     pages[i] = new indexPagex(listQuery[i].url, listQuery[i].errorMessage);
                 }
