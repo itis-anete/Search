@@ -68,19 +68,20 @@
                 var queryInput = document.getElementById("indexQuery");
                 var url = queryInput.value;
 
-                fetch("api/Index/Index?Url=" + url, {
+               fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
                 }).then(function (response) {
-
+                    
                     if (response.status != 200) {
 
                         response.text().then(function (st) {
                             var r = st;
                             alert(r);
                         });
-                        } else {
-                            statusQueue(url);
-                        }
+                    
+                    } else {
+                        setTimeout(statusQueue, 2000, url);
+                    }
                            
                     });
             });
@@ -95,12 +96,11 @@
                                     for (let key in statusPage) {
                                         if (result[i].status == key) {
                                             alert(statusPage[key]);
-                                            break;
                                         }
 
                                         if (result[i].status == 4) {
                                             alert(result[i].errorMessage);
-                                            break;
+                                            
                                         }
                                     }
                                 }
