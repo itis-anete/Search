@@ -7,6 +7,7 @@ using Search.IndexService.Models;
 using Search.IndexService.SiteMap;
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -49,7 +50,7 @@ namespace Search.IndexService
             while (!stoppingToken.IsCancellationRequested)
             {
                 var request = indexRequestsQueue.WaitForIndexElement();
-                var inProgressRequest = request.SetInProgress();
+                var inProgressRequest = request.SetInProgress(DateTime.UtcNow);
                 indexRequestsQueue.Update(inProgressRequest);
 
                 IndexRequest processedRequest;
@@ -67,16 +68,8 @@ namespace Search.IndexService
             }
         }
 
-        private void UpdateIndexRequest(IndexRequest indexRequest)
-        {//метод для изменение состояниемодели в бд
-            indexRequestsQueue.Update(indexRequest);
-        }
-
         private async Task<IndexRequest> Index(InProgressIndexRequest request)
         {
-            //IndexRequest date = request;
-            request.StartIndexing = DateTime.Now;//установливаем время начало индексации
-
             var siteHost = GetHost(request.Url);
             var siteHostWithDotBefore = '.' + siteHost;
 
@@ -92,8 +85,8 @@ namespace Search.IndexService
                 .Distinct()
                 .ForEach(uri => urlsToIndex.TryAdd(uri, default));
 
-            request.FoundPages = urlsToIndex.Count();//устанавливаем сколько связанных стр. найденно
-            UpdateIndexRequest(request);
+            request.UpdatePagesCounts(0, urlsToIndex.Count);
+            indexRequestsQueue.Update(request);
 
             Result<string> indexingResult;
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
@@ -116,6 +109,15 @@ namespace Search.IndexService
                 urlsToIndex.TryRemove(currentUrl, out _);
                 indexedUrls.TryAdd(currentUrl, default);
 
+                if (semaphore.CurrentCount == 0)
+                {
+                    var indexedPagesCount = indexedUrls.Count;
+                    var foundPagesCount = indexedPagesCount + urlsToIndex.Count;
+                    request.UpdatePagesCounts(indexedPagesCount, foundPagesCount);
+#pragma warning disable 4014
+                    indexRequestsQueue.UpdateAsync(request);
+#pragma warning restore 4014
+                }
                 semaphore.Wait();
                 indexingTasks.TryAdd(
                     IndexPage(currentUrl, request, siteHost, siteHostWithDotBefore, urlsToIndex, indexedUrls)
@@ -142,20 +144,18 @@ namespace Search.IndexService
                     indexingTask.Wait();
                 }
 
-                if (!pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
-                    continue;
-                Task.WaitAll(indexingTasks.Keys.ToArray());
-                indexedUrls.Keys
-                    .Where(uri => uri != request.Url)
-                    .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
-                request.IndexedPages = request.FoundPages - urlsToIndex.Count;//сколько стр. индексированно
-                request.FinishIndexing = DateTime.Now;//закончили индексация
-                UpdateIndexRequest(request);//обновляем данные
-
-                return request.SetError(
-                    $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
-                    $"(найдено не менее {indexedUrls.Count} страниц). Проиндексирована только главная страница."
-                );
+                // ReSharper disable once InvertIf
+                if (pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
+                {
+                    Task.WaitAll(indexingTasks.Keys.ToArray());
+                    indexedUrls.Keys
+                        .Where(uri => uri != request.Url)
+                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
+                    return request.SetError(
+                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
+                        $"(найдено не менее {indexedUrls.Count} страниц). Проиндексирована только главная страница."
+                    );
+                }
             }
 
             Task.WaitAll(indexingTasks.Keys.ToArray());
@@ -163,7 +163,10 @@ namespace Search.IndexService
             if (indexingResult.IsFailure)
                 return request.SetError(indexingResult.Error);
 
-            return request.SetIndexed();
+            Debug.Assert(urlsToIndex.Count == 0,
+                "После завершения индексации остались непроиндексированные страницы");
+            request.UpdatePagesCounts(indexedUrls.Count, indexedUrls.Count);
+            return request.SetIndexed(DateTime.UtcNow);
 
             Result<string> CheckResultOfCompletedTasks()
             {

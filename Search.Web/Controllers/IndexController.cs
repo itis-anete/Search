@@ -38,9 +38,7 @@ namespace Search.Web.Controllers
             if (requests.IsFailure)
                 return StatusCode(requests.Error.ToInt());
 
-            return Ok(
-                requests.Value.Select(x => x.ToDbo())
-            );
+            return Ok(requests.Value);
         }
 
         private readonly QueueForIndex _queueForIndex;

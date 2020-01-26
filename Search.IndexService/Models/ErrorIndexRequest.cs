@@ -5,6 +5,8 @@ namespace Search.IndexService.Models
     public class ErrorIndexRequest : IndexRequest
     {
         public string ErrorMessage { get; }
+        
+        public override IndexRequestStatus Status => IndexRequestStatus.Error;
 
         public ErrorIndexRequest(Uri url, DateTime createdTime, string errorMessage)
             : base(url, createdTime)
@@ -17,7 +19,5 @@ namespace Search.IndexService.Models
                 );
             ErrorMessage = errorMessage;
         }
-
-        public override IndexRequestStatus Status => IndexRequestStatus.Error;
     }
 }

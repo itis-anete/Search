@@ -12,5 +12,13 @@ namespace Search.IndexService.Dbo
         public IndexRequestStatus Status { get; set; }
 
         public string ErrorMessage { get; set; }
+        
+        public int IndexedPagesCount { get; set; }
+        
+        public int FoundPagesCount { get; set; }
+        
+        public DateTime StartIndexingTime { get; set; }
+        
+        public DateTime EndIndexingTime { get; set; }
     }
 }

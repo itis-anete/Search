@@ -19,8 +19,8 @@ namespace Search.IndexService.Models.Converters
             return dbo.Status switch
             {
                 IndexRequestStatus.Pending => new PendingIndexRequest(dbo.Url, dbo.CreatedTime),
-                IndexRequestStatus.InProgress => new InProgressIndexRequest(dbo.Url, dbo.CreatedTime),
-                IndexRequestStatus.Indexed => new IndexedIndexRequest(dbo.Url, dbo.CreatedTime),
+                IndexRequestStatus.InProgress => new InProgressIndexRequest(dbo.Url, dbo.CreatedTime, dbo.StartIndexingTime, dbo.IndexedPagesCount, dbo.FoundPagesCount),
+                IndexRequestStatus.Indexed => new IndexedIndexRequest(dbo.Url, dbo.CreatedTime, dbo.StartIndexingTime, dbo.IndexedPagesCount, dbo.EndIndexingTime),
                 IndexRequestStatus.Error => new ErrorIndexRequest(dbo.Url, dbo.CreatedTime, dbo.ErrorMessage),
                 _ => throw new NotSupportedException(
                         GetStatusNotSupportedMessage(dbo.Url, dbo.CreatedTime, dbo.Status)
@@ -41,8 +41,31 @@ namespace Search.IndexService.Models.Converters
                 CreatedTime = model.CreatedTime,
                 Status = model.Status
             };
-            if (model.Status == IndexRequestStatus.Error)
-                dbo.ErrorMessage = ((ErrorIndexRequest)model).ErrorMessage;
+            switch (model.Status)
+            {
+                case IndexRequestStatus.InProgress:
+                {
+                    var inProgressModel = (InProgressIndexRequest)model;
+                    dbo.StartIndexingTime = inProgressModel.StartIndexingTime;
+                    dbo.IndexedPagesCount = inProgressModel.IndexedPagesCount;
+                    dbo.FoundPagesCount = inProgressModel.FoundPagesCount;
+                    break;
+                }
+                case IndexRequestStatus.Indexed:
+                {
+                    var indexedModel = (IndexedIndexRequest)model;
+                    dbo.StartIndexingTime = indexedModel.StartIndexingTime;
+                    dbo.IndexedPagesCount = indexedModel.IndexedPagesCount;
+                    dbo.EndIndexingTime = indexedModel.EndIndexingTime;
+                    break;
+                }
+                case IndexRequestStatus.Error:
+                {
+                    var errorModel = (ErrorIndexRequest)model;
+                    dbo.ErrorMessage = errorModel.ErrorMessage;
+                    break;
+                }
+            }
             return dbo;
         }
 
