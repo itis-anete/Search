@@ -91,6 +91,7 @@ namespace Search.IndexService
             Result<string> indexingResult;
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
             var isUrlFromRequestIndexed = false;
+            var indexedUrlsRoughCount = 0;
             
             var semaphore = new SemaphoreSlim(32);
             var indexingTasks = new ConcurrentDictionary<Task, byte>();
@@ -142,6 +143,12 @@ namespace Search.IndexService
                     
                     indexingTasks.TryRemove(indexingTask, out _);
                     indexingTask.Wait();
+                }
+                
+                if (indexedUrls.Count / 200 > indexedUrlsRoughCount / 200)
+                {
+                    GC.Collect();
+                    indexedUrlsRoughCount = indexedUrls.Count;
                 }
 
                 // ReSharper disable once InvertIf
