@@ -35,7 +35,7 @@ namespace Search.IndexService
             _indexingTimer = new Timer(
                 SearchOldPages,
                 null,
-                TimeSpan.Zero,
+                indexingFrequency,
                 indexingFrequency);
             return Task.CompletedTask;
         }
