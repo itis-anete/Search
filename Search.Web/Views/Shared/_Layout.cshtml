@@ -10,14 +10,37 @@
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
-    <partial name="_CookieConsentPartial" />
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h2>List Indexing Pages</h2>
+            </div>
+            <div class="modal-body">
+                <table id="tab1" class="sortable">
+                    <thead>
+                        <tr>
+                            <th>Url</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
     <div id="popup1" class="overlay">
         <div class="popup">
 
             <h2>Index Query please!</h2>
             <a class="close" href="#">&times;</a>
             <input id="indexQuery" type="text" class="content" placeholder="Indexid" required>
-            <a class="listQuery">?</a>
+            <a class="listQuery" >?</a>
+            <button class="button_ok" onclick="indexesSite()">Ok</button>
         </div>
     </div>
 
@@ -26,17 +49,18 @@
     </div>
 
     <script>
+
         $('#indexQuery').keydown(function (e) {
-            if (e.keyCode === 13) {
-                indexesSite();
+            if (e.keyCode === 13)  {
+                indexesSite();                
             }
         });
 
-        class indexPagex {
-            constructor(url, status) {
-                this.url = url;
-                this.status = status;
-            }
+        var statusPage = {
+            1: "В очереди",
+            2: "Идет обработка",
+            3: "Страница индексирована",
+            4: "Error"
         }
 
         function indexesSite() {
@@ -44,34 +68,135 @@
                 var queryInput = document.getElementById("indexQuery");
                 var url = queryInput.value;
 
-               
-                fetch("api/Index/Index?Url=" + url, {
+               fetch("api/Index/Index?Url=" + url, {
                     method: 'POST'
-                });
+                }).then(function (response) {
+                    
+                    if (response.status != 200) {
+
+                        response.text().then(function (st) {
+                            var r = st;
+                            alert(r);
+                        });
+                    
+                    } else {
+                        setTimeout(statusQueue, 2000, url);
+                    }
+                           
+                    });
             });
         }
 
+        function statusQueue(urlSite) {
+            fetch("api/Index/GetQueue", { method: 'GET' }).then(function (response) {
+                        response.json().then(function (parsedJson) {
+                            var result = parsedJson;
+                            for (var i = 0; i < result.length; i++) {
+                                if (result[i].url == urlSite) {
+                                    for (let key in statusPage) {
+                                        if (result[i].status == key) {
+                                            alert(statusPage[key]);
+                                        }
+
+                                        if (result[i].status == 4) {
+                                            alert(result[i].errorMessage);
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        });         
+            });
+        }
+
+    </script>
+
+    <script>
         var pages = [];
 
-        function listIndexing(listQuer) {
+        class indexPagex {
+            constructor(url, status) {
+                this.url = url;
+                this.status = status;
+            }
+        }
+        domElement();
+
+        function domElement() {
+
             $(document.body).ready(function () {
-                $('.listQuery').on('click', function () {
-                    for (var i = 0; i < listQuer.length; i++) {
-                        if (listQuer[i].errorMessage == null) {
-                            pages[i] = new indexPagex(listQuer[i].url, "ok");
 
-                        } else {
-                            pages[i] = new indexPagex(listQuer[i].url, "error");
-                        }
+                var modal = document.getElementById('myModal');
+
+                var btn = document.getElementsByClassName("listQuery")[0];
+
+                var span = document.getElementsByClassName("close")[0];
+
+                btn.onclick = function () {
+                    fetch("api/Index/GetQueue", { method: 'GET' }).then(function (response) {
+                        response.json().then(function (parsedJson) {
+                            var result = parsedJson;
+                                statusPages(result);
+                        });         
+                    });
+                    modal.style.display = "block";
+                }
+
+                span.onclick = function () {
+                    modal.style.display = "none";
+                    $('#tab1 tbody tr').remove();
+                }
+                window.onclick = function (event) {
+                    if (event.target == modal) {
+                        this.modal.style.display = "none";
                     }
-                    for (var i = 0; i < pages.length; i++) {
-                        console.log(pages[i].url, pages[i].status);
-
-                    }
-                    alert(pages.map(e => `Url: "${e.url}";    Status: ${e.status}`).join("\n"));
-                });
-
+                }
             });
+        }
+
+        function statusPages(listQuer) {
+            for (var i = 0; i < listQuer.length; i++) {
+                if (listQuer[i].status == 1) {
+                            pages[i] = new indexPagex(listQuer[i].url, "В очереди");
+                } if (listQuer[i].status == 2){
+                    pages[i] = new indexPagex(listQuer[i].url, "Идет обработка");
+                } if (listQuer[i].status == 3){
+                    
+                    pages[i] = new indexPagex(listQuer[i].url, "Индексировано");
+                } if (listQuer[i].status == 4) {
+                            pages[i] = new indexPagex(listQuer[i].url, listQuer[i].errorMessage );
+                }
+            }
+
+            if (pages.length == 0) {
+                listPages("Пусто", "Пусто");
+            } else {
+                for (var i = 0; i < pages.length; i++) {
+                    console.log(pages[i].url, pages[i].status);
+                    listPages(pages[i].url, pages[i].status);
+                }
+            
+            } 
+        }
+
+        function listPages(url, status) {
+            var d = document;
+            var tbody = d.getElementById('tab1').getElementsByTagName('TBODY')[0];
+
+            var row = d.createElement("TR");
+            tbody.appendChild(row);
+
+            // Создаем ячейки в вышесозданной строке
+            // и добавляем тх
+            var td1 = d.createElement("TD");
+            var td2 = d.createElement("TD");
+
+            row.appendChild(td1);
+            row.appendChild(td2);
+
+            td1.innerHTML = url;
+            td2.innerHTML = status;
         }
     </script>
 
