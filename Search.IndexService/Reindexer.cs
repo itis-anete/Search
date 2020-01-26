@@ -12,9 +12,8 @@ namespace Search.IndexService
 {
     public class Reindexer : IHostedService
     {
-        private readonly int reindexTime = -7;
-        private readonly TimeSpan indexingFrequency = TimeSpan.FromMinutes(15);
-        private readonly ElasticSearchClient<Document> _documentsClient;
+        private readonly TimeSpan pageTimeToLive = TimeSpan.FromDays(1);
+        private readonly TimeSpan indexingFrequency = TimeSpan.FromDays(1);
         private readonly ElasticSearchClient<IndexRequestDto> _requestsClient;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex _queueForIndex;
@@ -22,12 +21,10 @@ namespace Search.IndexService
         private Timer _indexingTimer;
 
         public Reindexer(
-            ElasticSearchClient<Document> documentsClient,
             ElasticSearchClient<IndexRequestDto> requestsClient,
             ElasticSearchOptions options,
             QueueForIndex queueForIndex)
         {
-            _documentsClient = documentsClient;
             _requestsClient = requestsClient;
             _options = options;
             _queueForIndex = queueForIndex;
@@ -38,7 +35,7 @@ namespace Search.IndexService
             _indexingTimer = new Timer(
                 SearchOldPages,
                 null,
-                TimeSpan.Zero,
+                indexingFrequency,
                 indexingFrequency);
             return Task.CompletedTask;
         }
@@ -51,39 +48,24 @@ namespace Search.IndexService
 
         private void SearchOldPages(object state = null)
         {
-            var responseWithDocuments = _documentsClient.Search(search => search
-                .Index(_options.DocumentsIndexName)
-                .Query(desc =>
-                    desc.DateRange(d => d
-                        .Field(x => x.IndexedTime)
-                        .LessThan(DateTime.UtcNow.AddDays(reindexTime))
-                    )
-                )
-            );
-            if (!responseWithDocuments.IsValid)
-                return;
-
-            var documentsUrls = responseWithDocuments.Documents
-                .Select(x => x.Url)
-                .ToArray();
-            var responseWithRequests = _requestsClient.Search(search => search
+            var response = _requestsClient.Search(search => search
                 .Index(_options.RequestsIndexName)
                 .Query(desc =>
-                    desc.Terms(t => t
-                        .Field(x => x.Url)
-                        .Terms(documentsUrls)
+                    desc.Term(t => t
+                        .Field(request => request.Status)
+                        .Value(IndexRequestStatus.Indexed)
                     )
                     &&
-                    desc.Term(t => t
-                        .Field(x => x.Status)
-                        .Value(IndexRequestStatus.Indexed)
+                    desc.DateRange(d => d
+                        .Field(request => request.CreatedTime) // TODO: изменить на indexedTime
+                        .LessThan(DateTime.UtcNow.Subtract(pageTimeToLive))
                     )
                 )
             );
-            if (!responseWithRequests.IsValid)
+            if (!response.IsValid)
                 return;
 
-            var urlsToReindex = responseWithRequests.Documents
+            var urlsToReindex = response.Documents
                 .Select(x => x.Url)
                 .ToArray();
             foreach (var url in urlsToReindex)
