@@ -155,9 +155,12 @@ namespace Search.IndexService
                 if (pagesPerSiteLimiter.IsLimitReached(indexedUrls.Count))
                 {
                     Task.WaitAll(indexingTasks.Keys.ToArray());
-                    indexedUrls.Keys
-                        .Where(uri => uri != request.Url)
-                        .ForEach(x => _client.Delete(x.ToString(), _options.DocumentsIndexName));
+                    _client.DeleteMany(
+                        indexedUrls.Keys
+                            .Where(uri => uri != request.Url)
+                            .Select(uri => uri.ToString()),
+                        _options.DocumentsIndexName
+                    );
                     return request.SetError(
                         $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
                         $"(найдено не менее {indexedUrls.Count} страниц). Проиндексирована только главная страница."

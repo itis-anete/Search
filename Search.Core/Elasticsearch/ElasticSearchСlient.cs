@@ -1,6 +1,9 @@
 ﻿using Nest;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using MoreLinq;
 
 namespace Search.Core.Elasticsearch
 {
@@ -29,6 +32,23 @@ namespace Search.Core.Elasticsearch
         )
         {
             _client.Delete(documentPath, x => x.Index(indexName));
+        }
+
+        public void DeleteMany(
+            IEnumerable<string> documentPaths,
+            IndexName indexName
+        )
+        {
+            var bulkRequest = new BulkRequest
+            {
+                Operations = new BulkOperationsCollection<IBulkOperation>(
+                    documentPaths.Select(path => new BulkDeleteOperation<TModel>(path)
+                    {
+                        Index = indexName
+                    })
+                )
+            };
+            _client.Bulk(bulkRequest);
         }
 
         public GetResponse<TModel> Get(
