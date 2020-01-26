@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Search.Web.StartupHelpers;
 
 namespace Search.Web
 {
@@ -15,10 +16,6 @@ namespace Search.Web
                 .ConfigureWebHostDefaults(builder =>
                 {
                     builder.UseStartup<Startup>();
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddBackgroundServices();
                 });
     }
 }

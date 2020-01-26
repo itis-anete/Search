@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MoreLinq;
 using Search.Core.Elasticsearch;
@@ -8,10 +10,8 @@ using Search.IndexHelpers;
 using Search.IndexService;
 using Search.IndexService.Dto;
 using Search.IndexService.SiteMap;
-using System;
-using System.Collections.Generic;
 
-namespace Search.Web
+namespace Search.Web.StartupHelpers
 {
 	 public static class ServiceCollectionExtensions
     {
@@ -29,12 +29,15 @@ namespace Search.Web
 
         public static void AddBackgroundServices(this IServiceCollection services)
         {
+            services.AddSingleton<HangingRequestsHandler>();
+            services.AddHostedService<HangingRequestsHandlerAdapter>();
+            
+            services.AddHostedService<Reindexer>();
+            
             services.AddSingleton<SiteMapGetter>();
             services.AddSingleton<SiteMapIndex>();
             services.AddSingleton<PagesPerSiteLimiter>();
             services.AddHostedService<Indexer>();
-
-            services.AddHostedService<Reindexer>();
         }
 
         public static void AddDomainServices(this IServiceCollection services)
