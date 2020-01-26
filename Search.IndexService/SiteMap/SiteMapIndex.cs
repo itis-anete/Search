@@ -67,14 +67,16 @@ namespace Search.IndexService.SiteMap
         private static List<Uri> GetLinks(XmlNodeList nodeList)
         {
             var links = new List<Uri>();
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (XmlNode node in nodeList)
             {
-                if (node.InnerText != null)
-                {
-                    if (Uri.IsWellFormedUriString(node.InnerText, UriKind.Absolute))
-                        links.Add(new Uri(node.InnerText));
-                }
+                var locNode = node
+                    .Cast<XmlNode>()
+                    .FirstOrDefault(child => child.Name == "loc");
+                if (locNode != null && Uri.IsWellFormedUriString(locNode.InnerText, UriKind.Absolute))
+                    links.Add(new Uri(locNode.InnerText));
             }
+
             return links;
         }
 
