@@ -31,13 +31,16 @@ namespace Search.Web.StartupHelpers
         {
             services.AddSingleton<HangingRequestsHandler>();
             services.AddHostedService<HangingRequestsHandlerAdapter>();
-            
-            services.AddHostedService<Reindexer>();
-            
+        }
+
+        public static void AddBackgroundServicesAfterServer(this IServiceCollection services)
+        {
             services.AddSingleton<SiteMapGetter>();
             services.AddSingleton<SiteMapIndex>();
             services.AddSingleton<PagesPerSiteLimiter>();
             services.AddHostedService<Indexer>();
+            
+            services.AddHostedService<Reindexer>();
         }
 
         public static void AddDomainServices(this IServiceCollection services)
