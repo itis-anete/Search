@@ -100,7 +100,7 @@ namespace Search.IndexService
             var indexedUrlsRoughCount = 0;
 
             var currentProcess = Process.GetCurrentProcess();
-            var semaphore = new SemaphoreSlim(32);
+            var semaphore = new SemaphoreSlim(8);
             var indexingTasks = new ConcurrentDictionary<Task, byte>();
             var completedIndexingTasks = new ConcurrentStack<Task<Result<string>>>();
             while (!urlsToIndex.IsEmpty)
