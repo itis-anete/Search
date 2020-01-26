@@ -163,7 +163,9 @@ namespace Search.IndexService
                             $"Не удалось проиндексировать сайт {request.Url} из-за нехватки оперативной памяти " +
                             $"(использовано {usedMemoryInMegabytes} МБ)");
                     }
-                    
+
+                    if (usedMemoryInMegabytes > MaxAvailableMemoryInMegabytes / 2)
+                        GC.Collect();
                     indexedUrlsRoughCount = indexedUrls.Count;
                 }
 
