@@ -75,6 +75,10 @@ namespace Search.IndexService
 
             var siteMapUrl = new Uri(request.Url, "/sitemap.xml");
             var siteMap = await siteMapGetter.GetSiteMap(siteMapUrl);
+            if (pagesPerSiteLimiter.IsLimitReached(siteMap.Links.Length))
+                return request.SetError(GetTooManyPagesErrorMessage(
+                    request.Url, siteMap.Links.Length, pagesPerSiteLimiter.PagesPerSiteLimit)
+                );
 
             var urlsToIndex = new ConcurrentDictionary<Uri, byte>();
             urlsToIndex.TryAdd(request.Url, default);
@@ -161,9 +165,10 @@ namespace Search.IndexService
                             .Select(uri => uri.ToString()),
                         _options.DocumentsIndexName
                     );
-                    return request.SetError(
-                        $"Не удалось проиндексировать сайт {request.Url} из-за ограничения в {pagesPerSiteLimiter.PagesPerSiteLimit} страниц на сайт " +
-                        $"(найдено не менее {indexedUrls.Count} страниц). Проиндексирована только главная страница."
+                    return request.SetError(GetTooManyPagesErrorMessage(
+                        request.Url,
+                        indexedUrls.Count,
+                        pagesPerSiteLimiter.PagesPerSiteLimit)
                     );
                 }
             }
@@ -300,6 +305,12 @@ namespace Search.IndexService
                 return hostStr;
 
             return hostStr.Substring(nextToLastDotIndex + 1, hostStr.Length - nextToLastDotIndex - 1);
+        }
+
+        private static string GetTooManyPagesErrorMessage(Uri url, int foundPagesCount, int pagesCountLimit)
+        {
+            return $"Не удалось проиндексировать сайт {url} из-за ограничения в {pagesCountLimit} страниц на сайт " +
+                   $"(найдено не менее {foundPagesCount} страниц). Проиндексирована только главная страница.";
         }
     }
 }
