@@ -152,7 +152,7 @@ namespace Search.IndexService
                     indexingTask.Wait();
                 }
                 
-                if (indexedUrls.Count / 10 > indexedUrlsRoughCount / 10)
+                if (indexedUrls.Count / 4 > indexedUrlsRoughCount / 4)
                 {
                     currentProcess.Refresh();
                     var usedMemoryInMegabytes = Process.GetCurrentProcess().PrivateMemorySize64 / 1024 / 1024;
