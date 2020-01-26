@@ -12,8 +12,8 @@ namespace Search.IndexService
 {
     public class Reindexer : IHostedService
     {
-        private readonly TimeSpan pageTimeToLive = TimeSpan.FromDays(1);
-        private readonly TimeSpan indexingFrequency = TimeSpan.FromDays(1);
+        private readonly TimeSpan pageTimeToLive = TimeSpan.FromMinutes(5);
+        private readonly TimeSpan indexingFrequency = TimeSpan.FromMinutes(5);
         private readonly ElasticSearchClient<IndexRequestDbo> _requestsClient;
         private readonly ElasticSearchOptions _options;
         private readonly QueueForIndex _queueForIndex;
