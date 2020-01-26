@@ -93,7 +93,7 @@ namespace Search.IndexService
                 .ForEach(uri => urlsToIndex.TryAdd(uri, default));
 
             request.FoundPages = urlsToIndex.Count();//устанавливаем сколько связанных стр. найденно
-
+            UpdateIndexRequest(request);
 
             Result<string> indexingResult;
             var indexedUrls = new ConcurrentDictionary<Uri, byte>();
