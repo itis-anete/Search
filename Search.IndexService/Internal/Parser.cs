@@ -2,6 +2,7 @@
 using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -90,7 +91,11 @@ namespace Search.IndexService.Internal
                             if (link.Scheme != Uri.UriSchemeHttp && link.Scheme != Uri.UriSchemeHttps)
                                 continue;
                             if (!string.IsNullOrEmpty(link.Query))
-                                continue;
+                            {
+                                var linkString = link.ToString();
+                                var queryBeginning = linkString.IndexOf('?');
+                                link = new Uri(linkString.Substring(0, queryBeginning));
+                            }
                             
                             href.Add(link);
                         }
