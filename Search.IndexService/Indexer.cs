@@ -210,7 +210,7 @@ namespace Search.IndexService
                 if (currentUrl == request.Url)
                     return Result<string>.Fail($"Не удалось загрузить страницу {request.Url}\n" +
                                                htmlResult.Error);
-                return Result<string>.Success(); // TODO: лучше не замалчивать ошибку
+                return Result<string>.Success();
             }
 
             var html = htmlResult.Value;
@@ -220,7 +220,7 @@ namespace Search.IndexService
                 if (currentUrl == request.Url)
                     return Result<string>.Fail($"Не удалось проиндексировать страницу {request.Url}\n" +
                                                parsedHtmlResult.Error);
-                return Result<string>.Success(); // TODO: лучше не замалчивать ошибку
+                return Result<string>.Success();
             }
 
             var parsedHtml = parsedHtmlResult.Value;
@@ -294,7 +294,7 @@ namespace Search.IndexService
 
         private static string GetHost(Uri url)
         {
-            var hostStr = url.Host.ToString();
+            var hostStr = url.Host;
 
             var lastDotIndex = hostStr.LastIndexOf('.');
             if (lastDotIndex < 0)
